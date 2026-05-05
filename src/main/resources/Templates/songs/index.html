@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="uk"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Пісні</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1 class="text-3xl font-bold mb-4 text-gray-900 text-center">
+        Список пісень
+    </h1>
+    <div th:if="${#lists.isEmpty(songs)}">
+        <p class="text-gray-500">Пісні відсутні</p>
+    </div>
+    <div th:if="${!#lists.isEmpty(songs)}" class="space-y-4">
+        <div th:each="song : ${songs}" class="border border-gray-300 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition">
+            <h2 class="text-xl font-bold text-gray-900" th:text="${song.name}"></h2>
+            <p class="text-gray-700">
+                <span class="font-semibold">Виконавець:</span>
+                <span th:text="${song.artist}"></span>
+            </p>
+            <p class="text-gray-700">
+                <span class="font-semibold">Альбом:</span>
+                <span th:text="${song.album}"></span>
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

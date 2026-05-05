@@ -1,4 +1,4 @@
-package org.example.Services;
+package org.example.services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.DTOs.GenreDto;
