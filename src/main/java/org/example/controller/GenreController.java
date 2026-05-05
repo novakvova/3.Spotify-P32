@@ -1,7 +1,7 @@
 package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.DTOs.GenreDto;
+import org.example.dtos.GenreDto;
 import org.example.services.GenreService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

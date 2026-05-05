@@ -1,6 +1,6 @@
 package org.example.mappers;
 
-import org.example.DTOs.GenreDto;
+import org.example.dtos.GenreDto;
 import org.example.entities.Genre;
 import org.springframework.stereotype.Component;
 

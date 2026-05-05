@@ -1,4 +1,4 @@
-package org.example.dtos.song;
+package org.example.dtos;
 
 import lombok.Getter;
 import lombok.Setter;

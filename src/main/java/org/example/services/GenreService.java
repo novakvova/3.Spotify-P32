@@ -1,7 +1,7 @@
 package org.example.services;
 
 import lombok.RequiredArgsConstructor;
-import org.example.DTOs.GenreDto;
+import org.example.dtos.GenreDto;
 import org.example.entities.Genre;
 import org.example.mappers.GenreMapper;
 import org.example.repositories.IGenreRepository;

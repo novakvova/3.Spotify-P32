@@ -13,7 +13,7 @@ public class SongService {
     private final SongMapper mapper;
     private final ISongRepository songRepository;
 
-    public List<org.example.dtos.song.SongItemDto> getAllSongs() {
+    public List<org.example.dtos.SongItemDto> getAllSongs() {
         return songRepository.findAll()
                 .stream()
                 .map(mapper::toDto)
