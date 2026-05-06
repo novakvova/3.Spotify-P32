@@ -25,7 +25,7 @@ public class Song {
     @Column(nullable = false, length = 200)
     private String album;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "song_genres",
             joinColumns = @JoinColumn(name = "song_id"),
