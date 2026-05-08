@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="uk"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -17,21 +18,42 @@
         </a>
 
         <div class="flex gap-6">
-            <a href="/" class="hover:text-green-100 transition">Головна</a>
-            <a href="/genres" class="hover:text-green-100 transition">Жанри</a>
             <a href="/songs" class="hover:text-green-100 transition">Пісні</a>
+            <a href="/genres" class="hover:text-green-100 transition">Жанри</a>
+        </div>
+
+        <div class="flex gap-6" sec:authorize="!isAuthenticated()">
             <a href="/login" class="hover:text-green-100 transition">Увійти</a>
             <a href="/register" class="hover:text-green-100 transition">Реєстрація</a>
         </div>
 
+        <div class="flex gap-4 items-center" sec:authorize="isAuthenticated()">
+            <img th:if="${#authentication.principal.image != null}"
+                th:src="@{'/uploads/small/' + ${#authentication.principal.image}}"
+                class="w-10 h-10 rounded-full border border-white shadow"
+                alt="Avatar">
 
+            <img th:if="${#authentication.principal.image == null}"
+                src="/images/default-avatar.png"
+                class="w-10 h-10 rounded-full border border-white shadow"
+                alt="Default Avatar">
+
+            <span class="font-medium" th:text="${#authentication.name}">Username</span>
+
+            <form th:action="@{/logout}" method="post">
+                <button type="submit"
+                        class="bg-white text-green-600 px-3 py-1 rounded hover:bg-green-100 transition">
+                    Вийти
+                </button>
+            </form>
+        </div>
     </div>
 </nav>
 
 
 <main class="container mx-auto px-4 py-10 flex-grow" layout:fragment="content"></main>
 
-<footer class="bg-green-100 text-green-800 text-center py-4 mt-10 border-t border-green-200 mt-auto">
+<footer class="bg-green-100 text-green-800 text-center py-4 mt-10 border-t border-green-200">
     <p>© 2026 Spring сайт | Усі права захищено</p>
 </footer>
 

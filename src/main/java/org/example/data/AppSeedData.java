@@ -1,18 +1,22 @@
 package org.example.data;
 
 import com.mpatric.mp3agic.*;
-import groovy.io.FileType;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import net.datafaker.Faker;
+import org.example.data.constants.RolesConstants;
 import org.example.entities.Genre;
+import org.example.entities.RoleEntity;
 import org.example.entities.Song;
+import org.example.entities.UserEntity;
 import org.example.repositories.IGenreRepository;
+import org.example.repositories.IRoleRepository;
 import org.example.repositories.ISongRepository;
+import org.example.repositories.IUserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,6 +30,10 @@ public class AppSeedData {
     //final - теж саме, що readonly у С#
     private final IGenreRepository genreRepository;
     private final ISongRepository songRepository;
+    private final IRoleRepository roleRepository;
+    private final IUserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
     private final Faker faker = new Faker(new Locale("uk"));
 
     @PostConstruct
@@ -34,8 +42,38 @@ public class AppSeedData {
         seedGenres();
         try {
             seedSongs();
+            seedRoles();
+            seedUsers();
         } catch (IOException e) {
             System.out.println("Error reead files");
+        }
+    }
+
+    private void seedRoles() {
+        List<String> roles = RolesConstants.Roles;
+
+        for (String roleName : roles) {
+            boolean exists = roleRepository.findByName(roleName).isPresent();
+            if (!exists) {
+                RoleEntity role = new RoleEntity();
+                role.setName(roleName);
+                roleRepository.save(role);
+                System.out.println("Додано роль: " + roleName);
+            } else {
+                System.out.println("Роль уже існує: " + roleName);
+            }
+        }
+    }
+
+   private void seedUsers() {
+        if(userRepository.count() == 0) {
+            RoleEntity role = roleRepository.findByName(RolesConstants.AdminRole).orElseThrow();
+            UserEntity user = new UserEntity();
+            user.setUsername("admin@gmail.com");
+            user.setEmail("admin@gmail.com");
+            user.setPassword(passwordEncoder.encode("123456"));
+            user.setRoles(Set.of(role));
+            userRepository.save(user);
         }
     }
 
@@ -64,7 +102,6 @@ public class AppSeedData {
             //отримуємо список усіх жарів
             var genres = genreRepository.findAll();
             Random random = new Random();
-            Collections.shuffle(genres); //робимо перемішування
             Files.list(path)
                     .filter(Files::isRegularFile)
                     .forEach(file -> {
@@ -92,6 +129,7 @@ public class AppSeedData {
                                 song.setAlbum(album);
                                 song.setName(title);
                                 song.setFileName(file.getFileName().toString());
+                                Collections.shuffle(genres); //робимо перемішування
                                 int count = 1 + random.nextInt(3); // від 1 до 3 жанрів
                                 List<Genre> randomGenres = genres.stream()
                                         .limit(count)
@@ -115,3 +153,4 @@ public class AppSeedData {
 
     }
 }
+ 
