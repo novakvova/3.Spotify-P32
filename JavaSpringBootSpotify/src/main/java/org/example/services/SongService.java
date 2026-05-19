@@ -18,16 +18,16 @@ public class SongService {
     private final SongMapper mapper;
     private final ISongRepository songRepository;
 
-    public List<org.example.dtos.SongItemDto> getAllSongs() {
-        return songRepository.findAll()
-                .stream()
-                .map(mapper::toDto)
-                .toList();
-    }
+    // public List<org.example.dtos.SongItemDto> getAllSongs() {
+    //     return songRepository.findAll()
+    //             .stream()
+    //             .map(mapper::toDto)
+    //             .toList();
+    // }
 
-    public Page<SongItemDto> getSongsPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return songRepository.findAll(pageable).map(mapper::toDto);
-    }
+    // public Page<SongItemDto> getSongsPage(int page, int size) {
+    //     Pageable pageable = PageRequest.of(page, size);
+    //     return songRepository.findAll(pageable).map(mapper::toDto);
+    // }
 }
 

@@ -17,8 +17,8 @@ public class SongController {
     @GetMapping("/songs")
     public String index(@RequestParam(defaultValue = "0") int page, Model model) {
         //Список усіх жанрів
-        Page<SongItemDto> songsPage = songService.getSongsPage(page, 10);
-        model.addAttribute("songsPage", songsPage);
+        // Page<SongItemDto> songsPage = songService.getSongsPage(page, 10);
+        // model.addAttribute("songsPage", songsPage);
         return "songs/index";
     }
 }
