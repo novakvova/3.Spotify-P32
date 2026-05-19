@@ -21,7 +21,6 @@ public class Song {
 
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
-    @Column(nullable = false, length = 200)
     private Artist artist;
 
     @Column(nullable = false)
