@@ -8,111 +8,106 @@
     <artifactId>1.Simple</artifactId>
     <version>1.0-SNAPSHOT</version>
     <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
-    <parent>
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.6</version>
+    <relativePath/>
+</parent>
+
+<dependencies>
+    <!-- Spring Boot starters -->
+    <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.5</version>
-    </parent>
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-    <dependencies>
-        <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <version>4.0.5</version>
-        </dependency>
-        <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-thymeleaf -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-            <version>4.0.5</version>
-        </dependency>
-        <!-- Source: https://mvnrepository.com/artifact/nz.net.ultraq.thymeleaf/thymeleaf-layout-dialect -->
-        <dependency>
-            <groupId>nz.net.ultraq.thymeleaf</groupId>
-            <artifactId>thymeleaf-layout-dialect</artifactId>
-            <version>4.0.1</version>
-        </dependency>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
 
-        <!-- Source: https://mvnrepository.com/artifact/org.postgresql/postgresql -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.7.10</version>
-        </dependency>
+    <!-- Thymeleaf extras -->
+    <dependency>
+        <groupId>nz.net.ultraq.thymeleaf</groupId>
+        <artifactId>thymeleaf-layout-dialect</artifactId>
+        <version>4.0.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.thymeleaf.extras</groupId>
+        <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+    </dependency>
 
-        <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>4.1.0-M4</version>
-        </dependency>
+    <!-- Сторонні бібліотеки -->
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>net.datafaker</groupId>
+        <artifactId>datafaker</artifactId>
+        <version>2.5.4</version>
+    </dependency>
+    <dependency>
+        <groupId>com.mpatric</groupId>
+        <artifactId>mp3agic</artifactId>
+        <version>0.9.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>1.6.3</version>
+    </dependency>
+    <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct-processor</artifactId>
+        <version>1.6.3</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>net.coobird</groupId>
+        <artifactId>thumbnailator</artifactId>
+        <version>0.4.20</version>
+    </dependency>
 
-        <!-- Source: https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.46</version>
-        </dependency>
+    <!-- JWT -->
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>0.11.5</version>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>0.11.5</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-jackson</artifactId>
+        <version>0.11.5</version>
+        <scope>runtime</scope>
+    </dependency>
+</dependencies>
 
-        <!-- Source: https://mvnrepository.com/artifact/com.github.javafaker/javafaker -->
-        <!-- Source: https://mvnrepository.com/artifact/net.datafaker/datafaker -->
-        <dependency>
-            <groupId>net.datafaker</groupId>
-            <artifactId>datafaker</artifactId>
-            <version>2.5.4</version>
-        </dependency>
 
-        <dependency>
-            <groupId>com.mpatric</groupId>
-            <artifactId>mp3agic</artifactId>
-            <version>0.9.1</version>
-        </dependency>
 
-        <!-- Source: https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>1.6.3</version>
-        </dependency>
 
-        <!-- Source: https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>1.6.3</version>
-        </dependency>
-        <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-            <version>4.1.0-M4</version>
-        </dependency>
-
-        <!-- Source: https://mvnrepository.com/artifact/org.thymeleaf.extras/thymeleaf-extras-springsecurity6 -->
-        <dependency>
-            <groupId>org.thymeleaf.extras</groupId>
-            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
-            <version>3.1.5.RELEASE</version>
-        </dependency>
-        <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-            <version>4.1.0-M4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.coobird</groupId>
-            <artifactId>thumbnailator</artifactId>
-            <version>0.4.20</version>
-        </dependency>
-
-    </dependencies>
     <build>
         <finalName>
             p32

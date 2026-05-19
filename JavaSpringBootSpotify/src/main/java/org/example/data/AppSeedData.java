@@ -125,8 +125,8 @@ public class AppSeedData {
                                 String genre = id3v2Tag.getGenreDescription();
 
                                 Song song = new Song();
-                                song.setArtist(artist);
-                                song.setAlbum(album);
+                                // song.setArtist(artist);
+                                // song.setAlbum(album);
                                 song.setName(title);
                                 song.setFileName(file.getFileName().toString());
                                 Collections.shuffle(genres); //робимо перемішування

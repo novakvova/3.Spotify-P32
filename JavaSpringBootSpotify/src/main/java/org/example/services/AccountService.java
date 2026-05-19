@@ -21,7 +21,7 @@ public class AccountService {
     private final IRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserEntity register(RegisterDto dto, HttpServletRequest request) {
+    public String register(RegisterDto dto) {
         UserEntity user = new UserEntity();
 
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
@@ -52,18 +52,8 @@ public class AccountService {
 
         UserEntity savedUser = userRepository.save(user);
 
-        UsernamePasswordAuthenticationToken authToken =
-            new UsernamePasswordAuthenticationToken(savedUser, null, savedUser.getAuthorities());
-
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        request.getSession(true).setAttribute(
-            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-            SecurityContextHolder.getContext()
-        );
-        
-
-        return savedUser;
-
+        JwtUtil jwtUtil = new JwtUtil();
+        String token = jwtUtil.generateToken(savedUser.getUsername());
+        return token;
     }
 }
