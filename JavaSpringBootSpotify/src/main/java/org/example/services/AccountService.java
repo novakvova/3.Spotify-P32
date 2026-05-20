@@ -5,14 +5,11 @@ import org.example.dtos.*;
 import org.example.entities.RoleEntity;
 import org.example.entities.UserEntity;
 import org.example.repositories.IUserRepository;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
-import jakarta.servlet.http.HttpServletRequest;
 import org.example.data.constants.RolesConstants;
 import org.example.repositories.IRoleRepository;
+// ОПТИМІЗАЦІЯ: видалено непотрібні import'и (UnusedImports)
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +17,7 @@ public class AccountService {
     private final IUserRepository userRepository;
     private final IRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil; // ОПТИМІЗАЦІЯ: впровадження залежності замість створення нових екземплярів
 
     public String register(RegisterDto dto) {
         UserEntity user = new UserEntity();
@@ -53,12 +51,10 @@ public class AccountService {
 
         UserEntity savedUser = userRepository.save(user);
 
-        JwtUtil jwtUtil = new JwtUtil();
-        String token = jwtUtil.generateToken(savedUser.getUsername());
-        return token;
+        // ОПТИМІЗАЦІЯ: використання впровадженого jwtUtil замість створення нового
+        return jwtUtil.generateToken(savedUser.getUsername());
     }
     public String login(LoginDto dto) {
-        
         UserEntity user = userRepository.findByUsername(dto.getUsername())
                 .orElseThrow(() -> new RuntimeException("Invalid username or password"));
 
@@ -66,8 +62,7 @@ public class AccountService {
             throw new RuntimeException("Invalid username or password");
         }
 
-        JwtUtil jwtUtil = new JwtUtil();
-        String token = jwtUtil.generateToken(user.getUsername());
-        return token;
+        // ОПТИМІЗАЦІЯ: використання впровадженого jwtUtil замість створення нового
+        return jwtUtil.generateToken(user.getUsername());
     }
 }

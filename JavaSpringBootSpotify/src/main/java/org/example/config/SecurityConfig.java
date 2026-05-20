@@ -1,6 +1,5 @@
 package org.example.config;
 
-import org.aspectj.lang.annotation.RequiredTypes;
 import org.example.services.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,33 +14,27 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-        private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    
-
-       @Bean
+    // ОПТИМІЗАЦІЯ: форматування та покращення читаності
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-            http
-                            // REST API → без CSRF токенів
-                            .csrf(csrf -> csrf.disable())
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/login", "/register", "/api/register").permitAll()
+                .anyRequest().authenticated())
+            .formLogin(form -> form.disable())
+            .logout(logout -> logout.disable());
 
-                            // дозволяємо доступ до публічних ендпоінтів
-                            .authorizeHttpRequests(auth -> auth
-                                            .requestMatchers("/login", "/register", "/api/register").permitAll()
-                                            .anyRequest().authenticated())
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-                            // вимикаємо дефолтний formLogin і logout
-                            .formLogin(form -> form.disable())
-                            .logout(logout -> logout.disable());
-
-            http.addFilterBefore(jwtAuthenticationFilter,
-                            UsernamePasswordAuthenticationFilter.class);
-
-            return http.build();
+        return http.build();
     }
 
-       @Bean
+    // ОПТИМІЗАЦІЯ: форматування
+    @Bean
     public PasswordEncoder passwordEncoder() {
-            return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder();
     }
 }

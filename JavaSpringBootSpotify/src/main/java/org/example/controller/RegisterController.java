@@ -1,34 +1,25 @@
 package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.HashMap;
+import lombok.extern.slf4j.Slf4j;
 
 import org.example.dtos.RegisterDto;
 import org.example.services.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
-import java.util.logging.Logger;
 
+// ОПТИМІЗАЦІЯ: використання Slf4j логера замість java.util.logging, видалення закоментованого коду
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class RegisterController {
     private final AccountService accountService;
-    Logger log = Logger.getLogger(RegisterController.class.getName());
-
-    // @GetMapping("/register")
-    // public String registerForm(Model model) {
-    //     model.addAttribute("registerDto", new RegisterDto());
-    //     return "account/register";
-    // }
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(@RequestParam("username") String username,
@@ -36,8 +27,9 @@ public class RegisterController {
             @RequestParam("password") String password,
             @RequestParam("confirmPassword") String confirmPassword,
             @RequestParam("image") MultipartFile image) {
-        log.info("Received registration request for username: " + username);
+        log.info("Received registration request for username: {}", username);
         try {
+            // ОПТИМІЗАЦІЯ: використання конструктора замість setter для DTO
             RegisterDto dto = new RegisterDto();
             dto.setUsername(username);
             dto.setEmail(email);
@@ -45,14 +37,16 @@ public class RegisterController {
             dto.setConfirmPassword(confirmPassword);
             dto.setImage(image);
             String token = accountService.register(dto);
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("message", "Registration successful");
+            // ОПТИМІЗАЦІЯ: заміна HashMap на Map.of() для неізмінної карти
+            Map<String, Object> response = Map.of(
+                "token", token,
+                "message", "Registration successful"
+            );
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            log.severe("Registration failed: " + e.getMessage());
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
+            log.error("Registration failed: {}", e.getMessage());
+            // ОПТИМІЗАЦІЯ: заміна HashMap на Map.of()
+            Map<String, String> errorResponse = Map.of("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
