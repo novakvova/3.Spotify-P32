@@ -1,7 +1,7 @@
 package org.example.services;
 
 import lombok.RequiredArgsConstructor;
-import org.example.dtos.RegisterDto;
+import org.example.dtos.*;
 import org.example.entities.RoleEntity;
 import org.example.entities.UserEntity;
 import org.example.repositories.IUserRepository;
@@ -33,7 +33,7 @@ public class AccountService {
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
             throw new RuntimeException("Passwords do not match");
         }
-        
+
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -47,13 +47,27 @@ public class AccountService {
             }
         }
 
-        RoleEntity roleUser = roleRepository.findByName(RolesConstants.UserRole).orElseThrow(()->new RuntimeException("User role not found"));
+        RoleEntity roleUser = roleRepository.findByName(RolesConstants.UserRole)
+                .orElseThrow(() -> new RuntimeException("User role not found"));
         user.getRoles().add(roleUser);
 
         UserEntity savedUser = userRepository.save(user);
 
         JwtUtil jwtUtil = new JwtUtil();
         String token = jwtUtil.generateToken(savedUser.getUsername());
+        return token;
+    }
+    public String login(LoginDto dto) {
+        
+        UserEntity user = userRepository.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        JwtUtil jwtUtil = new JwtUtil();
+        String token = jwtUtil.generateToken(user.getUsername());
         return token;
     }
 }
