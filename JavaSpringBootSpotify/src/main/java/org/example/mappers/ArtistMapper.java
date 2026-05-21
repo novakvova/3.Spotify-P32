@@ -3,6 +3,7 @@ package org.example.mappers;
 import org.example.dtos.ArtistDto;
 import org.example.entities.Artist;
 import org.springframework.stereotype.Component;
+import org.example.dtos.CreateArtistDto;
 
 @Component
 public class ArtistMapper {
@@ -14,9 +15,8 @@ public class ArtistMapper {
         return dto;
     }
 
-    public Artist toEntity(ArtistDto dto) {
+    public Artist toEntity(CreateArtistDto dto) {
         Artist entity = new Artist();
-        entity.setId(dto.getId());
         entity.setName(dto.getName());
         entity.setBirthDate(dto.getBirthDate());
         return entity;

@@ -10,6 +10,7 @@ import org.example.services.AlbumService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.example.dtos.CreateAlbumDto;
 
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class AlbumController {
     @PostMapping
     @Operation(summary = "Create new album", description = "Create a new album")
     @ApiResponse(responseCode = "201", description = "Album created successfully")
-    public ResponseEntity<AlbumDto> create(@RequestBody AlbumDto dto) {
+    public ResponseEntity<AlbumDto> create(@RequestBody CreateAlbumDto dto) {
         AlbumDto created = albumService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }

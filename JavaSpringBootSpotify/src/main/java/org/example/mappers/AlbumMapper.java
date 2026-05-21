@@ -3,6 +3,8 @@ package org.example.mappers;
 import org.example.dtos.AlbumDto;
 import org.example.entities.Album;
 import org.springframework.stereotype.Component;
+import org.example.dtos.CreateAlbumDto;
+import org.example.entities.Artist;
 
 @Component
 public class AlbumMapper {
@@ -17,11 +19,11 @@ public class AlbumMapper {
         return dto;
     }
 
-    public Album toEntity(AlbumDto dto) {
+    public Album toEntity(CreateAlbumDto dto, Artist artist) {
         Album entity = new Album();
-        entity.setId(dto.getId());
         entity.setTitle(dto.getTitle());
         entity.setReleaseYear(dto.getReleaseYear());
+        entity.setArtist(artist);
         return entity;
     }
 }

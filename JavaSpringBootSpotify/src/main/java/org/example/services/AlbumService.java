@@ -6,6 +6,8 @@ import org.example.entities.Album;
 import org.example.mappers.AlbumMapper;
 import org.example.repositories.IAlbumRepository;
 import org.springframework.stereotype.Service;
+import org.example.dtos.CreateAlbumDto;
+import org.example.repositories.IArtistRepository;
 
 import java.util.List;
 
@@ -13,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AlbumService {
     private final IAlbumRepository albumRepository;
+    private final IArtistRepository artistRepository;
     private final AlbumMapper mapper;
 
     // CRUD ОПЕРАЦІЇ
@@ -29,8 +32,10 @@ public class AlbumService {
                 .orElse(null);
     }
 
-    public AlbumDto create(AlbumDto dto) {
-        Album entity = mapper.toEntity(dto);
+    public AlbumDto create(CreateAlbumDto dto) {
+        var artist = artistRepository.findById(dto.getArtistId())
+                .orElseThrow(() -> new RuntimeException("Artist not found with ID: " + dto.getArtistId()));
+        Album entity = mapper.toEntity(dto, artist);
         Album saved = albumRepository.save(entity);
         return mapper.toDto(saved);
     }
