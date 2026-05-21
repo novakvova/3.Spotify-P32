@@ -23,7 +23,7 @@ public class RegisterController {
             @RequestParam("email") String email,
             @RequestParam("password") String password,
             @RequestParam("confirmPassword") String confirmPassword,
-            @RequestParam("image") MultipartFile image) {
+            @RequestPart(value = "image",required = false) MultipartFile image) {
                 Map<String, String> response  = null;
         log.info("Received registration request for username: {}", username);
         try {
