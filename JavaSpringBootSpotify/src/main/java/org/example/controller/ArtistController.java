@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.dtos.ArtistDto;
+import org.example.dtos.CreateArtistDto;
 import org.example.services.ArtistService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +49,7 @@ public class ArtistController {
     @PostMapping
     @Operation(summary = "Create new artist", description = "Create a new artist")
     @ApiResponse(responseCode = "201", description = "Artist created successfully")
-    public ResponseEntity<ArtistDto> create(@RequestBody ArtistDto dto) {
+    public ResponseEntity<ArtistDto> create(@RequestBody CreateArtistDto dto) {
         ArtistDto created = artistService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
