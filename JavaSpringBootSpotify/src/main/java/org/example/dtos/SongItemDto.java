@@ -10,7 +10,7 @@ public class SongItemDto {
     private Long id;
     private String name;
     private String fileName;
-    private String artist;
-    private String album;
-    private List<String> genres;
+    private String artist_name;
+    private String album_title;
+    private List<String> genres_names;
 }

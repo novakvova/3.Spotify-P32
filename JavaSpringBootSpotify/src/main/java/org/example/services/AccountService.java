@@ -43,9 +43,12 @@ public class AccountService {
                 imageService.saveUserImage(dto.getImage(), dto.getUsername());
                 user.setImage(dto.getUsername() + ".jpg");
             } catch (Exception e) {
-              
+
                 throw new RuntimeException("Failed to save user image", e);
             }
+        }
+        else {
+            user.setImage("default.jpg");
         }
 
         RoleEntity roleUser = roleRepository.findByName(RolesConstants.UserRole)
