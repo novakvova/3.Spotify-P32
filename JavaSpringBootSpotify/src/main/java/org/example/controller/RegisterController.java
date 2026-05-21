@@ -2,21 +2,18 @@ package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.example.dtos.RegisterDto;
 import org.example.services.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 // ОПТИМІЗАЦІЯ: використання Slf4j логера замість java.util.logging, видалення закоментованого коду
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class RegisterController {
     private final AccountService accountService;
@@ -27,6 +24,7 @@ public class RegisterController {
             @RequestParam("password") String password,
             @RequestParam("confirmPassword") String confirmPassword,
             @RequestParam("image") MultipartFile image) {
+                Map<String, String> response  = null;
         log.info("Received registration request for username: {}", username);
         try {
             // ОПТИМІЗАЦІЯ: використання конструктора замість setter для DTO
@@ -36,18 +34,14 @@ public class RegisterController {
             dto.setPassword(password);
             dto.setConfirmPassword(confirmPassword);
             dto.setImage(image);
-            String token = accountService.register(dto);
+            response = accountService.register(dto);
             // ОПТИМІЗАЦІЯ: заміна HashMap на Map.of() для неізмінної карти
-            Map<String, Object> response = Map.of(
-                "token", token,
-                "message", "Registration successful"
-            );
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            log.error("Registration failed: {}", e.getMessage());
+            log.error("Registration failed: \n----------------------\n{}\n----------------------", e);
             // ОПТИМІЗАЦІЯ: заміна HashMap на Map.of()
-            Map<String, String> errorResponse = Map.of("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            response = Map.of("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 

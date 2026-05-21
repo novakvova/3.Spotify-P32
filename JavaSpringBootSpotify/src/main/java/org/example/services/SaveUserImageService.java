@@ -1,11 +1,13 @@
 package org.example.services;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
 import org.springframework.web.multipart.MultipartFile;
 import net.coobird.thumbnailator.Thumbnails;
-
+import org.springframework.stereotype.Service;
+@Service
 public class SaveUserImageService {
     public void saveUserImage(MultipartFile file, String username) throws IOException {
     // базова директорія

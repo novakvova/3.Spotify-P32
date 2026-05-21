@@ -1,5 +1,6 @@
 package org.example.services;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.example.dtos.*;
 import org.example.entities.RoleEntity;
@@ -17,9 +18,10 @@ public class AccountService {
     private final IUserRepository userRepository;
     private final IRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SaveUserImageService imageService;
     private final JwtUtil jwtUtil; // ОПТИМІЗАЦІЯ: впровадження залежності замість створення нових екземплярів
 
-    public String register(RegisterDto dto) {
+    public Map<String,String> register(RegisterDto dto) {
         UserEntity user = new UserEntity();
 
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
@@ -38,7 +40,7 @@ public class AccountService {
 
         if (dto.getImage() != null && !dto.getImage().isEmpty()) {
             try {
-                new SaveUserImageService().saveUserImage(dto.getImage(), dto.getUsername());
+                imageService.saveUserImage(dto.getImage(), dto.getUsername());
                 user.setImage(dto.getUsername() + ".jpg");
             } catch (Exception e) {
                 throw new RuntimeException("Failed to save user image", e);
@@ -52,7 +54,7 @@ public class AccountService {
         UserEntity savedUser = userRepository.save(user);
 
         // ОПТИМІЗАЦІЯ: використання впровадженого jwtUtil замість створення нового
-        return jwtUtil.generateToken(savedUser.getUsername());
+        return Map.of("token",jwtUtil.generateToken(savedUser.getUsername()),"message","Registration Succesfull");
     }
     public String login(LoginDto dto) {
         UserEntity user = userRepository.findByUsername(dto.getUsername())
