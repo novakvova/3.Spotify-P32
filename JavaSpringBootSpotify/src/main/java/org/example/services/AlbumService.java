@@ -53,4 +53,11 @@ public class AlbumService {
     public void delete(Long id) {
         albumRepository.deleteById(id);
     }
+
+    public List<AlbumDto> searchByTitle(String title) {
+        return albumRepository.findByTitleContainingIgnoreCase(title)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
+    }
 }
