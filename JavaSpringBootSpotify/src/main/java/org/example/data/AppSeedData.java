@@ -39,14 +39,14 @@ public class AppSeedData {
     @PostConstruct
     public void seed() {
         System.out.println("---------Run seed data-----------");
-        seedGenres();
-        try {
-            seedSongs();
+        // seedGenres();
+        // try {
+            // seedSongs();
             seedRoles();
-            seedUsers();
-        } catch (IOException e) {
-            System.out.println("Error reead files");
-        }
+            // seedUsers();
+        // } catch (IOException e) {
+        //     System.out.println("Error reead files");
+        // }
     }
 
     private void seedRoles() {
