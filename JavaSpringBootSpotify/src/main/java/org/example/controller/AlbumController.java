@@ -77,4 +77,13 @@ public class AlbumController {
         albumService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    // ПОШУК АЛЬБОМІВ ЗА НАЗВОЮ
+    @GetMapping("/search")
+    @Operation(summary = "Search albums by title", description = "Search for albums by their title")
+    @ApiResponse(responseCode = "200", description = "Successful")
+    public ResponseEntity<List<AlbumDto>> search(@RequestParam String title) {
+        List<AlbumDto> albums = albumService.searchByTitle(title);
+        return ResponseEntity.ok(albums);
+    }
 }

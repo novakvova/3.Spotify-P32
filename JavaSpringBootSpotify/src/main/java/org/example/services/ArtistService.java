@@ -49,4 +49,11 @@ public class ArtistService {
     public void delete(Long id) {
         artistRepository.deleteById(id);
     }
+
+    public List<ArtistDto> searchByName(String name) {
+        return artistRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
+    }
 }

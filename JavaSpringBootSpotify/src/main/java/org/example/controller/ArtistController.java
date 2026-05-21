@@ -77,4 +77,13 @@ public class ArtistController {
         artistService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    // ПОШУК АРТИСТІВ ЗА ІМ'ЯМ
+    @GetMapping("/search")
+    @Operation(summary = "Search artists by name", description = "Search for artists by their name")
+    @ApiResponse(responseCode = "200", description = "Successful")
+    public ResponseEntity<List<ArtistDto>> search(@RequestParam String name) {
+        List<ArtistDto> artists = artistService.searchByName(name);
+        return ResponseEntity.ok(artists);
+    }
 }
