@@ -4,13 +4,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 
 @Service
 public class SaveMusicService {
-    private final Path baseDir = Paths.get("C:\\Users\\valea\\OneDrive\\Desktop\\Exam_java\\3.Spotify-P32\\JavaSpringBootSpotify\\mp3songs");
+    
+    @Value("${upload.dir}")
+    private String uploadDir;
 
     ///
     /// Зберігає MP3 файл на диск з унікальним ім'ям, повертає ім'я файлу для збереження в БД
@@ -22,7 +25,7 @@ public class SaveMusicService {
         if (contentType == null || !contentType.equals("audio/mpeg")) {
             throw new IllegalArgumentException("Файл не є MP3");
         }
-
+        Path baseDir = Paths.get(uploadDir).toAbsolutePath();
         // базова директорія
         Files.createDirectories(baseDir);
         String uniqueFileName = UUID.randomUUID() + "_" + fileName+ ".mp3";
