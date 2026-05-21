@@ -8,8 +8,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Getter
 @Setter
-public class ArtistDto {
-    private Long id;
+public class CreateArtistDto {
     private String name;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthDate;

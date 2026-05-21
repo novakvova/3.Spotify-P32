@@ -4,6 +4,8 @@ import org.example.dtos.AlbumDto;
 import org.example.entities.Album;
 import org.example.repositories.IArtistRepository;
 import org.springframework.stereotype.Component;
+import org.example.dtos.CreateAlbumDto;
+import org.example.entities.Artist;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,12 +24,12 @@ public class AlbumMapper {
         return dto;
     }
 
-    public Album toEntity(AlbumDto dto) {
+    public Album toEntity(CreateAlbumDto dto, Artist artist) {
         Album entity = new Album();
-        entity.setId(dto.getId());
         entity.setTitle(dto.getTitle());
         entity.setArtist(artistRepository.findById(dto.getArtistId()).orElse(null));
         entity.setReleaseYear(dto.getReleaseYear());
+        entity.setArtist(artist);
         return entity;
     }
 }

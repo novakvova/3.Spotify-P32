@@ -6,6 +6,7 @@ import org.example.entities.Artist;
 import org.example.mappers.ArtistMapper;
 import org.example.repositories.IArtistRepository;
 import org.springframework.stereotype.Service;
+import org.example.dtos.CreateArtistDto;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class ArtistService {
                 .orElse(null);
     }
 
-    public ArtistDto create(ArtistDto dto) {
+    public ArtistDto create(CreateArtistDto dto) {
         Artist entity = mapper.toEntity(dto);
         Artist saved = artistRepository.save(entity);
         return mapper.toDto(saved);
@@ -47,5 +48,12 @@ public class ArtistService {
 
     public void delete(Long id) {
         artistRepository.deleteById(id);
+    }
+
+    public List<ArtistDto> searchByName(String name) {
+        return artistRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
     }
 }
