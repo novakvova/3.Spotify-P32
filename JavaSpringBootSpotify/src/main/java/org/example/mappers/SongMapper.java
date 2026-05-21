@@ -1,9 +1,7 @@
 package org.example.mappers;
 
-import org.example.entities.Song;
 import org.mapstruct.Mapper;
-import org.example.dtos.SongItemDto;
-import org.mapstruct.Mapping;
+
 
 @Mapper(componentModel = "spring")
 public interface SongMapper {

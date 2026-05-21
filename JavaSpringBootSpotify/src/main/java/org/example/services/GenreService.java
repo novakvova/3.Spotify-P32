@@ -8,7 +8,7 @@ import org.example.repositories.IGenreRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+// ОПТИМІЗАЦІЯ: видалено непотрібний import Collectors
 
 @Service
 @RequiredArgsConstructor
@@ -17,10 +17,11 @@ public class GenreService {
     private final GenreMapper mapper;
 
     public List<GenreDto> getAll() {
+        // ОПТИМІЗАЦІЯ: заміна Collectors.toList() на toList() для Java 16+
         return genreRepository.findAll()
                 .stream()
                 .map(mapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public GenreDto getById(Long id) {
