@@ -97,4 +97,15 @@ public class AlbumController {
         List<AlbumDto> albums = albumService.getAlbumsByArtist(artistId);
         return ResponseEntity.ok(albums);
     }
+
+
+
+
+    // Обробка винятків у цьому контролері
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("Error: " + ex.getMessage());
+    }
 }
