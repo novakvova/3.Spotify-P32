@@ -3,6 +3,7 @@ package org.example.mappers;
 import org.example.dtos.GenreDto;
 import org.example.entities.Genre;
 import org.springframework.stereotype.Component;
+import org.example.dtos.CreateGenreDto;
 
 @Component
 public class GenreMapper {
@@ -14,9 +15,8 @@ public class GenreMapper {
         return dto;
     }
 
-    public Genre toEntity(GenreDto dto) {
+    public Genre toEntity(CreateGenreDto dto) {
         Genre entity = new Genre();
-        entity.setId(dto.getId());
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
         return entity;

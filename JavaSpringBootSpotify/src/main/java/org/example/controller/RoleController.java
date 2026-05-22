@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.example.dtos.RoleDto;
+import org.example.dtos.*;
 import org.example.services.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +48,7 @@ public class RoleController {
     @PostMapping
     @Operation(summary = "Create new role", description = "Create a new role")
     @ApiResponse(responseCode = "201", description = "Role created successfully")
-    public ResponseEntity<RoleDto> create(@RequestBody RoleDto dto) {
+    public ResponseEntity<RoleDto> create(@RequestBody CreateRoleDto dto) {
         RoleDto created = roleService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -60,7 +60,7 @@ public class RoleController {
             @ApiResponse(responseCode = "200", description = "Role updated successfully"),
             @ApiResponse(responseCode = "404", description = "Role not found")
     })
-    public ResponseEntity<RoleDto> update(@PathVariable Long id, @RequestBody RoleDto dto) {
+    public ResponseEntity<RoleDto> update(@PathVariable Long id, @RequestBody UpdateRoleDto dto) {
         RoleDto updated = roleService.update(id, dto);
         if (updated == null) {
             return ResponseEntity.notFound().build();

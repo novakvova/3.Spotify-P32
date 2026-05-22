@@ -7,6 +7,7 @@ import org.example.mappers.ArtistMapper;
 import org.example.repositories.IArtistRepository;
 import org.springframework.stereotype.Service;
 import org.example.dtos.CreateArtistDto;
+import org.example.dtos.UpdateArtistDto;
 
 import java.util.List;
 
@@ -36,14 +37,13 @@ public class ArtistService {
         return mapper.toDto(saved);
     }
 
-    public ArtistDto update(Long id, ArtistDto dto) {
-        return artistRepository.findById(id)
-                .map(existing -> {
-                    existing.setName(dto.getName());
-                    existing.setBirthDate(dto.getBirthDate());
-                    return mapper.toDto(artistRepository.save(existing));
-                })
-                .orElse(null);
+    public ArtistDto update(Long id, UpdateArtistDto dto) {
+       Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Artist not found with ID: " + id));
+                 
+        artist.setName(dto.getName());
+        artist.setBirthDate(dto.getBirthDate());
+        return mapper.toDto(artistRepository.save(artist));
     }
 
     public void delete(Long id) {
@@ -51,7 +51,7 @@ public class ArtistService {
     }
 
     public List<ArtistDto> searchByName(String name) {
-        return artistRepository.findByNameContainingIgnoreCase(name)
+        return artistRepository.findByName(name)
                 .stream()
                 .map(mapper::toDto)
                 .toList();

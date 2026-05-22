@@ -6,6 +6,8 @@ import org.example.entities.Genre;
 import org.example.mappers.GenreMapper;
 import org.example.repositories.IGenreRepository;
 import org.springframework.stereotype.Service;
+import org.example.dtos.CreateGenreDto;
+import org.example.dtos.UpdateGenreDto;
 
 import java.util.List;
 // ОПТИМІЗАЦІЯ: видалено непотрібний import Collectors
@@ -29,20 +31,19 @@ public class GenreService {
                 .map(mapper::toDto)
                 .orElse(null);
     }
-    public GenreDto create(GenreDto dto) {
+    public GenreDto create(CreateGenreDto dto) {
         Genre entity = mapper.toEntity(dto);
         Genre saved = genreRepository.save(entity);
         return mapper.toDto(saved);
     }
 
-    public GenreDto update(Long id, GenreDto dto) {
-        return genreRepository.findById(id)
-                .map(existing -> {
-                    existing.setName(dto.getName());
-                    existing.setDescription(dto.getDescription());
-                    return mapper.toDto(genreRepository.save(existing));
-                })
-                .orElse(null);
+    public GenreDto update(Long id, UpdateGenreDto dto) {
+        Genre genre = genreRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Genre not found with ID: " + id));
+                 
+        genre.setName(dto.getName());
+        genre.setDescription(dto.getDescription());
+        return mapper.toDto(genreRepository.save(genre));
     }
 
     public void delete(Long id) {
