@@ -1,11 +1,12 @@
 package org.example.services;
 
 import lombok.RequiredArgsConstructor;
-import org.example.dtos.RoleDto;
+import org.example.dtos.*;
 import org.example.entities.RoleEntity;
 import org.example.mappers.RoleMapper;
 import org.example.repositories.IRoleRepository;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 
@@ -29,13 +30,13 @@ public class RoleService {
                 .orElse(null);
     }
 
-    public RoleDto create(RoleDto dto) {
+    public RoleDto create(CreateRoleDto dto) {
         RoleEntity entity = mapper.toEntity(dto);
         RoleEntity saved = roleRepository.save(entity);
         return mapper.toDto(saved);
     }
 
-    public RoleDto update(Long id, RoleDto dto) {
+    public RoleDto update(Long id, UpdateRoleDto dto) {
         return roleRepository.findById(id)
                 .map(existing -> {
                     existing.setName(dto.getName());

@@ -1,6 +1,6 @@
 package org.example.mappers;
 
-import org.example.dtos.RoleDto;
+import org.example.dtos.*;
 import org.example.entities.RoleEntity;
 import org.springframework.stereotype.Component;
 
@@ -13,9 +13,8 @@ public class RoleMapper {
         return dto;
     }
 
-    public RoleEntity toEntity(RoleDto dto) {
+    public RoleEntity toEntity(CreateRoleDto dto) {
         RoleEntity entity = new RoleEntity();
-        entity.setId(dto.getId());
         entity.setName(dto.getName());
         return entity;
     }

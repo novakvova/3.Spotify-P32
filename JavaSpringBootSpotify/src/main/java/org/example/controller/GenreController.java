@@ -10,6 +10,8 @@ import org.example.services.GenreService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.example.dtos.CreateGenreDto;
+import org.example.dtos.UpdateGenreDto;
 
 import java.util.List;
 
@@ -48,7 +50,7 @@ public class GenreController {
     @PostMapping
     @Operation(summary = "Create new genre", description = "Create a new music genre")
     @ApiResponse(responseCode = "201", description = "Genre created successfully")
-    public ResponseEntity<GenreDto> create(@RequestBody GenreDto genreDto) {
+    public ResponseEntity<GenreDto> create(@RequestBody CreateGenreDto genreDto) {
         GenreDto created = genreService.create(genreDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -60,7 +62,7 @@ public class GenreController {
             @ApiResponse(responseCode = "200", description = "Genre updated successfully"),
             @ApiResponse(responseCode = "404", description = "Genre not found")
     })
-    public ResponseEntity<GenreDto> update(@PathVariable Long id, @RequestBody GenreDto genreDto) {
+    public ResponseEntity<GenreDto> update(@PathVariable Long id, @RequestBody UpdateGenreDto genreDto) {
         GenreDto updated = genreService.update(id, genreDto);
         if (updated == null) {
             return ResponseEntity.notFound().build();
