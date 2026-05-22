@@ -55,7 +55,7 @@ public class AlbumService {
     }
 
     public List<AlbumDto> searchByTitle(String title) {
-        return albumRepository.findByTitleContainingIgnoreCase(title)
+        return albumRepository.findByTitle(title)
                 .stream()
                 .map(mapper::toDto)
                 .toList();

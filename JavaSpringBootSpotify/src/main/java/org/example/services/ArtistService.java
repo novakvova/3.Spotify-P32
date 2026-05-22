@@ -51,7 +51,7 @@ public class ArtistService {
     }
 
     public List<ArtistDto> searchByName(String name) {
-        return artistRepository.findByNameContainingIgnoreCase(name)
+        return artistRepository.findByName(name)
                 .stream()
                 .map(mapper::toDto)
                 .toList();
