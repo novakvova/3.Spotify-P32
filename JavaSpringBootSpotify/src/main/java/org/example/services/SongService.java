@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.example.dtos.CreateSongDto;
 
 import java.io.IOException;
 import java.util.List;
@@ -49,7 +50,7 @@ public class SongService {
     }
 
     // СТВОРИТИ НОВУ ПІСНЮ
-    public SongItemDto createSong(SongItemDto dto, MultipartFile file) {
+    public SongItemDto createSong(CreateSongDto dto, MultipartFile file) {
         if (dto == null || file == null || file.isEmpty()) {
             throw new IllegalArgumentException("DTO та файл не можуть бути порожні");
         }
@@ -57,18 +58,18 @@ public class SongService {
         Song song = new Song();
 
         // Знаходимо та встановлюємо артиста за назвою
-        var artist = artistRepository.findByName(dto.getArtist_name())
-                .orElseThrow(() -> new RuntimeException("Артист не знайдено: " + dto.getArtist_name()));
+        var artist = artistRepository.findByName(dto.getArtistName())
+                .orElseThrow(() -> new RuntimeException("Артист не знайдено: " + dto.getArtistName()));
         song.setArtist(artist);
 
         // Знаходимо та встановлюємо альбом за назвою
-        var album = albumRepository.findByTitle(dto.getAlbum_title())
-                .orElseThrow(() -> new RuntimeException("Альбом не знайдено: " + dto.getAlbum_title()));
+        var album = albumRepository.findByTitle(dto.getAlbumTitle())
+                .orElseThrow(() -> new RuntimeException("Альбом не знайдено: " + dto.getAlbumTitle()));
         song.setAlbum(album);
 
         // Знаходимо та встановлюємо жанри за назвами
-        if (dto.getGenres_names() != null && !dto.getGenres_names().isEmpty()) {
-            var genres = dto.getGenres_names()
+        if (dto.getGenres() != null && !dto.getGenres().isEmpty()) {
+            var genres = dto.getGenres()
                     .stream()
                     .map(name -> genreRepository.findByName(name)
                             .orElseThrow(() -> new RuntimeException("Жанр не знайдено: " + name)))

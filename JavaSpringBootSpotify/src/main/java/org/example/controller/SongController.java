@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.example.dtos.CreateSongDto;
 
 import java.util.Arrays;
 import java.util.List;
@@ -80,11 +81,11 @@ public class SongController {
                     : List.of();
 
             // Створюємо DTO з отриманими параметрами
-            SongItemDto dto = new SongItemDto();
+            CreateSongDto dto = new CreateSongDto();
             dto.setName(name);
-            dto.setArtist_name(artist_name);
-            dto.setAlbum_title(album_title);
-            dto.setGenres_names(genresList);
+            dto.setArtistName(artist_name);
+            dto.setAlbumTitle(album_title);
+            dto.setGenres(genresList);
 
             // Передаємо в сервіс для обробки та збереження файлу
             SongItemDto createdSong = songService.createSong(dto, file);
