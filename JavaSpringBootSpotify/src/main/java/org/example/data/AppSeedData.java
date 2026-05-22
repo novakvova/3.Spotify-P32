@@ -5,17 +5,12 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import net.datafaker.Faker;
 import org.example.data.constants.RolesConstants;
-import org.example.entities.Genre;
-import org.example.entities.RoleEntity;
-import org.example.entities.Song;
-import org.example.entities.UserEntity;
-import org.example.repositories.IGenreRepository;
-import org.example.repositories.IRoleRepository;
-import org.example.repositories.ISongRepository;
-import org.example.repositories.IUserRepository;
+import org.example.entities.*;
+import org.example.repositories.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,6 +27,8 @@ public class AppSeedData {
     private final ISongRepository songRepository;
     private final IRoleRepository roleRepository;
     private final IUserRepository userRepository;
+    private final IArtistRepository artistRepository;
+    private final IAlbumRepository albumRepository;
     private final PasswordEncoder passwordEncoder;
 
     private final Faker faker = new Faker(new Locale("uk"));
@@ -43,7 +40,10 @@ public class AppSeedData {
         // try {
             // seedSongs();
             seedRoles();
-            // seedUsers();
+            seedUsers();
+            seedGenres();
+            seedArtists();
+            seedAlbums();
         // } catch (IOException e) {
         //     System.out.println("Error reead files");
         // }
@@ -92,6 +92,34 @@ public class AppSeedData {
                 Genre genre = new Genre();
                 genre.setName(genreName);
                 genreRepository.save(genre);
+            }
+        }
+    }
+
+    private void seedArtists() {
+        if (artistRepository.count() == 0) {
+            for (int i = 0; i < 10; i++) {
+                Artist artist = new Artist();
+                artist.setName(faker.artist().name());
+                artist.setBirthDate(faker.date().birthday().toInstant()
+                    .atZone(TimeZone.getDefault().toZoneId())
+                    .toLocalDate());
+                artistRepository.save(artist);
+            }
+        }
+    }
+
+    private void seedAlbums() {
+        if (albumRepository.count() == 0) {
+            List<Artist> artists = artistRepository.findAll();
+            for (Artist artist : artists) {
+                Album album = new Album();
+                album.setTitle(faker.book().title());
+                album.setReleaseYear(faker.number().numberBetween(1950, 2026));
+                album.setArtist(artist);
+                albumRepository.save(album);
+            
+                albumRepository.save(album);
             }
         }
     }

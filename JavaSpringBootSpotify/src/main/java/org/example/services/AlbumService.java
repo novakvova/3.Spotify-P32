@@ -8,7 +8,8 @@ import org.example.repositories.IAlbumRepository;
 import org.springframework.stereotype.Service;
 import org.example.dtos.CreateAlbumDto;
 import org.example.repositories.IArtistRepository;
-
+import org.example.dtos.UpdateAlbumDto;
+import java.util.Optional;
 import java.util.List;
 
 @Service
@@ -40,24 +41,29 @@ public class AlbumService {
         return mapper.toDto(saved);
     }
 
-    public AlbumDto update(Long id, AlbumDto dto) {
-        return albumRepository.findById(id)
-                .map(existing -> {
-                    existing.setTitle(dto.getTitle());
-                    existing.setReleaseYear(dto.getReleaseYear());
-                    return mapper.toDto(albumRepository.save(existing));
-                })
-                .orElse(null);
+    public AlbumDto update(Long id, UpdateAlbumDto dto) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Album not found with ID: " + id));
+        album.setTitle(dto.getTitle());
+        album.setReleaseYear(dto.getReleaseYear());
+        if (dto.getArtistId() != null) {
+            var artist = artistRepository.findById(dto.getArtistId())
+                    .orElseThrow(() -> new RuntimeException("Artist not found with ID: " + dto.getArtistId()));
+            album.setArtist(artist);
+        }
+        return mapper.toDto(albumRepository.save(album));
     }
 
     public void delete(Long id) {
         albumRepository.deleteById(id);
     }
 
-    public List<AlbumDto> searchByTitle(String title) {
-        return albumRepository.findByTitle(title)
-                .stream()
-                .map(mapper::toDto)
-                .toList();
+    public Optional<AlbumDto> searchByTitle(String title) {
+        return albumRepository.findByTitle(title).map(mapper::toDto);
+                
+    }
+
+    public Optional<AlbumDto> getAlbumsByArtist(Long artistId) {
+        return albumRepository.findByArtist_Id(artistId).map(mapper::toDto);
     }
 }

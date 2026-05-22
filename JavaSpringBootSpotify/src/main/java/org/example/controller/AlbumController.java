@@ -7,11 +7,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.dtos.AlbumDto;
 import org.example.services.AlbumService;
+import org.hibernate.sql.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.example.dtos.CreateAlbumDto;
-
+import org.example.dtos.UpdateAlbumDto;
+import java.util.Optional;
 import java.util.List;
 
 @RestController
@@ -61,7 +63,7 @@ public class AlbumController {
             @ApiResponse(responseCode = "200", description = "Album updated successfully"),
             @ApiResponse(responseCode = "404", description = "Album not found")
     })
-    public ResponseEntity<AlbumDto> update(@PathVariable Long id, @RequestBody AlbumDto dto) {
+    public ResponseEntity<AlbumDto> update(@PathVariable Long id, @RequestBody UpdateAlbumDto dto) {
         AlbumDto updated = albumService.update(id, dto);
         if (updated == null) {
             return ResponseEntity.notFound().build();
@@ -82,8 +84,17 @@ public class AlbumController {
     @GetMapping("/search")
     @Operation(summary = "Search albums by title", description = "Search for albums by their title")
     @ApiResponse(responseCode = "200", description = "Successful")
-    public ResponseEntity<List<AlbumDto>> search(@RequestParam String title) {
-        List<AlbumDto> albums = albumService.searchByTitle(title);
+    public ResponseEntity<Optional<AlbumDto>> search(@RequestParam String title) {
+        Optional<AlbumDto> albums = albumService.searchByTitle(title);
+        return ResponseEntity.ok(albums);
+    }
+
+    // ОТРИМАТИ ВСІ АЛЬБОМИ АРТИСТА ЗА ID
+    @GetMapping("/by-artist/{artistId}")
+    @Operation(summary = "Get albums by artist ID", description = "Retrieve all albums of a specific artist by their ID")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    public ResponseEntity<Optional<AlbumDto>> getByArtist(@PathVariable Long artistId) {
+        Optional<AlbumDto> albums = albumService.getAlbumsByArtist(artistId);
         return ResponseEntity.ok(albums);
     }
 }
