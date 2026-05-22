@@ -10,6 +10,7 @@ import org.example.dtos.CreateAlbumDto;
 import org.example.repositories.IArtistRepository;
 import org.example.dtos.UpdateAlbumDto;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.List;
 
 @Service
@@ -59,11 +60,14 @@ public class AlbumService {
     }
 
     public Optional<AlbumDto> searchByTitle(String title) {
-        return albumRepository.findByTitle(title).map(mapper::toDto);
+        return albumRepository.findByTitle(title).stream().findFirst().map(mapper::toDto);
                 
     }
 
-    public Optional<AlbumDto> getAlbumsByArtist(Long artistId) {
-        return albumRepository.findByArtist_Id(artistId).map(mapper::toDto);
+    public List<AlbumDto> getAlbumsByArtist(Long artistId) {
+        return albumRepository.findByArtist_Id(artistId)   // повертає List<Album>
+            .stream()                           // перетворюємо у Stream<Album>
+            .map(mapper::toDto)                 // мапимо кожен Album -> AlbumDto
+            .collect(Collectors.toList());      // збираємо назад у List<AlbumDto>
     }
 }

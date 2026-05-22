@@ -80,7 +80,7 @@ public class AlbumController {
         return ResponseEntity.noContent().build();
     }
 
-    // ПОШУК АЛЬБОМІВ ЗА НАЗВОЮ
+    // ПОШУК АЛЬБОМУ ЗА НАЗВОЮ
     @GetMapping("/search")
     @Operation(summary = "Search albums by title", description = "Search for albums by their title")
     @ApiResponse(responseCode = "200", description = "Successful")
@@ -93,8 +93,8 @@ public class AlbumController {
     @GetMapping("/by-artist/{artistId}")
     @Operation(summary = "Get albums by artist ID", description = "Retrieve all albums of a specific artist by their ID")
     @ApiResponse(responseCode = "200", description = "Successful retrieval")
-    public ResponseEntity<Optional<AlbumDto>> getByArtist(@PathVariable Long artistId) {
-        Optional<AlbumDto> albums = albumService.getAlbumsByArtist(artistId);
+    public ResponseEntity<List<AlbumDto>> getByArtist(@PathVariable Long artistId) {
+        List<AlbumDto> albums = albumService.getAlbumsByArtist(artistId);
         return ResponseEntity.ok(albums);
     }
 }

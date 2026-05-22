@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 @Repository
 public interface IAlbumRepository extends JpaRepository<Album, Long> {
-    Optional<Album> findByTitle(String title);
-    Optional<Album> findByArtist_Id(Long artistId);
+    List<Album> findByTitle(String title); //повертає список альбомів з заданою назвою(але в сервісі ми просто повертаємо перший знайдений елемент або null, тому що в нашому випадку назва альбому має бути унікальною)
+    List<Album> findByArtist_Id(Long artistId);
 }
