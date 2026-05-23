@@ -115,6 +115,13 @@
         <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         <version>2.1.0</version>
     </dependency>
+    <!--ImageIO WebP-->
+    <dependency>
+    <groupId>com.twelvemonkeys.imageio</groupId>
+    <artifactId>imageio-webp</artifactId>
+    <version>3.9.4</version>
+    </dependency>
+
 </dependencies>
 
 
