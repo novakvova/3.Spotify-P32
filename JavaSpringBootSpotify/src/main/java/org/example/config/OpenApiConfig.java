@@ -34,6 +34,9 @@ import org.springframework.context.annotation.Configuration;
             url = "http://localhost:8434",
             description = "Alternative Local Server"
         )
+    },
+    security = {
+        @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
     }
 )
 @SecurityScheme(
