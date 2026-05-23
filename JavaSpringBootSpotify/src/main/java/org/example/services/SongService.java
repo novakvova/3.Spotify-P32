@@ -63,7 +63,7 @@ public class SongService {
         song.setArtist(artist);
 
         // Знаходимо та встановлюємо альбом за назвою
-        var album = albumRepository.findByTitle(dto.getAlbumTitle())
+        var album = albumRepository.findByTitle(dto.getAlbumTitle()).stream().findFirst()
                 .orElseThrow(() -> new RuntimeException("Альбом не знайдено: " + dto.getAlbumTitle()));
         song.setAlbum(album);
 
@@ -111,7 +111,7 @@ public class SongService {
                     existing.setArtist(artist);
 
                     // Оновлюємо альбом за назвою
-                    var album = albumRepository.findByTitle(dto.getAlbum_title())
+                    var album = albumRepository.findByTitle(dto.getAlbum_title()).stream().findFirst()
                             .orElseThrow(() -> new RuntimeException("Альбом не знайдено: " + dto.getAlbum_title()));
                     existing.setAlbum(album);
 

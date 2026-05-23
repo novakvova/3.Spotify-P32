@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.example.dtos.CreateAlbumDto;
 import org.example.dtos.UpdateAlbumDto;
-
+import java.util.Optional;
 import java.util.List;
 
 @RestController
@@ -80,12 +80,12 @@ public class AlbumController {
         return ResponseEntity.noContent().build();
     }
 
-    // ПОШУК АЛЬБОМІВ ЗА НАЗВОЮ
+    // ПОШУК АЛЬБОМУ ЗА НАЗВОЮ
     @GetMapping("/search")
     @Operation(summary = "Search albums by title", description = "Search for albums by their title")
     @ApiResponse(responseCode = "200", description = "Successful")
-    public ResponseEntity<List<AlbumDto>> search(@RequestParam String title) {
-        List<AlbumDto> albums = albumService.searchByTitle(title);
+    public ResponseEntity<Optional<AlbumDto>> search(@RequestParam String title) {
+        Optional<AlbumDto> albums = albumService.searchByTitle(title);
         return ResponseEntity.ok(albums);
     }
 
@@ -96,5 +96,16 @@ public class AlbumController {
     public ResponseEntity<List<AlbumDto>> getByArtist(@PathVariable Long artistId) {
         List<AlbumDto> albums = albumService.getAlbumsByArtist(artistId);
         return ResponseEntity.ok(albums);
+    }
+
+
+
+
+    // Обробка винятків у цьому контролері
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("Error: " + ex.getMessage());
     }
 }
