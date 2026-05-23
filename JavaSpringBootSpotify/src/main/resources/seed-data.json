@@ -1,0 +1,91 @@
+{
+  "artists": [
+    {
+      "name": "Ed Sheeran",
+      "birthDate": "1991-02-17",
+      "albums": [
+        {
+          "title": "Divide",
+          "year": 2017,
+          "songs": [
+            "Shape of You",
+            "Perfect",
+            "Galway Girl"
+          ]
+        },
+        {
+          "title": "Multiply",
+          "year": 2014,
+          "songs": [
+            "Thinking Out Loud",
+            "Photograph"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Скрябін",
+      "birthDate": "1968-08-17",
+      "albums": [
+        {
+          "title": "Моя еволюція",
+          "year": 2005,
+          "songs": [
+            "Спи собі сама",
+            "Мовчати"
+          ]
+        },
+        {
+          "title": "Про любов",
+          "year": 2003,
+          "songs": [
+            "Старі фотографії",
+            "Кинули"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Green Day",
+      "birthDate": "1986-01-01",
+      "albums": [
+        
+        {
+          "title": "Dookie",
+          "year": 1994,
+          "songs": [
+            "Basket Case",
+            "When I Come Around"
+          ]
+        }
+      ]
+    }
+  ],
+
+  "extraSongs": [
+    {
+      "title": "Danza Kuduro",
+      "artist": "Don Omar",
+      "album": "Meet the Orphans",
+      "year": 2010
+    },
+    {
+      "title": "Sex, Drugs, Etc.",
+      "artist": "Beach Weather",
+      "album": "Pineapple Sunrise",
+      "year": 2023
+    },
+    {
+      "title": "I Wanna Be Yours",
+      "artist": "Arctic Monkeys",
+      "album": "AM",
+      "year": 2013
+    },
+    {
+      "title": "Soldier, Poet, King",
+      "artist": "The Oh Hellos",
+      "album": "Dear Wormwood",
+      "year": 2015
+    }
+  ]
+}
