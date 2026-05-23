@@ -10,6 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.example.data.constants.RolesConstants;
 import org.example.repositories.IRoleRepository;
+import java.util.stream.Collectors;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 // ОПТИМІЗАЦІЯ: видалено непотрібні import'и (UnusedImports)
 
 @Service
@@ -71,4 +74,60 @@ public class AccountService {
         // ОПТИМІЗАЦІЯ: використання впровадженого jwtUtil замість створення нового
         return jwtUtil.generateToken(user.getUsername());
     }
+    public ProfileDto getProfile(String username) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ProfileDto dto = new ProfileDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setImage("/uploads/medium/" + user.getImage());
+        dto.setRoles(
+            user.getRoles().stream()
+                .map(r -> r.getName())
+                .collect(Collectors.toSet()));
+        return dto;
+    }
+
+    public ProfileDto updateProfile(String currentUsername, UpdateProfileDto dto, MultipartFile image) {
+
+    UserEntity user = userRepository.findByUsername(currentUsername)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    // Оновлення текстових даних
+    if (dto != null) {
+        if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
+            user.setUsername(dto.getUsername());
+        }
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            user.setEmail(dto.getEmail());
+        }
+    }
+
+    // Оновлення фото
+    if (image != null && !image.isEmpty()) {
+        try {
+            imageService.saveUserImage(image, user.getUsername());
+            user.setImage(user.getUsername() + ".jpg");
+        } catch (IOException e) {
+            throw new RuntimeException("Помилка при збереженні фото: " + e.getMessage());
+        }
+    }
+
+    userRepository.save(user);
+
+    ProfileDto profile = new ProfileDto();
+    profile.setId(user.getId());
+    profile.setUsername(user.getUsername());
+    profile.setEmail(user.getEmail());
+    profile.setImage("/uploads/medium/" + user.getImage());
+    profile.setRoles(
+            user.getRoles().stream()
+                    .map(r -> r.getName())
+                    .collect(Collectors.toSet())
+    );
+
+    return profile;
+}
+
 }
