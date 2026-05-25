@@ -1,35 +1,24 @@
 package org.example.controller;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
-import io.jsonwebtoken.io.IOException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
-import org.example.dtos.LoginDto;
-import org.example.dtos.RegisterDto;
+import org.example.dtos.*;
 import org.example.services.AccountService;
-import org.springframework.http.MediaType;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ConstraintViolation;
-import org.example.dtos.UpdateProfileDto;
-import org.example.services.AccountService;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 
 // ОПТИМІЗАЦІЯ: використання Slf4j логера замість java.util.logging

@@ -9,12 +9,8 @@ import org.springframework.stereotype.Service;
 import org.example.dtos.CreateAlbumDto;
 import org.example.repositories.IArtistRepository;
 import org.example.dtos.UpdateAlbumDto;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.List;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +39,7 @@ public class AlbumService {
         if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
             throw new RuntimeException("Album title cannot be null or empty");
         }
-        var existAlbum = albumRepository.findByTitle(dto.getTitle()).stream().findFirst();
+        var existAlbum = albumRepository.findByTitleContainingIgnoreCase(dto.getTitle()).stream().findFirst();
         if(existAlbum.isPresent()) {
             throw new RuntimeException("Album with title '" + dto.getTitle() + "' already exists");
         }
@@ -59,7 +55,7 @@ public class AlbumService {
         if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
             throw new RuntimeException("Album title cannot be null or empty");
         }
-        var existAlbum = albumRepository.findByTitle(dto.getTitle()).stream().findFirst();
+        var existAlbum = albumRepository.findByTitleContainingIgnoreCase(dto.getTitle()).stream().findFirst();
         if(existAlbum.isPresent()) {
             throw new RuntimeException("Album with title '" + dto.getTitle() + "' already exists");
         }
@@ -77,9 +73,11 @@ public class AlbumService {
         albumRepository.deleteById(id);
     }
 
-    public Optional<AlbumDto> searchByTitle(String title) {
-        return albumRepository.findByTitle(title).stream().findFirst().map(mapper::toDto);
-                
+     public List<AlbumDto> searchByTitle(String title) {
+        return albumRepository.findByTitleContainingIgnoreCase(title)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
     }
 
     public List<AlbumDto> getAlbumsByArtist(Long artistId) {
