@@ -58,13 +58,18 @@ public class SongService {
         Song song = new Song();
 
         // Знаходимо та встановлюємо артиста за назвою
-        var artist = artistRepository.findByName(dto.getArtistName())
+        var artist = artistRepository.findByNameContainingIgnoreCase(dto.getArtistName())
+                .stream()
+                .findFirst()
                 .orElseThrow(() -> new RuntimeException("Артист не знайдено: " + dto.getArtistName()));
         song.setArtist(artist);
 
         // Знаходимо та встановлюємо альбом за назвою
-        var album = albumRepository.findByTitle(dto.getAlbumTitle()).stream().findFirst()
-                .orElseThrow(() -> new RuntimeException("Альбом не знайдено: " + dto.getAlbumTitle()));
+        var album = albumRepository.findByTitleContainingIgnoreCase(dto.getAlbumTitle())
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Альбом не знайдено: " + 
+                dto.getAlbumTitle()));
         song.setAlbum(album);
 
         // Знаходимо та встановлюємо жанри за назвами
@@ -106,12 +111,16 @@ public class SongService {
                     existing.setName(dto.getName());
 
                     // Оновлюємо артиста за назвою
-                    var artist = artistRepository.findByName(dto.getArtist_name())
+                    var artist = artistRepository.findByNameContainingIgnoreCase(dto.getArtist_name())
+                            .stream()
+                            .findFirst()
                             .orElseThrow(() -> new RuntimeException("Артист не знайдено: " + dto.getArtist_name()));
                     existing.setArtist(artist);
 
                     // Оновлюємо альбом за назвою
-                    var album = albumRepository.findByTitle(dto.getAlbum_title()).stream().findFirst()
+                    var album = albumRepository.findByTitleContainingIgnoreCase(dto.getAlbum_title())
+                            .stream()
+                            .findFirst()
                             .orElseThrow(() -> new RuntimeException("Альбом не знайдено: " + dto.getAlbum_title()));
                     existing.setAlbum(album);
 
@@ -157,4 +166,19 @@ public class SongService {
         }
         return dto;
     }
+
+    public List<SongItemDto> searchByName(String name) {
+        return songRepository.findByNameContainingIgnoreCase(name)
+            .stream()
+            .map(this::convertToDto)
+            .toList();
+    }
+
+    public List<SongItemDto> getSongsByAlbum(Long albumId) {
+        return songRepository.findByAlbumId(albumId)
+            .stream()
+            .map(this::convertToDto)
+            .toList();
+    }
+
 }

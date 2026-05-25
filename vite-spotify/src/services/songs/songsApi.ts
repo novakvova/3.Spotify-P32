@@ -17,12 +17,14 @@ export const songsApi = createApi({
                 return `/api/songs/page?${p}`
             },
         }),
+        getSongsByAlbum: builder.query<ISong[], number>({
+            query: (albumId) => `/api/songs/by-album/${albumId}`,
+        }),
 
-    incrementPlay: builder.mutation<void, number>({
-    query: (id) => ({ url: `/api/songs/${id}/play`, method: 'POST' }),
-}),
-
-}),
+        incrementPlay: builder.mutation<void, number>({
+            query: (id) => ({ url: `/api/songs/${id}/play`, method: 'POST' }),
+        }),
+    }),
 })
 
-export const { useGetSongsQuery, useIncrementPlayMutation } = songsApi
+export const { useGetSongsQuery, useGetSongsByAlbumQuery, useIncrementPlayMutation } = songsApi

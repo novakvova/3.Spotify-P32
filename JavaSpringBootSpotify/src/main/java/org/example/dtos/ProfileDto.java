@@ -3,7 +3,6 @@ package org.example.dtos;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.Set;
-import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
