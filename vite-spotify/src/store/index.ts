@@ -5,6 +5,8 @@ import themeReducer from './slices/themeSlice'
 import { authApi } from '../services/auth/authApi'
 import { songsApi } from '../services/songs/songsApi'
 import { genresApi } from '../services/genres/genresApi'
+import { artistsApi } from '../services/artists/artistsApi'
+import { albumsApi } from '../services/albums/albumsApi'
 
 export const store = configureStore({
     reducer: {
@@ -14,12 +16,16 @@ export const store = configureStore({
         [authApi.reducerPath]: authApi.reducer,
         [songsApi.reducerPath]: songsApi.reducer,
         [genresApi.reducerPath]: genresApi.reducer,
+        [artistsApi.reducerPath]: artistsApi.reducer,
+        [albumsApi.reducerPath]: albumsApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(
             authApi.middleware,
             songsApi.middleware,
             genresApi.middleware,
+            artistsApi.middleware,
+            albumsApi.middleware,
         ),
 })
 

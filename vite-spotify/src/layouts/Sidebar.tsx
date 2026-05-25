@@ -127,12 +127,21 @@ export default function Sidebar() {
             <div className="border-t pt-4" style={{ borderColor: 'var(--border)' }}>
                 {isAuth && user ? (
                     <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ color: 'var(--text)' }}>
-                        <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 border"
-                            style={{ background: 'var(--accent)', color: '#000', borderColor: 'var(--border)' }}
-                        >
-                            {user?.username?.[0]?.toUpperCase() ?? '?'}
-                        </div>
+                        {user?.image && user.image !== 'default.jpg' ? (
+                            <img
+                                src={`${user.image}`}
+                                alt="avatar"
+                                className="w-8 h-8 rounded-full object-cover flex-shrink-0 border"
+                                style={{ borderColor: 'var(--border)' }}
+                            />
+                        ) : (
+                            <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                style={{ background: 'var(--accent)', color: '#000' }}
+                            >
+                                {user?.username?.[0]?.toUpperCase() ?? '?'}
+                            </div>
+                        )}
                         {width > 200 && <span className="text-sm font-medium truncate flex-1">{user.username}</span>}
                         <button
                             onClick={() => dispatch(logout())}
