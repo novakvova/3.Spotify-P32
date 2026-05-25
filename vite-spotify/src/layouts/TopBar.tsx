@@ -25,18 +25,27 @@ export default function TopBar() {
             style={{
                 background: 'var(--bg)',
                 borderColor: 'var(--border)',
-                height: 56, // Повертаємо стандартну висоту Spotify
+                height: 56,
             }}
         >
-            {/* Аватарка/Профіль (ТІЛЬКИ НА МОБІЛКАХ) */}
             <div className="md:hidden flex items-center gap-2 flex-shrink-0">
                 {isAuth && user ? (
-                    <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border"
-                        style={{ background: 'var(--accent)', color: '#000', borderColor: 'var(--border)' }}
-                        title={user.username}
-                    >
-                        {user?.username?.[0]?.toUpperCase() ?? '?'}
+                    <div>
+                        {user?.image && user.image !== 'default.jpg' ? (
+                            <img
+                                src={`${user.image}`}
+                                alt="avatar"
+                                className="w-8 h-8 rounded-full object-cover flex-shrink-0 border"
+                                style={{ borderColor: 'var(--border)' }}
+                            />
+                        ) : (
+                            <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                style={{ background: 'var(--accent)', color: '#000' }}
+                            >
+                                {user?.username?.[0]?.toUpperCase() ?? '?'}
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <NavLink to="/login" style={{ color: 'var(--text)' }} title="Увійти">
@@ -45,7 +54,6 @@ export default function TopBar() {
                 )}
             </div>
 
-            {/* Форма Пошуку (На ПК на весь екран + кнопка Знайти, на мобілках — компактна) */}
             <form onSubmit={handleSearch} className="flex items-center gap-2 md:gap-3 flex-1 w-full">
                 <div
                     className="flex items-center gap-2 flex-1 px-4 py-1.5 rounded-full transition-all focus-within:ring-1 focus-within:ring-[var(--accent)]"
@@ -72,7 +80,6 @@ export default function TopBar() {
                     )}
                 </div>
 
-                {/* Кнопка "Знайти" — відображається завжди на ПК, а на мобілках ховається */}
                 <button
                     type="submit"
                     className="hidden md:block px-5 py-2 rounded-full text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] flex-shrink-0"
@@ -82,7 +89,6 @@ export default function TopBar() {
                 </button>
             </form>
 
-            {/* Блок керування темою та виходом (ТІЛЬКИ НА МОБІЛКАХ) */}
             <div className="md:hidden flex items-center gap-2 flex-shrink-0">
                 <button
                     onClick={() => dispatch(toggleTheme())}
