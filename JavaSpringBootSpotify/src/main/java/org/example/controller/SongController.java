@@ -1,12 +1,11 @@
 package org.example.controller;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.dtos.SongItemDto;
+import org.example.dtos.*;
 import org.example.services.SongService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -14,8 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.example.dtos.CreateSongDto;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -164,5 +161,16 @@ public class SongController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Помилка при видаленні: " + e.getMessage());
         }
+    }
+    @GetMapping("/search")
+    @Operation(summary = "Search songs by name", description = "Search for songs by their name")
+    @ApiResponse(responseCode = "200", description = "Successful")
+    public ResponseEntity<List<SongItemDto>> search(@RequestParam String name) {
+        return ResponseEntity.ok(songService.searchByName(name));
+    }
+
+    @GetMapping("/by-album/{albumId}")
+    public ResponseEntity<List<SongItemDto>> getSongsByAlbum(@PathVariable Long albumId) {
+        return ResponseEntity.ok(songService.getSongsByAlbum(albumId));
     }
 }

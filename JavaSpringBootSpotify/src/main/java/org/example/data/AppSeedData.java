@@ -98,7 +98,9 @@ public class AppSeedData {
                 String artistName = artistNode.get("name").asText();
                 LocalDate birthDate = LocalDate.parse(artistNode.get("birthDate").asText());
 
-                Artist artist = artistRepository.findByName(artistName)
+                Artist artist = artistRepository.findByNameContainingIgnoreCase(artistName)
+                        .stream()
+                        .findFirst()
                         .orElseGet(() -> {
                             Artist a = new Artist();
                             a.setName(artistName);
@@ -134,7 +136,9 @@ public class AppSeedData {
                 String albumName = songNode.get("album").asText();
                 int year = songNode.get("year").asInt();
 
-                Artist artist = artistRepository.findByName(artistName)
+                Artist artist = artistRepository.findByNameContainingIgnoreCase(artistName)
+                        .stream()
+                        .findFirst()
                         .orElseGet(() -> {
                             Artist a = new Artist();
                             a.setName(artistName);
@@ -163,6 +167,12 @@ public class AppSeedData {
 
     private void createSong(String title, Artist artist, Album album) {
         try {
+            var existSong = songRepository.findByNameAndAlbumId(title, album.getId());
+            if (existSong.isPresent()) {
+                System.out.println("Song already exists: " + title);
+                return;
+            }
+        
             String fileName = title + ".mp3";
             var filePath = Paths.get("mp3songs", fileName);
 
