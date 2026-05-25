@@ -9,7 +9,14 @@ export default defineConfig({
     proxy: {
       '/api': { target: 'http://localhost:8434', changeOrigin: true },
       '/register': { target: 'http://localhost:8434', changeOrigin: true },
-      '/login': { target: 'http://localhost:8434', changeOrigin: true },
+      '/login': {
+        target: 'http://localhost:8434',
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.method === 'GET') return req.url
+        },
+      },
+      '/profile': { target: 'http://localhost:8434', changeOrigin: true },
       '/mp3songs': { target: 'http://localhost:8434', changeOrigin: true },
       '/uploads': { target: 'http://localhost:8434', changeOrigin: true },
     },
