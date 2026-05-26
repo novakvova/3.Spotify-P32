@@ -13,7 +13,7 @@ export const songsApi = createApi({
             query: ({ page = 0, size = 20, genre, search } = {}) => {
                 const p = new URLSearchParams({ page: String(page), size: String(size) })
                 if (genre) p.set('genre', String(genre))
-                if (search) p.set('search', search)
+                if (search) p.set('name', search)
                 return `/api/songs/page?${p}`
             },
         }),
@@ -21,10 +21,19 @@ export const songsApi = createApi({
             query: (albumId) => `/api/songs/by-album/${albumId}`,
         }),
 
+        getSongsByArtist: builder.query<ISong[], number>({
+            query: (artistId) => `/api/songs/by-artist/${artistId}`,
+        }),
+        searchSongs: builder.query<ISong[], string>({
+            query: (name) => `/api/songs/search?name=${encodeURIComponent(name)}`,
+        }),
+
         incrementPlay: builder.mutation<void, number>({
             query: (id) => ({ url: `/api/songs/${id}/play`, method: 'POST' }),
         }),
-    }),
+
+}),
 })
 
-export const { useGetSongsQuery, useGetSongsByAlbumQuery, useIncrementPlayMutation } = songsApi
+export const { useGetSongsQuery, useGetSongsByAlbumQuery,
+    useGetSongsByArtistQuery, useIncrementPlayMutation, useSearchSongsQuery } = songsApi

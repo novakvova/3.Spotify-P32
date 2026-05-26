@@ -6,6 +6,7 @@ import type {IProfile} from "../../types/IProfile.ts";
 export const authApi = createApi({
     reducerPath: 'authApi',
     baseQuery: createBaseQuery,
+    tagTypes: ['Profile'],
     endpoints: (builder) => ({
 
         register: builder.mutation<IAuthResponse, FormData>({
@@ -25,9 +26,18 @@ export const authApi = createApi({
         }),
         getProfile: builder.query<IProfile, void>({
             query: () => '/profile',
+            providesTags: ['Profile'],
+        }),
+        updateProfile: builder.mutation<IProfile, FormData>({
+            query: (formData) => ({
+                url: '/profile/update',
+                method: 'PUT',
+                body: formData,
+            }),
+            invalidatesTags: ['Profile'],
         }),
 
     }),
 })
 
-export const { useRegisterMutation, useLoginMutation, useGetProfileQuery } = authApi
+export const { useRegisterMutation, useLoginMutation, useGetProfileQuery, useUpdateProfileMutation } = authApi

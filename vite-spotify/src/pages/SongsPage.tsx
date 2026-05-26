@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
-import { useGetSongsQuery } from '../services/songs/songsApi'
+import {useGetSongsQuery, useSearchSongsQuery} from '../services/songs/songsApi'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { playSong, togglePlay, selectCurrentSong, selectIsPlaying } from '../store/slices/playerSlice'
 import type { ISong } from '../types/ISong'
@@ -14,15 +14,24 @@ export default function SongsPage() {
 
 
     const [searchParams] = useSearchParams()
-    const search = searchParams.get('search') ?? undefined
+    const search = searchParams.get('search') ?? ''
     const genre = searchParams.get('genre') ? Number(searchParams.get('genre')) : undefined
 
-    const { data, isLoading } = useGetSongsQuery({ page: page, size: 20, search, genre })
-    const songs: ISong[] = data?.content ?? []
 
+    const { data: pageData, isLoading: isPageLoading } = useGetSongsQuery(
+        { page, size: 20, genre },
+        { skip: !!search }
+    )
+    const { data: searchData, isLoading: isSearchLoading } = useSearchSongsQuery(
+        search,
+        { skip: !search }
+    )
+    const songs = search ? (searchData ?? []) : (pageData?.content ?? [])
+    const isLoading = search ? isSearchLoading : isPageLoading
     useEffect(() => {
         setPage(0)
     }, [search, genre])
+
     const handlePlay = (song: ISong) => {
         if (currentSong?.id === song.id) dispatch(togglePlay())
         else dispatch(playSong({ song, queue: songs }))
@@ -109,10 +118,10 @@ export default function SongsPage() {
                         </div>
                     )
                 })}
-                {data && data.totalPages > 1 && (
+                {!search && pageData && pageData.totalPages > 1 && (
                     <div className="flex items-center justify-center gap-4 mt-6">
                         <button
-                            disabled={data.first}
+                            disabled={pageData.first}
                             onClick={() => setPage(p => p - 1)}
                             className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-30 transition-all hover:scale-105"
                             style={{ background: 'var(--bg-card)', color: 'var(--text)', border: '1px solid var(--border)' }}
@@ -120,10 +129,10 @@ export default function SongsPage() {
                             ← Назад
                         </button>
                         <span className="text-sm" style={{ color: 'var(--text-3)' }}>
-                          {data.number + 1} / {data.totalPages}
+                          {pageData.number + 1} / {pageData.totalPages}
                         </span>
                         <button
-                            disabled={data.last}
+                            disabled={pageData.last}
                             onClick={() => setPage(p => p + 1)}
                             className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-30 transition-all hover:scale-105"
                             style={{ background: 'var(--bg-card)', color: 'var(--text)', border: '1px solid var(--border)' }}

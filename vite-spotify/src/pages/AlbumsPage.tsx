@@ -1,10 +1,16 @@
 import { useGetAlbumsQuery } from '../services/albums/albumsApi'
-import { Link } from 'react-router-dom'
+import {Link, useSearchParams} from 'react-router-dom'
 import { Disc } from 'lucide-react'
 
 export default function AlbumsPage() {
-    const { data: albums, isLoading, isError } = useGetAlbumsQuery()
+    const { data: allAlbums, isLoading, isError } = useGetAlbumsQuery()
 
+    const [searchParams] = useSearchParams()
+    const search = searchParams.get('search') ?? ''
+    const albums = allAlbums ? allAlbums.filter(album => {
+        if (!search) return true
+        return album.title?.toLowerCase().includes(search.toLowerCase())
+    }) : []
     if (isLoading) return (
         <div className="flex items-center justify-center h-48">
             <p className="animate-pulse text-sm" style={{ color: 'var(--text-3)' }}>Завантаження альбомів...</p>
