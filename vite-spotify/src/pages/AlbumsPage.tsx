@@ -32,7 +32,7 @@ export default function AlbumsPage() {
                     {albums.map((album) => (
                         <Link
                             key={album.id}
-                            to={`/albums/${album.id}`}
+                            to={`/album/${album.id}`}
                             className="flex flex-col gap-3 p-4 rounded-xl transition-all bg-white/[0.01] hover:bg-white/[0.04] border border-white/5 group cursor-pointer"
                         >
                             <div
