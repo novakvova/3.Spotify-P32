@@ -22,13 +22,17 @@ export default function LoginPage() {
         try {
             const data = await login({ username, password }).unwrap()
 
+            localStorage.setItem('token', data.token)
             dispatch(setCredentials({
                 token: data.token,
                 user: { id: 0, username, email: '', image: null, roles: [] },
             }))
 
             const profileRes = await fetch('/profile', {
-                headers: { Authorization: `Bearer ${data.token}` },
+                headers: {
+                    Authorization: `Bearer ${data.token}`,
+                    'Content-Type': 'application/json',
+                },
             })
 
             if (profileRes.ok) {

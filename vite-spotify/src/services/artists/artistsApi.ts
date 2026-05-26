@@ -12,7 +12,10 @@ export const artistsApi = createApi({
         getArtistById: builder.query<IArtist, number>({
             query: (id) => `/api/artists/${id}`,
         }),
+        searchArtists: builder.query<IArtist[], string>({
+            query: (name) => `/api/artists/search?name=${encodeURIComponent(name)}`,
+        }),
     }),
 })
 
-export const { useGetArtistsQuery, useGetArtistByIdQuery } = artistsApi
+export const { useGetArtistsQuery, useGetArtistByIdQuery, useSearchArtistsQuery } = artistsApi

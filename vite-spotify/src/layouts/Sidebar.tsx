@@ -1,27 +1,24 @@
 import { useState, useEffect, useRef } from 'react'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
 import { toggleTheme, selectTheme } from '../store/slices/themeSlice'
 import {
-    Home,
-    Music,
-    Layers,
-    Mic2,
-    Disc,
-    Sun,
-    Moon,
-    LogOut,
-    Play
+    Home, Music, Layers, Mic2, Disc,
+    Sun, Moon, LogOut, Play,
 } from 'lucide-react'
 
 const NAV = [
-    { to: '/',        label: 'Головна',    icon: Home },
-    { to: '/songs',   label: 'Пісні',      icon: Music },
-    { to: '/genres',  label: 'Жанри',      icon: Layers },
-    { to: '/artists', label: 'Виконавці',  icon: Mic2 },
-    { to: '/albums',  label: 'Альбоми',    icon: Disc },
+    { to: '/',        label: 'Головна',   icon: Home },
+    { to: '/songs',   label: 'Пісні',     icon: Music },
+    { to: '/genres',  label: 'Жанри',     icon: Layers },
+    { to: '/artists', label: 'Виконавці', icon: Mic2 },
+    { to: '/albums',  label: 'Альбоми',   icon: Disc },
 ]
+
+function hasCustomAvatar(image: string | null | undefined): boolean {
+    return !!image && !image.includes('default.jpg')
+}
 
 export default function Sidebar() {
     const dispatch = useAppDispatch()
@@ -41,23 +38,16 @@ export default function Sidebar() {
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!isResizing) return
-
             let newWidth = e.clientX
-
             if (newWidth < 180) newWidth = 180
             if (newWidth > 400) newWidth = 400
-
             setWidth(newWidth)
         }
-
-        const handleMouseUp = () => {
-            setIsResizing(false)
-        }
+        const handleMouseUp = () => setIsResizing(false)
 
         if (isResizing) {
             window.addEventListener('mousemove', handleMouseMove)
             window.addEventListener('mouseup', handleMouseUp)
-
             document.body.classList.add('cursor-grabbing-active')
         } else {
             document.body.classList.remove('cursor-grabbing-active')
@@ -74,11 +64,7 @@ export default function Sidebar() {
         <aside
             ref={sidebarRef}
             className="hidden md:flex flex-col h-full px-3 py-5 border-r select-none relative group"
-            style={{
-                background: 'var(--sidebar-bg)',
-                borderColor: 'var(--border)',
-                width: width
-            }}
+            style={{ background: 'var(--sidebar-bg)', borderColor: 'var(--border)', width }}
         >
             <div className="flex items-center gap-2 px-3 mb-8">
                 <div
@@ -88,8 +74,8 @@ export default function Sidebar() {
                     <Play size={16} fill="#000" />
                 </div>
                 <span className="font-bold text-base tracking-wider" style={{ fontFamily: 'Syne', color: 'var(--text)' }}>
-          Spotify
-        </span>
+                    Spotify
+                </span>
             </div>
 
             <nav className="flex flex-col gap-1 flex-1">
@@ -110,15 +96,10 @@ export default function Sidebar() {
                 ))}
             </nav>
 
-
             <button
                 onClick={() => dispatch(toggleTheme())}
                 className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-4 transition-all hover:scale-105 active:scale-95"
-                style={{
-                    background: 'var(--bg-hover)',
-                    color: 'var(--text)',
-                    border: '1px solid var(--border)',
-                }}
+                style={{ background: 'var(--bg-hover)', color: 'var(--text)', border: '1px solid var(--border)' }}
                 title={theme === 'dark' ? 'Світла тема' : 'Темна тема'}
             >
                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -126,10 +107,15 @@ export default function Sidebar() {
 
             <div className="border-t pt-4" style={{ borderColor: 'var(--border)' }}>
                 {isAuth && user ? (
-                    <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ color: 'var(--text)' }}>
-                        {user?.image && user.image !== 'default.jpg' ? (
+                    <Link
+                        to="/me"
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all"
+                        style={{ color: 'var(--text)' }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {hasCustomAvatar(user.image) ? (
                             <img
-                                src={`${user.image}`}
+                                src={user.image!}
                                 alt="avatar"
                                 className="w-8 h-8 rounded-full object-cover flex-shrink-0 border"
                                 style={{ borderColor: 'var(--border)' }}
@@ -139,18 +125,20 @@ export default function Sidebar() {
                                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                                 style={{ background: 'var(--accent)', color: '#000' }}
                             >
-                                {user?.username?.[0]?.toUpperCase() ?? '?'}
+                                {user.username?.[0]?.toUpperCase() ?? '?'}
                             </div>
                         )}
-                        {width > 200 && <span className="text-sm font-medium truncate flex-1">{user.username}</span>}
+                        {width > 200 && (
+                            <span className="text-sm font-medium truncate flex-1">{user.username}</span>
+                        )}
                         <button
-                            onClick={() => dispatch(logout())}
+                            onClick={e => { e.preventDefault(); dispatch(logout()) }}
                             className="p-1 rounded-md text-red-500 opacity-60 hover:opacity-100 hover:bg-red-500/10 transition-all"
                             title="Вийти"
                         >
                             <LogOut size={16} />
                         </button>
-                    </div>
+                    </Link>
                 ) : (
                     <div className="flex flex-col gap-2 px-1">
                         <NavLink
@@ -175,10 +163,10 @@ export default function Sidebar() {
 
             <div
                 onMouseDown={startResizing}
-                className={`absolute top-0 right-0 w-1.5 h-full transition-colors duration-200 z-50
-    ${isResizing
-                    ? 'bg-[var(--accent)] cursor-grabbing'
-                    : 'bg-transparent hover:bg-[var(--border)] cursor-grab'
+                className={`absolute top-0 right-0 w-1.5 h-full transition-colors duration-200 z-50 ${
+                    isResizing
+                        ? 'bg-[var(--accent)] cursor-grabbing'
+                        : 'bg-transparent hover:bg-[var(--border)] cursor-grab'
                 }`}
             />
         </aside>

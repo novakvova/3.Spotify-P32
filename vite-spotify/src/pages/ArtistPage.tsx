@@ -1,7 +1,20 @@
-import { useGetArtistsQuery } from '../services/artists/artistsApi'
+import {useGetArtistsQuery, useSearchArtistsQuery} from '../services/artists/artistsApi'
+import {Link, useSearchParams} from "react-router-dom";
 
 export default function ArtistsPage() {
-    const { data: artists, isLoading, isError } = useGetArtistsQuery()
+    const [searchParams] = useSearchParams()
+    const search = searchParams.get('search') ?? ''
+    const { data: allArtists, isLoading: isAllLoading, isError: isAllError } = useGetArtistsQuery(
+        undefined,
+        { skip: !!search }
+    )
+    const { data: searchArtists, isLoading: isSearchLoading, isError: isSearchError } = useSearchArtistsQuery(
+        search,
+        { skip: !search }
+    )
+    const artists = search ? (searchArtists ?? []) : (allArtists ?? [])
+    const isLoading = search ? isSearchLoading : isAllLoading
+    const isError = search ? isSearchError : isAllError
 
     if (isLoading) return (
         <div className="flex items-center justify-center h-48">
@@ -25,8 +38,9 @@ export default function ArtistsPage() {
             {artists && artists.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {artists.map((artist) => (
-                        <div
+                        <Link
                             key={artist.id}
+                            to={`/artists/${artist.id}`}
                             className="flex flex-col items-center gap-3 p-5 rounded-xl transition-all hover:scale-105 cursor-pointer"
                             style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
                         >
@@ -46,7 +60,7 @@ export default function ArtistsPage() {
                                         : '—'}
                                 </p>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             ) : !isError && (

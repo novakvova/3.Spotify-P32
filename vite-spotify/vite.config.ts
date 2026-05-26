@@ -19,6 +19,7 @@ export default defineConfig({
       '/profile': { target: 'http://localhost:8434', changeOrigin: true },
       '/mp3songs': { target: 'http://localhost:8434', changeOrigin: true },
       '/uploads': { target: 'http://localhost:8434', changeOrigin: true },
+      '/api/search': { target: 'http://localhost:8434', changeOrigin: true },
     },
   },
 })

@@ -1,13 +1,19 @@
-import { useState } from 'react'
-import { useNavigate, NavLink } from 'react-router-dom'
+import {useEffect, useState} from 'react'
+import {useNavigate, NavLink, Link, useLocation} from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
 import { toggleTheme, selectTheme } from '../store/slices/themeSlice'
 import { Search, X, Sun, Moon, LogOut, User } from 'lucide-react'
 
+
+function hasCustomAvatar(image: string | null | undefined): boolean {
+    return !!image && !image.includes('default.jpg')
+}
+
 export default function TopBar() {
     const [query, setQuery] = useState('')
     const navigate = useNavigate()
+    const location = useLocation()
 
     const dispatch = useAppDispatch()
     const isAuth = useAppSelector(selectIsAuthenticated)
@@ -16,24 +22,36 @@ export default function TopBar() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
-        if (query.trim()) navigate(`/songs?search=${encodeURIComponent(query.trim())}`)
+        const trimmedQuery = query.trim()
+        if (!trimmedQuery) return
+
+        if (location.pathname === '/songs') {
+            navigate(`/songs?search=${encodeURIComponent(trimmedQuery)}`)
+        } else if (location.pathname === '/artists') {
+            navigate(`/artists?search=${encodeURIComponent(trimmedQuery)}`) // 👈 для артистів
+        } else if (location.pathname === '/albums') {
+            navigate(`/albums?search=${encodeURIComponent(trimmedQuery)}`)  // 👈 для альбомів
+        } else {
+            navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`)
+        }
     }
+    useEffect(() => {
+        const searchParam = new URLSearchParams(location.search).get('search');
+        const queryParam = new URLSearchParams(location.search).get('q');
+        setQuery(searchParam || queryParam || '');
+    }, [location]);
 
     return (
         <header
             className="flex items-center justify-between px-4 md:px-6 border-b flex-shrink-0 select-none gap-3 md:gap-4"
-            style={{
-                background: 'var(--bg)',
-                borderColor: 'var(--border)',
-                height: 56,
-            }}
+            style={{ background: 'var(--bg)', borderColor: 'var(--border)', height: 56 }}
         >
             <div className="md:hidden flex items-center gap-2 flex-shrink-0">
                 {isAuth && user ? (
-                    <div>
-                        {user?.image && user.image !== 'default.jpg' ? (
+                    <Link to="/me">
+                        {hasCustomAvatar(user.image) ? (
                             <img
-                                src={`${user.image}`}
+                                src={user.image!}
                                 alt="avatar"
                                 className="w-8 h-8 rounded-full object-cover flex-shrink-0 border"
                                 style={{ borderColor: 'var(--border)' }}
@@ -43,10 +61,10 @@ export default function TopBar() {
                                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                                 style={{ background: 'var(--accent)', color: '#000' }}
                             >
-                                {user?.username?.[0]?.toUpperCase() ?? '?'}
+                                {user.username?.[0]?.toUpperCase() ?? '?'}
                             </div>
                         )}
-                    </div>
+                    </Link>
                 ) : (
                     <NavLink to="/login" style={{ color: 'var(--text)' }} title="Увійти">
                         <User size={20} className="opacity-80 hover:opacity-100" />
@@ -71,7 +89,19 @@ export default function TopBar() {
                     {query && (
                         <button
                             type="button"
-                            onClick={() => setQuery('')}
+                            onClick={() => {
+                                setQuery('');
+
+                                if (location.pathname === '/songs') {
+                                    navigate('/songs');
+                                } else if (location.pathname === '/artists') {
+                                    navigate('/artists');
+                                } else if (location.pathname === '/albums') {
+                                    navigate('/albums');
+                                } else if (location.pathname === '/search') {
+                                    navigate('/');
+                                }
+                            }}
                             className="p-1 rounded-full opacity-60 hover:opacity-100 hover:bg-white/10 transition-all"
                             style={{ color: 'var(--text)' }}
                         >

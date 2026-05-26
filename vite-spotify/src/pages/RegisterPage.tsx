@@ -41,8 +41,12 @@ export default function RegisterPage() {
 
         try {
             const data = await register(fd).unwrap()
+            localStorage.setItem('token', data.token)
             const profileRes = await fetch('/profile', {
-                headers: { Authorization: `Bearer ${data.token}` },
+                headers: {
+                    Authorization: `Bearer ${data.token}`,
+                    'Content-Type': 'application/json',
+                },
             })
 
             let user = { id: 0, username, email, image: username + '.jpg', roles: ['user'] }

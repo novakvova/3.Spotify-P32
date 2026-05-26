@@ -12,6 +12,9 @@ export const albumsApi = createApi({
         getAlbumById: builder.query<IAlbum, number>({
             query: (id) => `/api/albums/${id}`,
         }),
+        searchAlbums: builder.query<IAlbum[], string>({
+            query: (title) => `/api/albums/search?title=${encodeURIComponent(title)}`,
+        }),
     }),
 })
 
