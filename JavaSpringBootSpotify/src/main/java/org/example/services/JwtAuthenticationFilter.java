@@ -5,45 +5,41 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.example.entities.UserEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.example.repositories.IUserRepository;
-
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
-import java.util.logging.Logger;
 
-@Configuration
+@Slf4j
+@Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private static final String PREFIX = "Bearer ";
     private final JwtUtil jwtUtil;
-     private final IUserRepository userRepository;
-    private  Logger log = Logger.getLogger(JwtAuthenticationFilter.class.getName());
+    private final IUserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
-            throws ServletException, IOException {
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
-        log.info("Auth Header: " + authHeader);
-        log.info("Request URI: " + request.getRequestURI());
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+        String header = request.getHeader("Authorization");
+
+        if (header != null && header.startsWith(PREFIX)) {
+            String token = header.substring(PREFIX.length());
             if (jwtUtil.validateToken(token)) {
-                String username = jwtUtil.extractUsername(token);
-                log.info("Authenticated user: " + username);
-                UserEntity user = userRepository.findByUsername(username).orElse(null);
-                if (user == null) {
-                    throw new RuntimeException("User not found");
-                }
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                String email = jwtUtil.extractUsername(token);
+                userRepository.findByEmailIgnoreCase(email).ifPresentOrElse(
+                        user -> SecurityContextHolder.getContext().setAuthentication(
+                                new UsernamePasswordAuthenticationToken(
+                                        user, null, user.getAuthorities())),
+                        () -> log.warn("Токен валідний, але користувача {} не знайдено", email));
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }

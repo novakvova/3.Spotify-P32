@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 @Component
@@ -55,17 +56,20 @@ public class AppSeedData {
     private void seedAdminUser() {
         if (userRepository.count() > 0) return;
 
-        RoleEntity adminRole = roleRepository.findByName(RolesConstants.AdminRole).orElseThrow();
+        RoleEntity adminRole = roleRepository.findByName(RolesConstants.AdminRole)
+            .orElseThrow(() -> new IllegalStateException("Роль admin не засіяна"));
 
         UserEntity admin = new UserEntity();
-        admin.setUsername("admin@gmail.com");
         admin.setEmail("admin@gmail.com");
-        admin.setPassword(passwordEncoder.encode("123456"));
-        admin.setRoles(Set.of(adminRole));
+        admin.setUsername("admin");
+        admin.setFullName("Administrator");
+        admin.setBirthDate(LocalDate.of(1990, 1, 1));
+        admin.setGender(Gender.UNDISCLOSED);
+        admin.setPassword(passwordEncoder.encode("Admin!2026pass"));
         admin.setImage("default.jpg");
+        admin.setRoles(new HashSet<>(Set.of(adminRole)));
 
         userRepository.save(admin);
-
         System.out.println("Admin user added");
     }
 
