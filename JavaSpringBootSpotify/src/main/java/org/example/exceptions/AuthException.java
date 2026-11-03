@@ -28,4 +28,29 @@ public class AuthException extends RuntimeException {
 
     @Schema (hidden = true)
     public HttpStatus getStatus() { return status; }
+
+
+    public static AuthException invalidCode() {
+        return new AuthException("CODE_INVALID", "code",
+            "Цей код недійсний. Перевірте код і повторіть спробу",
+            HttpStatus.BAD_REQUEST);
+    }
+
+    public static AuthException tooManyAttempts() {
+        return new AuthException("CODE_ATTEMPTS_EXCEEDED", "code",
+            "Забагато спроб. Запросіть новий код",
+            HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    public static AuthException resendTooSoon() {
+        return new AuthException("CODE_RESEND_TOO_SOON", "email",
+            "Код уже надіслано. Спробуйте за хвилину",
+            HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    public static AuthException invalidCredentials() {
+        return new AuthException("INVALID_CREDENTIALS", "password",
+            "Неправильні адреса електронної пошти або пароль",
+            HttpStatus.UNAUTHORIZED);
+    }
 }
