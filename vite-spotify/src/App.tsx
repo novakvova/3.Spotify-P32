@@ -20,8 +20,8 @@ export default function App() {
         <Provider store={store}>
             <BrowserRouter>
                 <Routes>
+                    <Route path="/" element={<HomePage />} />
                     <Route element={<MainLayout />}>
-                        <Route path="/"        element={<HomePage />} />
                         <Route path="/songs"   element={<SongsPage />} />
                         <Route path="/genres"  element={<GenresPage />} />
                         <Route path="/artists" element={<ArtistsPage />} />
