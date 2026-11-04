@@ -1,4 +1,5 @@
-import { useState} from 'react'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import imgPhoto1 from '../assets/home/photo1.png'
 import imgPhoto2 from '../assets/home/photo2.png'
 import imgFrame11 from '../assets/home/frame11.png'
@@ -7,11 +8,14 @@ import imgPlaylists from '../assets/home/playlists.svg'
 import imgHeart from '../assets/home/heart.svg'
 import imgSaveMobileData from '../assets/home/save-mobile-data.svg'
 import imgArrow from '../assets/home/arrow.svg'
-import {Header} from "../components/Header.tsx";
-import {Footer} from "../components/Footer.tsx";
+import { Header } from '../components/Header.tsx'
+import { Footer } from '../components/Footer.tsx'
+import { useAppSelector } from '../store/hooks'
+import { selectIsAuthenticated } from '../store/slices/authSlice'
 
 export default function HomePage() {
     const PURPLE_BG = '#280a3a'
+    const isAuthenticated = useAppSelector(selectIsAuthenticated)
     const [openFaq, setOpenFaq] = useState<Record<number, boolean>>({})
     const BENEFITS = [
         {
@@ -36,7 +40,6 @@ export default function HomePage() {
         },
     ]
 
-
     const toggleFaq = (index: number) => {
         setOpenFaq((prev) => ({ ...prev, [index]: !prev[index] }))
     }
@@ -46,7 +49,7 @@ export default function HomePage() {
             className="bg-white min-h-screen w-full overflow-x-hidden"
             style={{ fontFamily: "'Inter', sans-serif", color: PURPLE_BG }}
         >
-            <Header/>
+            <Header />
             <section
                 className="relative w-full mx-auto overflow-hidden flex items-end justify-center pb-16 md:pb-24"
                 style={{ height: 525 }}
@@ -67,15 +70,15 @@ export default function HomePage() {
                         <p className="leading-tight">Відчуй свій ритм</p>
                     </div>
 
-                    <button
-                        type="button"
+                    <Link
+                        to={isAuthenticated ? '/me' : '/register'}
                         className="bg-white flex items-center justify-center px-8 py-3.5 rounded-full shrink-0 w-full cursor-pointer hover:scale-105 transition-transform"
                         style={{ maxWidth: 300, height: 50, color: PURPLE_BG }}
                     >
                         <span className="font-bold text-base leading-none text-center whitespace-nowrap">
-                            Зареєструватися безкоштовно
+                            {isAuthenticated ? 'Мій профіль' : 'Зареєструватися безкоштовно'}
                         </span>
-                    </button>
+                    </Link>
                 </div>
             </section>
 
@@ -267,19 +270,19 @@ export default function HomePage() {
                             <p className="leading-tight">Готові? Нумо слухати</p>
                         </div>
 
-                        <button
-                            type="button"
+                        <Link
+                            to={isAuthenticated ? '/me' : '/register'}
                             className="bg-white flex items-center justify-center px-8 py-3.5 relative z-10 rounded-full shrink-0 w-full cursor-pointer hover:scale-105 transition-transform"
                             style={{ maxWidth: 300, height: 50, color: PURPLE_BG }}
                         >
                             <span className="font-bold text-base leading-none text-center whitespace-nowrap">
-                                Зареєструватися безкоштовно
+                                {isAuthenticated ? 'Мій профіль' : 'Зареєструватися безкоштовно'}
                             </span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </section>
-            <Footer/>
+            <Footer />
         </div>
     )
 }
