@@ -4,7 +4,7 @@
 @layer base {
   :root {
     --purple_bl: #280a3a;
-    --bg:        #f5f3ef;
+    --bg:        #ffffff;
     --bg-card:   #ffffff;
     --bg-hover:  #ede9e3;
     --bg-input:  #eae6e0;
@@ -73,4 +73,7 @@
   body.cursor-grabbing-active * {
     cursor: grabbing !important;
   }
+}
+@theme{
+    --color-purple: var(--purple_bl) !important;
 }
