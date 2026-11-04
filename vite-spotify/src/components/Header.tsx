@@ -1,14 +1,22 @@
-import React, {useEffect, useRef, useState} from 'react';
-import imgLogoSonora042 from "../assets/home/logo-sonora.png";
-import {Menu, X} from "lucide-react";
-import {Link, useNavigate} from "react-router-dom";
+import React, { useEffect, useRef, useState } from 'react'
+import imgLogoSonora042 from '../assets/home/logo-sonora.png'
+import { Menu, X } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
 
 export const Header: React.FC = () => {
+    const dispatch = useAppDispatch()
+    const isAuthenticated = useAppSelector(selectIsAuthenticated)
+    const user = useAppSelector(selectCurrentUser)
     const [openPremium, setOpenPremium] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const PURPLE_BG = '#280a3a'
     const premiumRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
+
+    const displayName = user?.fullName || user?.username || user?.email || 'Профіль'
+    const userInitial = displayName.charAt(0).toUpperCase()
 
     const PREMIUM_PLANS = [
         {
@@ -113,13 +121,40 @@ export const Header: React.FC = () => {
                         <span className="leading-normal">Завантажити</span>
                     </Link>
 
-                    <Link to="/register" className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity">
-                        <span className="leading-normal">Зареєструватися</span>
-                    </Link>
+                    {isAuthenticated ? (
+                        <>
+                            <Link
+                                to="/me"
+                                className="flex items-center gap-2.5 font-semibold shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity"
+                            >
+                                <span
+                                    className="rounded-full flex items-center justify-center font-bold text-sm text-black bg-white shrink-0"
+                                    style={{ width: 32, height: 32 }}
+                                >
+                                    {userInitial}
+                                </span>
+                                <span className="leading-normal">{displayName}</span>
+                            </Link>
 
-                    <Link to="/login" className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity">
-                        <span className="leading-normal">Увійти</span>
-                    </Link>
+                            <button
+                                type="button"
+                                onClick={() => dispatch(logout())}
+                                className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity"
+                            >
+                                <span className="leading-normal">Вийти</span>
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/register" className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity">
+                                <span className="leading-normal">Зареєструватися</span>
+                            </Link>
+
+                            <Link to="/login" className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity">
+                                <span className="leading-normal">Увійти</span>
+                            </Link>
+                        </>
+                    )}
 
                     <div className="flex flex-col font-normal justify-center shrink-0 text-sm text-right">
                         <span className="leading-5">Укр</span>
@@ -181,25 +216,55 @@ export const Header: React.FC = () => {
                     >
                         Завантажити
                     </Link>
-                    <Link
-                        to="/register"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="font-semibold text-base py-1 cursor-pointer"
-                    >
-                        Зареєструватися
-                    </Link>
-                    <Link
-                        to="/login"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="font-semibold text-base py-1 cursor-pointer"
-                    >
-                        Увійти
-                    </Link>
+                    {isAuthenticated ? (
+                        <>
+                            <Link
+                                to="/me"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="flex items-center gap-2.5 font-semibold text-base py-1 cursor-pointer"
+                            >
+                                <span
+                                    className="rounded-full flex items-center justify-center font-bold text-sm text-black bg-white shrink-0"
+                                    style={{ width: 28, height: 28 }}
+                                >
+                                    {userInitial}
+                                </span>
+                                <span>{displayName}</span>
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    dispatch(logout())
+                                    setMobileMenuOpen(false)
+                                }}
+                                className="font-semibold text-base py-1 text-left cursor-pointer"
+                            >
+                                Вийти
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                to="/register"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="font-semibold text-base py-1 cursor-pointer"
+                            >
+                                Зареєструватися
+                            </Link>
+                            <Link
+                                to="/login"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="font-semibold text-base py-1 cursor-pointer"
+                            >
+                                Увійти
+                            </Link>
+                        </>
+                    )}
                     <span className="text-sm opacity-80 pt-1 border-t border-white/10">
                         Мова: Укр
                     </span>
                 </div>
             )}
         </header>
-    );
-};
+    )
+}
