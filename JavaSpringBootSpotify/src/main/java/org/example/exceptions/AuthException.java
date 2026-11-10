@@ -53,4 +53,16 @@ public class AuthException extends RuntimeException {
             "Неправильні адреса електронної пошти або пароль",
             HttpStatus.UNAUTHORIZED);
     }
+
+    public static AuthException invalidResetToken() {
+        return new AuthException("RESET_TOKEN_INVALID", "resetToken",
+            "Посилання для відновлення паролю недійсне або прострочене. Запросіть новий код",
+            HttpStatus.UNAUTHORIZED);
+    }
+
+    public static AuthException passwordUnchanged() {
+        return new AuthException("PASSWORD_UNCHANGED", "newPassword",
+            "Новий пароль має відрізнятися від поточного",
+            HttpStatus.BAD_REQUEST);
+    }
 }

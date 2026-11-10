@@ -67,7 +67,7 @@ function formatValidBirthDate(dayStr: string, monthStr: string, yearStr: string)
     return `${years}-${paddedMonth}-${paddedDay}`
 }
 
-export const registerSchema = z
+const registerSchema = z
     .object({
         email: z
             .string()
@@ -112,7 +112,7 @@ export const registerSchema = z
         }
     })
 
-export type RegisterFormValues = z.input<typeof registerSchema>
+type RegisterFormValues = z.input<typeof registerSchema>
 
 export default function RegisterPage() {
     const navigate = useNavigate()

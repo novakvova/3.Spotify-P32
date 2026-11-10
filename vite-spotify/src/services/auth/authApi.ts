@@ -3,8 +3,11 @@ import { createBaseQuery } from '../../utils/createBaseQuery'
 import type {
     IAuthResponse,
     IEmailCheckResponse,
+    IForgotPasswordResponse,
     ILoginStartResponse,
     IRegisterRequest,
+    IResetPasswordResponse,
+    IResetTokenResponse,
 } from '../../types/IAuthResponse'
 import type { IProfile } from '../../types/IProfile.ts'
 
@@ -53,6 +56,33 @@ export const authApi = createApi({
             }),
         }),
 
+        forgotPassword: builder.mutation<IForgotPasswordResponse, { email: string }>({
+            query: (body) => ({
+                url: '/api/auth/password/forgot',
+                method: 'POST',
+                body,
+            }),
+        }),
+
+        verifyResetCode: builder.mutation<IResetTokenResponse, { email: string; code: string }>({
+            query: (body) => ({
+                url: '/api/auth/password/verify',
+                method: 'POST',
+                body,
+            }),
+        }),
+
+        resetPassword: builder.mutation<
+            IResetPasswordResponse,
+            { resetToken: string; newPassword: string }
+        >({
+            query: (body) => ({
+                url: '/api/auth/password/reset',
+                method: 'POST',
+                body,
+            }),
+        }),
+
         login: builder.mutation<IAuthResponse, { username: string; password: string }>({
             query: (body) => ({
                 url: '/login',
@@ -83,6 +113,9 @@ export const {
     useLoginEmailMutation,
     useLoginWithCodeMutation,
     useLoginWithPasswordMutation,
+    useForgotPasswordMutation,
+    useVerifyResetCodeMutation,
+    useResetPasswordMutation,
     useLoginMutation,
     useGetProfileQuery,
     useUpdateProfileMutation,
