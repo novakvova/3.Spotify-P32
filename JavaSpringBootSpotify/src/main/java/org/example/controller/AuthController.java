@@ -33,6 +33,9 @@ public class AuthController {
     @Value("${app.dev.expose-code:false}")
     private boolean exposeCode;
 
+    @Value("${app.dev.expose-reset-link:false}")
+    private boolean exposeResetLink;
+
     @Operation(
             summary = "Перевірити доступність email",
             description = "Використовується на першому кроці реєстрації, щоб не допустити дубль акаунта.")
@@ -102,44 +105,27 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "Запросити код для відновлення паролю",
+            summary = "Запросити посилання для відновлення паролю",
             description = """
-                    Надсилає 6-значний код на email. Відповідь однакова для наявних і невідомих адрес,
-                    щоб не розкривати існування акаунта. Повторний запит можливий через 60 секунд.""")
+                    Якщо акаунт із такою адресою існує, надсилає лист із посиланням на сторінку
+                    встановлення нового паролю. Посилання має обмежений термін дії та одноразове.
+                    Відповідь однакова для наявних і невідомих адрес, щоб не розкривати існування акаунта.""")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Запит прийнято"),
-            @ApiResponse(responseCode = "400", description = "Некоректний email (VALIDATION_ERROR)"),
-            @ApiResponse(responseCode = "429", description = "Код уже надіслано (CODE_RESEND_TOO_SOON)")
+            @ApiResponse(responseCode = "400", description = "Некоректний email (VALIDATION_ERROR)")
     })
     @PostMapping("/password/forgot")
     public ResponseEntity<ForgotPasswordResponse> forgotPassword(
             @Valid @RequestBody ForgotPasswordRequest request) {
-        String code = passwordResetService.requestCode(request.email());
-        String devCode = (exposeCode && code != null) ? code : null;
-        return ResponseEntity.ok(new ForgotPasswordResponse(true, devCode));
-    }
-
-    @Operation(
-            summary = "Перевірити код відновлення паролю",
-            description = """
-                    Перевіряє OTP і повертає короткоживучий reset-токен (10 хвилин).
-                    Токен має окреме призначення і не дає доступу до інших API.""")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Код підтверджено, повернуто resetToken"),
-            @ApiResponse(responseCode = "400", description = "Недійсний код (CODE_INVALID)"),
-            @ApiResponse(responseCode = "429", description = "Перевищено кількість спроб (CODE_ATTEMPTS_EXCEEDED)")
-    })
-    @PostMapping("/password/verify")
-    public ResponseEntity<ResetTokenResponse> verifyResetCode(
-            @Valid @RequestBody VerifyResetCodeRequest request) {
-        String resetToken = passwordResetService.verifyCode(request.email(), request.code());
-        return ResponseEntity.ok(new ResetTokenResponse(resetToken));
+        String link = passwordResetService.requestResetLink(request.email());
+        String devLink = (exposeResetLink && link != null) ? link : null;
+        return ResponseEntity.ok(new ForgotPasswordResponse(true, devLink));
     }
 
     @Operation(
             summary = "Встановити новий пароль",
             description = """
-                    Змінює пароль за reset-токеном. Пароль має містити 10–72 символи,
+                    Змінює пароль за токеном із посилання. Пароль має містити 10–72 символи,
                     щонайменше одну літеру та одне число або спеціальний символ.""")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Пароль змінено"),

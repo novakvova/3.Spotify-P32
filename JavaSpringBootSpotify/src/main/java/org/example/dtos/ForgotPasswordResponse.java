@@ -2,16 +2,18 @@ package org.example.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "Результат запиту коду для відновлення паролю")
+@Schema(description = "Результат запиту посилання для відновлення паролю")
 public record ForgotPasswordResponse(
 
-        @Schema(description = "Код надіслано (відповідь однакова для наявних і невідомих адрес)", example = "true")
+        @Schema(
+                description = "Запит прийнято (відповідь однакова для наявних і невідомих адрес)",
+                example = "true")
         boolean sent,
 
         @Schema(
-                description = "Код лише для dev-середовища (app.dev.expose-code=true)",
+                description = "Посилання лише для dev-середовища (app.dev.expose-reset-link=true)",
                 nullable = true,
                 accessMode = Schema.AccessMode.READ_ONLY)
-        String devCode
+        String devLink
 ) {
 }
