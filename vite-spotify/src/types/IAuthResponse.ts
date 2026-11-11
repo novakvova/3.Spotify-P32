@@ -16,6 +16,19 @@ export interface ILoginStartResponse {
     devCode?: string | null;
 }
 
+export interface IForgotPasswordResponse {
+    sent: boolean;
+    devCode?: string | null;
+}
+
+export interface IResetTokenResponse {
+    resetToken: string;
+}
+
+export interface IResetPasswordResponse {
+    message: string;
+}
+
 export interface IRegisterRequest {
     email: string;
     password: string;

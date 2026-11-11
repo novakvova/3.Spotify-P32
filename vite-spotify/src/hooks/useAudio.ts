@@ -49,9 +49,11 @@ export function useAudio() {
     useEffect(() => {
         const audio = audioRef.current
         if (!audio) return
-        isPlaying
-            ? audio.play().catch(() => dispatch(setPlaying(false)))
-            : audio.pause()
+        if (isPlaying) {
+            audio.play().catch(() => dispatch(setPlaying(false)))
+        } else {
+            audio.pause()
+        }
     }, [isPlaying])
 
     useEffect(() => {

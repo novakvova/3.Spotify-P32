@@ -1,4 +1,5 @@
 package org.example.services;
+
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -11,6 +12,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +30,8 @@ public class MailService {
     private final boolean enabled;
     private final String from;
     private final String logoUrl;
-    private final String template;
+    private final String loginTemplate;
+    private final String passwordResetTemplate;
     private final byte[] logoBytes;
 
     public MailService(ObjectProvider<JavaMailSender> senderProvider,
@@ -40,9 +43,8 @@ public class MailService {
         this.from = from;
         this.logoUrl = logoUrl == null ? "" : logoUrl.trim();
 
-        try (InputStream in = new ClassPathResource("templates/mail/login-code.html").getInputStream()) {
-            this.template = StreamUtils.copyToString(in, StandardCharsets.UTF_8);
-        }
+        this.loginTemplate = loadTemplate("login-code.html");
+        this.passwordResetTemplate = loadTemplate("password-reset-code.html");
 
         Resource logo = resolveLogo();
         this.logoBytes = logo == null ? null : StreamUtils.copyToByteArray(logo.getInputStream());
@@ -56,6 +58,17 @@ public class MailService {
         }
     }
 
+    private static String loadTemplate(String fileName) throws IOException {
+        Resource resource = new ClassPathResource("templates/mail/" + fileName);
+        if (!resource.exists()) {
+            // у проєкті папка ресурсів має назву Templates (з великої літери)
+            resource = new ClassPathResource("Templates/mail/" + fileName);
+        }
+        try (InputStream in = resource.getInputStream()) {
+            return StreamUtils.copyToString(in, StandardCharsets.UTF_8);
+        }
+    }
+
     private Resource resolveLogo() {
         Resource classpath = new ClassPathResource("./images/sonora-logo.png");
         if (classpath.exists()) return classpath;
@@ -64,8 +77,31 @@ public class MailService {
     }
 
     public void sendLoginCode(String to, String code) {
+        sendCodeEmail(
+                to,
+                code,
+                "Код входу в " + APP_NAME + " — " + code,
+                loginTemplate,
+                "Ваш код входу в " + APP_NAME + ": " + code
+                        + "\nКод дійсний 10 хвилин."
+                        + "\nЯкщо ви не намагалися увійти, просто проігноруйте цей лист.");
+    }
+
+    public void sendPasswordResetCode(String to, String code) {
+        sendCodeEmail(
+                to,
+                code,
+                "Відновлення паролю в " + APP_NAME + " — " + code,
+                passwordResetTemplate,
+                "Код для відновлення паролю в " + APP_NAME + ": " + code
+                        + "\nКод дійсний 10 хвилин."
+                        + "\nЯкщо ви не запитували зміну паролю, просто проігноруйте цей лист —"
+                        + " ваш пароль залишиться незмінним.");
+    }
+
+    private void sendCodeEmail(String to, String code, String subject, String template, String plain) {
         if (!enabled || sender == null) {
-            log.warn("=== DEV: код входу для {} -> {} (лист не надіслано) ===", to, code);
+            log.warn("=== DEV: {} для {} -> {} (лист не надіслано) ===", subject, to, code);
             return;
         }
         try {
@@ -73,17 +109,13 @@ public class MailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setFrom(from, APP_NAME);
             helper.setTo(to);
-            helper.setSubject("Код входу в " + APP_NAME + " — " + code);
+            helper.setSubject(subject);
 
             String html = template
                     .replace("[[LOGO]]", logoBlock())
                     .replace("[[CODE]]", code)
                     .replace("[[EMAIL]]", to)
                     .replace("[[YEAR]]", String.valueOf(Year.now().getValue()));
-
-            String plain = "Ваш код входу в " + APP_NAME + ": " + code
-                    + "\nКод дійсний 10 хвилин."
-                    + "\nЯкщо ви не намагалися увійти, просто проігноруйте цей лист.";
 
             helper.setText(plain, html);
 

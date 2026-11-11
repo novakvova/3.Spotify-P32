@@ -19,7 +19,7 @@ import eyeOpenIcon from '../assets/auth/eye-open.svg'
 import backArrowIcon from '../assets/auth/back-arrow.svg'
 import errorIcon from '../assets/auth/error-icon.svg'
 
-export const loginSchema = z.object({
+const loginSchema = z.object({
     email: z
         .string()
         .trim()
@@ -30,16 +30,16 @@ export const loginSchema = z.object({
         .min(1, 'Неправильні адреса електронної пошти або пароль'),
 })
 
-export type LoginFormValues = z.infer<typeof loginSchema>
+type LoginFormValues = z.infer<typeof loginSchema>
 
-export const codeLoginSchema = z.object({
+const codeLoginSchema = z.object({
     d0: z.string().regex(/^\d$/, 'Цей код недійсний. Перевірте код і повторіть спробу'),
     d1: z.string().regex(/^\d$/, 'Цей код недійсний. Перевірте код і повторіть спробу'),
     d2: z.string().regex(/^\d$/, 'Цей код недійсний. Перевірте код і повторіть спробу'),
     d3: z.string().regex(/^\d$/, 'Цей код недійсний. Перевірте код і повторіть спробу'),
 })
 
-export type CodeLoginFormValues = z.infer<typeof codeLoginSchema>
+type CodeLoginFormValues = z.infer<typeof codeLoginSchema>
 
 const CODE_KEYS: Array<keyof CodeLoginFormValues> = ['d0', 'd1', 'd2', 'd3']
 
@@ -442,6 +442,13 @@ export default function LoginPage() {
                         >
                             Зареєструватися
                         </Link>
+                        <Link
+                            to="/forgot-password"
+                            className="font-semibold text-white hover:underline"
+                            style={{ fontSize: '14px', lineHeight: '18px' }}
+                        >
+                            Забули пароль?
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -600,7 +607,17 @@ export default function LoginPage() {
                             )}
                         </div>
 
-                        <div className="w-full flex justify-center" style={{ marginTop: '42px' }}>
+                        <div className="w-full flex justify-end" style={{ marginTop: '10px' }}>
+                            <Link
+                                to="/forgot-password"
+                                className="font-semibold text-white hover:underline"
+                                style={{ fontSize: '14px', lineHeight: '18px' }}
+                            >
+                                Забули пароль?
+                            </Link>
+                        </div>
+
+                        <div className="w-full flex justify-center" style={{ marginTop: '32px' }}>
                             <button
                                 type="submit"
                                 disabled={isLoggingInPassword}
