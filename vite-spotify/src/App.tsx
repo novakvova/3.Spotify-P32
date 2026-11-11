@@ -20,7 +20,11 @@ import {StudentPage} from "./pages/StudentPage.tsx";
 import {FamilyPage} from "./pages/FamilyPage.tsx";
 import {DuoPage} from "./pages/DuoPage.tsx";
 import {KidsPage} from "./pages/KidsPage.tsx";
+import SupportPage from "./pages/SupportPage.tsx";
+import SupportPaymentMethodsPage from "./pages/SupportPaymentMethodsPage.tsx";
+import AboutPage from "./pages/AboutPage.tsx";
 import {ScrollToTop} from "./components/ScrollToTop.tsx";
+import {LanguageTranslator} from "./components/LanguageTranslator.tsx";
 
 
 export default function App() {
@@ -28,14 +32,17 @@ export default function App() {
         <Provider store={store}>
             <BrowserRouter>
                 <ScrollToTop/>
+                <LanguageTranslator/>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
-                    {/* Маршрути для підписок Sonora Premium */}
                     <Route path="/premium" element={<MainPage />} />
                     <Route path="/premium/student" element={<StudentPage />} />
                     <Route path="/premium/family" element={<FamilyPage />} />
                     <Route path="/premium/duo" element={<DuoPage />} />
                     <Route path="/premium/kids" element={<KidsPage />} />
+                    <Route path="/support" element={<SupportPage />} />
+                    <Route path="/support/payment-methods" element={<SupportPaymentMethodsPage />} />
+                    <Route path="/about" element={<AboutPage />} />
                     <Route element={<MainLayout />}>
                         <Route path="/songs"   element={<SongsPage />} />
                         <Route path="/genres"  element={<GenresPage />} />
@@ -46,13 +53,10 @@ export default function App() {
                         <Route path="/genres/:id"  element={<GenreDetailsPage />} />
                         <Route path="/me" element={<ProfilePage />} />
                         <Route path="/search" element={<SearchPage />} />
-
-
                     </Route>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
                 </Routes>
             </BrowserRouter>
         </Provider>

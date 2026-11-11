@@ -12,31 +12,43 @@ import { Header } from '../components/Header.tsx'
 import { Footer } from '../components/Footer.tsx'
 import { useAppSelector } from '../store/hooks'
 import { selectIsAuthenticated } from '../store/slices/authSlice'
+import { selectLanguage } from '../store/slices/languageSlice'
 
 export default function HomePage() {
     const PURPLE_BG = '#280a3a'
     const isAuthenticated = useAppSelector(selectIsAuthenticated)
+    const lang = useAppSelector(selectLanguage)
+    const isEn = lang === 'en'
     const [openFaq, setOpenFaq] = useState<Record<number, boolean>>({})
+
     const BENEFITS = [
         {
             icon: imgPlay,
-            title: 'Слухайте нове',
-            description: 'Твій вибір — твої хіти. Відкривай мільйони треків в один клік',
+            title: isEn ? 'Listen to new music' : 'Слухайте нове',
+            description: isEn
+                ? 'Your choice — your hits. Discover millions of tracks in one click'
+                : 'Твій вибір — твої хіти. Відкривай мільйони треків в один клік',
         },
         {
             icon: imgPlaylists,
-            title: 'Створюйте настрій',
-            description: 'Твої правила — твої плейлісти. Керуй музикою так, як хочеш ти',
+            title: isEn ? 'Create your mood' : 'Створюйте настрій',
+            description: isEn
+                ? 'Your rules — your playlists. Control your music the way you want'
+                : 'Твої правила — твої плейлісти. Керуй музикою так, як хочеш ти',
         },
         {
             icon: imgHeart,
-            title: 'Знаходьте своє',
-            description: 'Твої лайки — твій настрій. Знаходь ідеальну музику \nлише для себе',
+            title: isEn ? 'Find what’s yours' : 'Знаходьте своє',
+            description: isEn
+                ? 'Your likes — your vibe. Find the perfect music\njust for you'
+                : 'Твої лайки — твій настрій. Знаходь ідеальну музику \nлише для себе',
         },
         {
             icon: imgSaveMobileData,
-            title: 'Зберігайте трафік',
-            description: 'Твій інтернет — твої дані. Слухай улюблені пісні без зайвих витрат',
+            title: isEn ? 'Save mobile data' : 'Зберігайте трафік',
+            description: isEn
+                ? 'Your internet — your data. Listen to favorite songs without extra costs'
+                : 'Твій інтернет — твої дані. Слухай улюблені пісні без зайвих витрат',
         },
     ]
 
@@ -67,7 +79,9 @@ export default function HomePage() {
                     style={{ maxWidth: 1100 }}
                 >
                     <div className="flex flex-col font-extrabold justify-center text-3xl sm:text-4xl text-center text-white">
-                        <p className="leading-tight">Відчуй свій ритм</p>
+                        <p className="leading-tight">
+                            {isEn ? 'Feel your rhythm' : 'Відчуй свій ритм'}
+                        </p>
                     </div>
 
                     <Link
@@ -76,7 +90,13 @@ export default function HomePage() {
                         style={{ maxWidth: 300, height: 50, color: PURPLE_BG }}
                     >
                         <span className="font-bold text-base leading-none text-center whitespace-nowrap">
-                            {isAuthenticated ? 'Мій профіль' : 'Зареєструватися безкоштовно'}
+                            {isAuthenticated
+                                ? isEn
+                                    ? 'My profile'
+                                    : 'Мій профіль'
+                                : isEn
+                                ? 'Sign up free'
+                                : 'Зареєструватися безкоштовно'}
                         </span>
                     </Link>
                 </div>
@@ -90,7 +110,7 @@ export default function HomePage() {
                     className="flex flex-col font-semibold justify-center text-2xl md:text-3xl text-center w-full mx-auto"
                     style={{ maxWidth: 1100 }}
                 >
-                    <p className="leading-tight">Переваги</p>
+                    <p className="leading-tight">{isEn ? 'Benefits' : 'Переваги'}</p>
                 </div>
 
                 <div
@@ -146,7 +166,9 @@ export default function HomePage() {
                         className="relative z-10 pt-8 sm:pt-12 md:pt-16 px-4 mx-auto flex flex-col font-extrabold justify-center text-2xl sm:text-3xl md:text-4xl text-center text-white w-full"
                         style={{ maxWidth: 1100 }}
                     >
-                        <p className="leading-tight">На одній хвилі з друзями</p>
+                        <p className="leading-tight">
+                            {isEn ? 'On the same wavelength with friends' : 'На одній хвилі з друзями'}
+                        </p>
                     </div>
                 </div>
             </section>
@@ -159,7 +181,9 @@ export default function HomePage() {
                     className="px-4 flex flex-col font-semibold justify-center text-2xl md:text-3xl text-center w-full mx-auto"
                     style={{ maxWidth: 1100 }}
                 >
-                    <p className="leading-tight">Маєте запитання?</p>
+                    <p className="leading-tight">
+                        {isEn ? 'Got questions?' : 'Маєте запитання?'}
+                    </p>
                 </div>
 
                 <div className="mt-10 md:mt-20 flex flex-col gap-14 md:gap-24 items-start w-full">
@@ -175,7 +199,7 @@ export default function HomePage() {
                                     className="cursor-pointer flex items-center justify-between gap-4 w-full text-left"
                                 >
                                     <span className="font-bold text-lg md:text-xl leading-7">
-                                        Як створити плейліст?
+                                        {isEn ? 'How do I create a playlist?' : 'Як створити плейліст?'}
                                     </span>
                                     <div
                                         className={`relative shrink-0 transition-transform duration-200 ${
@@ -200,7 +224,7 @@ export default function HomePage() {
                                     className="cursor-pointer flex items-center justify-between gap-4 w-full text-left"
                                 >
                                     <span className="font-bold text-lg md:text-xl leading-7">
-                                        Як увімкнути економію трафіку?
+                                        {isEn ? 'How do I turn on Data Saver?' : 'Як увімкнути економію трафіку?'}
                                     </span>
                                     <div
                                         className={`relative shrink-0 transition-transform duration-200 ${
@@ -225,7 +249,7 @@ export default function HomePage() {
                                     className="cursor-pointer flex items-center justify-between gap-4 w-full text-left"
                                 >
                                     <span className="font-bold text-lg md:text-xl leading-7">
-                                        Де знайти подкасти?
+                                        {isEn ? 'Where can I find podcasts?' : 'Де знайти подкасти?'}
                                     </span>
                                     <div
                                         className={`relative shrink-0 transition-transform duration-200 ${
@@ -267,7 +291,9 @@ export default function HomePage() {
                             className="flex flex-col font-extrabold justify-center relative z-10 shrink-0 text-3xl sm:text-4xl text-center text-white w-full"
                             style={{ maxWidth: 1100 }}
                         >
-                            <p className="leading-tight">Готові? Нумо слухати</p>
+                            <p className="leading-tight">
+                                {isEn ? 'Ready? Let’s play' : 'Готові? Нумо слухати'}
+                            </p>
                         </div>
 
                         <Link
@@ -276,7 +302,13 @@ export default function HomePage() {
                             style={{ maxWidth: 300, height: 50, color: PURPLE_BG }}
                         >
                             <span className="font-bold text-base leading-none text-center whitespace-nowrap">
-                                {isAuthenticated ? 'Мій профіль' : 'Зареєструватися безкоштовно'}
+                                {isAuthenticated
+                                    ? isEn
+                                        ? 'My profile'
+                                        : 'Мій профіль'
+                                    : isEn
+                                    ? 'Sign up free'
+                                    : 'Зареєструватися безкоштовно'}
                             </span>
                         </Link>
                     </div>

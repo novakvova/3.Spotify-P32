@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import authReducer from './slices/authSlice'
 import playerReducer from './slices/playerSlice'
 import themeReducer from './slices/themeSlice'
+import languageReducer from './slices/languageSlice'
 import { authApi } from '../services/auth/authApi'
 import { songsApi } from '../services/songs/songsApi'
 import { genresApi } from '../services/genres/genresApi'
@@ -14,6 +15,7 @@ export const store = configureStore({
         auth: authReducer,
         player: playerReducer,
         theme: themeReducer,
+        language: languageReducer,
         [authApi.reducerPath]: authApi.reducer,
         [songsApi.reducerPath]: songsApi.reducer,
         [genresApi.reducerPath]: genresApi.reducer,

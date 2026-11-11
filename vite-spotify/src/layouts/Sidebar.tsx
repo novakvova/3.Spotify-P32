@@ -3,10 +3,12 @@ import { Link, NavLink } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
 import { toggleTheme, selectTheme } from '../store/slices/themeSlice'
+import { toggleLanguage, selectLanguage } from '../store/slices/languageSlice'
 import {
     Home, Music, Layers, Mic2, Disc,
-    Sun, Moon, LogOut, Play,
+    Sun, Moon, LogOut,
 } from 'lucide-react'
+import imgSonoraCircle from '../assets/home/sonoraCircleLogo.png'
 
 const NAV = [
     { to: '/',        label: 'Головна',   icon: Home },
@@ -25,6 +27,7 @@ export default function Sidebar() {
     const isAuth = useAppSelector(selectIsAuthenticated)
     const user = useAppSelector(selectCurrentUser)
     const theme = useAppSelector(selectTheme)
+    const lang = useAppSelector(selectLanguage)
 
     const [width, setWidth] = useState(220)
     const [isResizing, setIsResizing] = useState(false)
@@ -66,17 +69,16 @@ export default function Sidebar() {
             className="hidden md:flex flex-col h-full px-3 py-5 border-r select-none relative group"
             style={{ background: 'var(--sidebar-bg)', borderColor: 'var(--border)', width }}
         >
-            <div className="flex items-center gap-2 px-3 mb-8">
-                <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: 'var(--accent)', color: '#000' }}
-                >
-                    <Play size={16} fill="#000" />
-                </div>
+            <Link to="/" className="flex items-center gap-2.5 px-3 mb-8">
+                <img
+                    src={imgSonoraCircle}
+                    alt="Sonora"
+                    className="w-8 h-8 object-contain shrink-0"
+                />
                 <span className="font-bold text-base tracking-wider" style={{ fontFamily: 'Syne', color: 'var(--text)' }}>
-                    Spotify
+                    Sonora
                 </span>
-            </div>
+            </Link>
 
             <nav className="flex flex-col gap-1 flex-1">
                 {NAV.map(({ to, label, icon: Icon }) => (
@@ -96,14 +98,23 @@ export default function Sidebar() {
                 ))}
             </nav>
 
-            <button
-                onClick={() => dispatch(toggleTheme())}
-                className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-4 transition-all hover:scale-105 active:scale-95"
-                style={{ background: 'var(--bg-hover)', color: 'var(--text)', border: '1px solid var(--border)' }}
-                title={theme === 'dark' ? 'Світла тема' : 'Темна тема'}
-            >
-                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+            <div className="flex items-center justify-center gap-2 mb-4">
+                <button
+                    onClick={() => dispatch(toggleTheme())}
+                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                    style={{ background: 'var(--bg-hover)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                    title={theme === 'dark' ? 'Світла тема' : 'Темна тема'}
+                >
+                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                </button>
+                <button
+                    onClick={() => dispatch(toggleLanguage())}
+                    className="h-10 px-3 rounded-full flex items-center justify-center text-xs font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                    style={{ background: 'var(--bg-hover)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                >
+                    {lang === 'uk' ? 'Укр' : 'Eng'}
+                </button>
+            </div>
 
             <div className="border-t pt-4" style={{ borderColor: 'var(--border)' }}>
                 {isAuth && user ? (
@@ -151,8 +162,8 @@ export default function Sidebar() {
                         {width > 200 && (
                             <NavLink
                                 to="/register"
-                                className="text-center py-2 rounded-lg text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
-                                style={{ background: 'var(--accent)', color: '#000' }}
+                                className="text-center py-2 rounded-lg text-sm font-bold transition-all text-black"
+                                style={{ background: 'var(--accent)' }}
                             >
                                 Реєстрація
                             </NavLink>
@@ -164,10 +175,9 @@ export default function Sidebar() {
             <div
                 onMouseDown={startResizing}
                 className={`absolute top-0 right-0 w-1.5 h-full transition-colors duration-200 z-50 ${
-                    isResizing
-                        ? 'bg-[var(--accent)] cursor-grabbing'
-                        : 'bg-transparent hover:bg-[var(--border)] cursor-grab'
+                    isResizing ? 'cursor-grabbing' : 'bg-transparent cursor-grab'
                 }`}
+                style={{ backgroundColor: isResizing ? 'var(--accent)' : undefined }}
             />
         </aside>
     )
