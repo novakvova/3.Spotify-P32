@@ -51,7 +51,7 @@ export default function LoginPage() {
     const [loginWithPassword, { isLoading: isLoggingInPassword }] =
         useLoginWithPasswordMutation()
 
-    const [view, setView] = useState<'email' | 'password' | 'code'>('password')
+    const [view, setView] = useState<'email' | 'password' | 'code'>('email')
     const [showPassword, setShowPassword] = useState(false)
     const [codeResentMessage, setCodeResentMessage] = useState('')
 
@@ -283,48 +283,23 @@ export default function LoginPage() {
             >
                 <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '70px' }}>
                     <Link to="/" className="shrink-0" style={{ width: '60px', height: '60px' }}>
-                        {/*   <img
+                        <img
                             src={logoSonoraIcon}
                             alt="Sonora"
                             className="w-full h-full object-cover block"
-                        />*/}
+                        />
                     </Link>
 
-                    <div
-                        className="w-full relative flex items-center justify-center"
-                        style={{ marginTop: '20px' }}
+                    <h1
+                        className="font-semibold text-center text-white w-full"
+                        style={{
+                            fontSize: '30px',
+                            lineHeight: '50px',
+                            marginTop: '20px',
+                        }}
                     >
-                        <button
-                            type="button"
-                            onClick={() => {
-                                clearErrors()
-                                clearCodeErrors()
-                                setCodeResentMessage('')
-                                setView('password')
-                            }}
-                            aria-label="Назад"
-                            className="cursor-pointer flex items-center justify-center"
-                            style={{
-                                position: 'absolute',
-                                left: 0,
-                                top: '13px',
-                                width: '24px',
-                                height: '24px',
-                            }}
-                        >
-                            <img src={backArrowIcon} alt="" className="block" />
-                        </button>
-
-                        <h1
-                            className="font-semibold text-center text-white"
-                            style={{
-                                fontSize: '30px',
-                                lineHeight: '50px',
-                            }}
-                        >
-                            Вхід за кодом
-                        </h1>
-                    </div>
+                        Раді бачити вас знову!
+                    </h1>
 
                     <form
                         onSubmit={handleEmailContinue}
@@ -402,11 +377,56 @@ export default function LoginPage() {
                                 {isSendingCode ? 'Зачекайте...' : 'Далі'}
                             </button>
 
-                            
+                            <p
+                                className="font-bold text-center text-white"
+                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                            >
+                                або
+                            </p>
                         </div>
                     </form>
 
-                    
+                    <div className="w-full flex flex-col" style={{ marginTop: '40px', gap: '15px' }}>
+                        <button
+                            type="button"
+                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
+                            style={{
+                                height: '55px',
+                                borderRadius: '35px',
+                                paddingLeft: '20px',
+                                paddingRight: '20px',
+                                fontSize: '16px',
+                                lineHeight: '23px',
+                            }}
+                        >
+                            <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
+                                <img src={googleIcon} alt="Google" className="block" />
+                            </span>
+                            <span className="flex-1 text-center">
+                                Зареєструватися через
+                                <br />
+                                Google
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
+                            style={{
+                                height: '55px',
+                                borderRadius: '35px',
+                                paddingLeft: '20px',
+                                paddingRight: '20px',
+                                fontSize: '16px',
+                                lineHeight: '23px',
+                            }}
+                        >
+                            <span className="shrink-0" style={{ width: '20px', height: '22px' }}>
+                                <img src={appleIcon} alt="Apple" className="block" />
+                            </span>
+                            <span className="flex-1 text-center">Вхід через Apple</span>
+                        </button>
+                    </div>
 
                     <div
                         className="w-full flex flex-col items-center text-center"
@@ -440,30 +460,46 @@ export default function LoginPage() {
 
         return (
             <div
+                key="password-view"
                 className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
                 style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
             >
-                <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '70px' }}>
-                    <Link to="/" className="shrink-0" style={{ width: '60px', height: '60px' }}>
-                        <img
-                            src={logoSonoraIcon}
-                            alt="Sonora"
-                            className="w-full h-full object-cover block"
-                        />
-                    </Link>
+                <div className="w-full flex flex-col items-start" style={{ maxWidth: '355px', marginTop: '110px' }}>
+                    <div className="w-full relative flex items-start">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                clearErrors()
+                                setView('code')
+                            }}
+                            aria-label="Назад"
+                            className="cursor-pointer flex items-center justify-center"
+                            style={{
+                                position: 'absolute',
+                                left: '-42px',
+                                top: '4px',
+                                width: '24px',
+                                height: '24px',
+                            }}
+                        >
+                            <img src={backArrowIcon} alt="" className="block" />
+                        </button>
 
-                    <h1
-                        className="font-semibold text-center text-white w-full"
-                        style={{ fontSize: '30px', lineHeight: '50px', marginTop: '20px' }}
-                    >
-                        Раді бачити вас знову!
-                    </h1>
+                        <h1
+                            key="password-heading"
+                            data-login-heading="password"
+                            className="font-bold text-white"
+                            style={{ fontSize: '20px', lineHeight: '30px' }}
+                        >
+                            Увійти за допомогою пароля
+                        </h1>
+                    </div>
 
                     <form
                         onSubmit={handleSubmit(onPasswordSubmit)}
                         noValidate
                         className="w-full flex flex-col items-start"
-                        style={{ marginTop: '36px' }}
+                        style={{ marginTop: '28px' }}
                     >
                         <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
                             <label
@@ -567,17 +603,7 @@ export default function LoginPage() {
                             )}
                         </div>
 
-                        <div className="w-full flex justify-end" style={{ marginTop: '10px' }}>
-                            <Link
-                                to="/forgot-password"
-                                className="font-semibold text-white hover:underline"
-                                style={{ fontSize: '14px', lineHeight: '18px' }}
-                            >
-                                Забули пароль?
-                            </Link>
-                        </div>
-
-                        <div className="w-full flex justify-center items-center" style={{ marginTop: '32px' }}>
+                        <div className="w-full flex justify-center" style={{ marginTop: '36px' }}>
                             <button
                                 type="submit"
                                 disabled={isLoggingInPassword}
@@ -591,87 +617,40 @@ export default function LoginPage() {
                             >
                                 {isLoggingInPassword ? 'Вхід...' : 'Увійти'}
                             </button>
-                            
                         </div>
-                        <p
-                            className="font-bold text-center text-white w-full"
-                            style={{ fontSize: '16px', lineHeight: '25px', marginTop: '28px' }}
-                        >
-                            або
-                        </p>
-                        <div className="w-full flex flex-col" style={{ marginTop: '40px', gap: '15px' }}>
-                        <button
-                            type="button"
-                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
-                            style={{
-                                height: '55px',
-                                borderRadius: '35px',
-                                paddingLeft: '20px',
-                                paddingRight: '20px',
-                                fontSize: '16px',
-                                lineHeight: '23px',
-                            }}
-                        >
-                            <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
-                                <img src={googleIcon} alt="Google" className="block" />
-                            </span>
-                            <span className="flex-1 text-center">
-                                Зареєструватися через
-                                <br />
-                                Google
-                            </span>
-                        </button>
 
-                        <button
-                            type="button"
-                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
-                            style={{
-                                height: '55px',
-                                borderRadius: '35px',
-                                paddingLeft: '20px',
-                                paddingRight: '20px',
-                                fontSize: '16px',
-                                lineHeight: '23px',
-                            }}
-                        >
-                            <span className="shrink-0" style={{ width: '20px', height: '22px' }}>
-                                <img src={appleIcon} alt="Apple" className="block" />
-                            </span>
-                            <span className="flex-1 text-center">Вхід через Apple</span>
-                        </button>
-                    </div>
-                        <div className="w-full flex justify-center" style={{ marginTop: '56px' }}>
+                        {/* Блок посилань знизу: спочатку "Увійти без пароля", а під ним "Забули пароль?" */}
+                        <div className="w-full flex flex-col items-center" style={{ marginTop: '40px', gap: '16px' }}>
                             <button
                                 type="button"
-                                onClick={() => {
-                                    clearErrors()
+                                onClick={async () => {
                                     clearCodeErrors()
                                     setCodeResentMessage('')
-                                    setView('email')
+                                    const trimmed = watch('email').trim()
+                                    if (trimmed) {
+                                        try {
+                                            await loginEmail({ email: trimmed }).unwrap()
+                                        } catch {
+                                            setCodeResentMessage('')
+                                        }
+                                    }
+                                    setView('code')
                                 }}
                                 className="cursor-pointer font-bold text-white text-center hover:underline"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
                                 Увійти без пароля
                             </button>
+
+                            <Link
+                                to="/forgot-password"
+                                className="font-bold text-white text-center hover:underline"
+                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                            >
+                                Забули пароль?
+                            </Link>
                         </div>
                     </form>
-
-                    <div
-                        className="w-full flex flex-col items-center text-center"
-                        style={{ marginTop: '40px', gap: '16px' }}
-                    >
-                        <p className="font-normal text-white" style={{ fontSize: '16px', lineHeight: '30px' }}>
-                            Немає акаунту?
-                        </p>
-                        <Link
-                            to="/register"
-                            className="font-bold text-white hover:underline"
-                            style={{ fontSize: '16px', lineHeight: '25px' }}
-                        >
-                            Зареєструватися
-                        </Link>
-                    </div>
                 </div>
             </div>
         )
