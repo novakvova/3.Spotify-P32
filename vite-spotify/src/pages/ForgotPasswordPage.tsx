@@ -1,8 +1,10 @@
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import {
     useForgotPasswordMutation,
     useResetPasswordMutation,
@@ -18,34 +20,35 @@ import errorIcon from '../assets/auth/error-icon.svg'
 const PASSWORD_MIN = 10
 const PASSWORD_MAX = 72
 
-const emailSchema = z.object({
-    email: z
-        .string()
-        .trim()
-        .min(1, 'Введіть коректну адресу електронної пошти')
-        .email('Введіть коректну адресу електронної пошти'),
-})
-
-const passwordSchema = z
-    .object({
-        password: z
-            .string()
-            .min(PASSWORD_MIN, 'Пароль має містити щонайменше 10 символів')
-            .max(PASSWORD_MAX, 'Пароль занадто довгий')
-            .refine((val) => /\p{L}/u.test(val), 'Пароль має містити принаймні 1 літеру')
-            .refine(
-                (val) => /[\d\p{P}\p{S}]/u.test(val),
-                'Пароль має містити принаймні 1 число або 1 спеціальний символ'
-            ),
-        confirmPassword: z.string().min(1, 'Підтвердіть пароль'),
+function buildEmailSchema(t: TFunction) {
+    const message = t('forgotPassword.validation.emailInvalid')
+    return z.object({
+        email: z.string().trim().min(1, message).email(message),
     })
-    .refine((values) => values.password === values.confirmPassword, {
-        path: ['confirmPassword'],
-        message: 'Паролі не збігаються',
-    })
+}
 
-type EmailFormValues = z.infer<typeof emailSchema>
-type PasswordFormValues = z.infer<typeof passwordSchema>
+function buildPasswordSchema(t: TFunction) {
+    return z
+        .object({
+            password: z
+                .string()
+                .min(PASSWORD_MIN, t('forgotPassword.validation.passwordMin'))
+                .max(PASSWORD_MAX, t('forgotPassword.validation.passwordMax'))
+                .refine((val) => /\p{L}/u.test(val), t('forgotPassword.validation.passwordLetter'))
+                .refine(
+                    (val) => /[\d\p{P}\p{S}]/u.test(val),
+                    t('forgotPassword.validation.passwordDigitOrSpecial')
+                ),
+            confirmPassword: z.string().min(1, t('forgotPassword.validation.confirmRequired')),
+        })
+        .refine((values) => values.password === values.confirmPassword, {
+            path: ['confirmPassword'],
+            message: t('forgotPassword.validation.mismatch'),
+        })
+}
+
+type EmailFormValues = z.infer<ReturnType<typeof buildEmailSchema>>
+type PasswordFormValues = z.infer<ReturnType<typeof buildPasswordSchema>>
 
 interface ApiErrorShape {
     status?: number
@@ -97,11 +100,12 @@ function ResetLogo() {
 }
 
 function BackButton({ onClick }: { onClick: () => void }) {
+    const { t } = useTranslation()
     return (
         <button
             type="button"
             onClick={onClick}
-            aria-label="Назад"
+            aria-label={t('forgotPassword.back')}
             className="cursor-pointer flex items-center justify-center"
             style={{ width: '24px', height: '24px' }}
         >
@@ -111,13 +115,14 @@ function BackButton({ onClick }: { onClick: () => void }) {
 }
 
 function LoginLink({ marginTop }: { marginTop: string }) {
+    const { t } = useTranslation()
     return (
         <Link
             to="/login"
             className="font-bold text-white text-center hover:underline"
             style={{ fontSize: '16px', lineHeight: '25px', marginTop }}
         >
-            Згадали пароль?
+            {t('forgotPassword.forgotLogin')}
         </Link>
     )
 }
@@ -125,6 +130,10 @@ function LoginLink({ marginTop }: { marginTop: string }) {
 export default function ForgotPasswordPage() {
     const navigate = useNavigate()
     const { token } = useParams<{ token: string }>()
+    const { t } = useTranslation()
+
+    const emailSchema = useMemo(() => buildEmailSchema(t), [t])
+    const passwordSchema = useMemo(() => buildPasswordSchema(t), [t])
 
     const [linkSent, setLinkSent] = useState(false)
     const [sentEmail, setSentEmail] = useState('')
@@ -169,7 +178,7 @@ export default function ForgotPasswordPage() {
             setLinkSent(true)
         } catch (err) {
             emailForm.setError('email', {
-                message: apiMessage(err, 'Не вдалося надіслати лист. Спробуйте ще раз'),
+                message: apiMessage(err, t('forgotPassword.errors.sendFailed')),
             })
         }
     }
@@ -180,9 +189,9 @@ export default function ForgotPasswordPage() {
         try {
             const response = await requestLink({ email: sentEmail }).unwrap()
             setDevLink(response.devLink ?? null)
-            setSentNotice('Лист надіслано повторно')
+            setSentNotice(t('forgotPassword.resent'))
         } catch (err) {
-            setSentError(apiMessage(err, 'Не вдалося надіслати лист. Спробуйте ще раз'))
+            setSentError(apiMessage(err, t('forgotPassword.errors.sendFailed')))
         }
     }
 
@@ -199,15 +208,12 @@ export default function ForgotPasswordPage() {
             if (parsed.status === 401 || parsed.data?.code === 'RESET_TOKEN_INVALID') {
                 passwordForm.setError('root', {
                     type: 'token',
-                    message: apiMessage(
-                        err,
-                        'Посилання для відновлення паролю недійсне або прострочене. Запросіть нове посилання'
-                    ),
+                    message: apiMessage(err, t('forgotPassword.errors.resetTokenInvalid')),
                 })
                 return
             }
             passwordForm.setError('root', {
-                message: apiMessage(err, 'Не вдалося змінити пароль. Спробуйте ще раз'),
+                message: apiMessage(err, t('forgotPassword.errors.resetFailed')),
             })
         }
     }
@@ -236,15 +242,14 @@ export default function ForgotPasswordPage() {
                             className="font-semibold text-white"
                             style={{ fontSize: '30px', lineHeight: '42px', marginTop: '24px' }}
                         >
-                            Пароль оновлено!
+                            {t('forgotPassword.doneTitle')}
                         </h1>
 
                         <p
                             className="text-white"
                             style={{ fontSize: '16px', lineHeight: '24px', marginTop: '16px' }}
                         >
-                            Ваш пароль успішно змінено. Тепер ви можете увійти у свій
-                            обліковий запис
+                            {t('forgotPassword.doneText')}
                         </p>
 
                         <button
@@ -259,7 +264,7 @@ export default function ForgotPasswordPage() {
                                 marginTop: '36px',
                             }}
                         >
-                            Повернутися до входу
+                            {t('forgotPassword.backToLogin')}
                         </button>
                     </div>
                 </div>
@@ -287,15 +292,8 @@ export default function ForgotPasswordPage() {
                         className="font-semibold text-center text-white w-full"
                         style={{ fontSize: '30px', lineHeight: '50px', marginTop: '20px' }}
                     >
-                        Створіть новий пароль
+                        {t('forgotPassword.newPasswordTitle')}
                     </h1>
-
-                    {/*<p
-                        className="text-center text-white"
-                        style={{ fontSize: '15px', lineHeight: '22px', marginTop: '12px' }}
-                    >
-                        Придумайте новий пароль для свого акаунта
-                    </p>*/}
 
                     {tokenExpired ? (
                         <div
@@ -315,7 +313,7 @@ export default function ForgotPasswordPage() {
                                     marginTop: '24px',
                                 }}
                             >
-                                Запросити нове посилання
+                                {t('forgotPassword.requestNewLink')}
                             </button>
                         </div>
                     ) : (
@@ -334,7 +332,7 @@ export default function ForgotPasswordPage() {
                                     className="font-bold text-white"
                                     style={{ fontSize: '16px', lineHeight: '25px' }}
                                 >
-                                    Створіть новий пароль
+                                    {t('forgotPassword.passwordLabel')}
                                 </label>
 
                                 <div
@@ -368,7 +366,9 @@ export default function ForgotPasswordPage() {
                                         className="cursor-pointer shrink-0 ml-2 flex items-center justify-center"
                                         style={{ width: '25px', height: '25px' }}
                                         aria-label={
-                                            showPassword ? 'Сховати пароль' : 'Показати пароль'
+                                            showPassword
+                                                ? t('forgotPassword.hidePassword')
+                                                : t('forgotPassword.showPassword')
                                         }
                                     >
                                         <img
@@ -388,13 +388,13 @@ export default function ForgotPasswordPage() {
                                     style={{ gap: '6px', marginTop: '2px' }}
                                 >
                                     <Requirement fulfilled={hasValidLength}>
-                                        Щонайменше 10 символів
+                                        {t('forgotPassword.req.length')}
                                     </Requirement>
                                     <Requirement fulfilled={hasLetter}>
-                                        Принаймні 1 літера
+                                        {t('forgotPassword.req.letter')}
                                     </Requirement>
                                     <Requirement fulfilled={hasDigitOrSpecial}>
-                                        Принаймні 1 число або спеціальний символ
+                                        {t('forgotPassword.req.digitOrSpecial')}
                                     </Requirement>
                                 </div>
                             </div>
@@ -408,7 +408,7 @@ export default function ForgotPasswordPage() {
                                     className="font-bold text-white"
                                     style={{ fontSize: '16px', lineHeight: '25px' }}
                                 >
-                                    Повторіть пароль
+                                    {t('forgotPassword.confirmLabel')}
                                 </label>
 
                                 <div
@@ -437,8 +437,8 @@ export default function ForgotPasswordPage() {
                                         style={{ width: '25px', height: '25px' }}
                                         aria-label={
                                             showConfirmPassword
-                                                ? 'Сховати пароль'
-                                                : 'Показати пароль'
+                                                ? t('forgotPassword.hidePassword')
+                                                : t('forgotPassword.showPassword')
                                         }
                                     >
                                         <img
@@ -474,8 +474,8 @@ export default function ForgotPasswordPage() {
                                     }}
                                 >
                                     {isResettingPassword
-                                        ? 'Збереження...'
-                                        : 'Змінити пароль'}
+                                        ? t('forgotPassword.saving')
+                                        : t('forgotPassword.changePassword')}
                                 </button>
                             </div>
                         </form>
@@ -518,15 +518,14 @@ export default function ForgotPasswordPage() {
                             className="font-semibold text-white"
                             style={{ fontSize: '30px', lineHeight: '42px', marginTop: '24px' }}
                         >
-                            Перевірте свою пошту
+                            {t('forgotPassword.checkEmailTitle')}
                         </h1>
 
                         <p
                             className="text-white"
                             style={{ fontSize: '16px', lineHeight: '24px', marginTop: '16px' }}
                         >
-                            Ми надіслали посилання для відновлення паролю на вашу
-                            електронну адресу
+                            {t('forgotPassword.checkEmailText')}
                         </p>
 
                         {sentNotice && (
@@ -557,7 +556,7 @@ export default function ForgotPasswordPage() {
                                 marginTop: '36px',
                             }}
                         >
-                            Повернутися до входу
+                            {t('forgotPassword.backToLogin')}
                         </button>
 
                         <button
@@ -572,7 +571,7 @@ export default function ForgotPasswordPage() {
                                 marginTop: '28px',
                             }}
                         >
-                            {isRequestingLink ? 'Надсилання...' : 'Надіслати ще раз'}
+                            {isRequestingLink ? t('forgotPassword.sending') : t('forgotPassword.resendLink')}
                             {!isRequestingLink && <ChevronRight size={18} />}
                         </button>
 
@@ -587,7 +586,7 @@ export default function ForgotPasswordPage() {
                                     marginTop: '14px',
                                 }}
                             >
-                                DEV: відкрити посилання
+                                {t('forgotPassword.devLink')}
                             </a>
                         )}
                     </div>
@@ -618,7 +617,7 @@ export default function ForgotPasswordPage() {
                         className="font-semibold text-center text-white w-full"
                         style={{ fontSize: '30px', lineHeight: '50px', marginTop: '20px' }}
                     >
-                        Відновити пароль
+                        {t('forgotPassword.title')}
                     </h1>
 
                     <form
@@ -633,7 +632,7 @@ export default function ForgotPasswordPage() {
                                 className="font-bold text-white"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                Електронна пошта
+                                {t('forgotPassword.emailLabel')}
                             </label>
 
                             <div
@@ -678,8 +677,7 @@ export default function ForgotPasswordPage() {
                                     color: '#b3a1c3',
                                 }}
                             >
-                                Введіть свою електронну пошту і ми надішлемо посилання для
-                                скидання паролю
+                                {t('forgotPassword.emailHint')}
                             </p>
 
                             <ErrorText message={emailForm.formState.errors.email?.message} />
@@ -697,7 +695,7 @@ export default function ForgotPasswordPage() {
                                 marginTop: '36px',
                             }}
                         >
-                            {isRequestingLink ? 'Надсилання...' : 'Надіслати'}
+                            {isRequestingLink ? t('forgotPassword.sending') : t('forgotPassword.send')}
                         </button>
                     </form>
 
@@ -705,7 +703,7 @@ export default function ForgotPasswordPage() {
                         className="font-bold text-center text-white w-full"
                         style={{ fontSize: '16px', lineHeight: '25px', marginTop: '28px' }}
                     >
-                        або
+                        {t('forgotPassword.or')}
                     </p>
 
                     <LoginLink marginTop="40px" />

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FAQ } from '../components/FAQ';
 import { Header } from "../components/Header.tsx";
 import duohero from '../assets/home/duo-hero.png';
@@ -12,14 +13,15 @@ const CheckIcon: React.FC = () => (
     </svg>
 );
 
+const WHY_ICONS_KEYS = [0, 1, 2, 3] as const;
+const EXISTING_KEYS = [0, 1, 2] as const;
+const STEP_KEYS = [0, 1, 2] as const;
+const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4', 'q5'] as const;
+
 export const DuoPage: React.FC = () => {
-    const faqList = [
-        { question: "Ми отримаємо спільний акаунт чи окремий для кожного?" },
-        { question: "Учасник із Premium-підпискою Premium — як зміниться збережена музика?" },
-        { question: "Як виставляється рахунок? Потрібно розділити вартість?" },
-        { question: "Можна скасувати коли завгодно?" },
-        { question: "Які умови доступу до часу для прослуховування аудіокниг дається для менеджерів і учасників підписки Premium Duo?" }
-    ];
+    const { t } = useTranslation();
+
+    const faqList = FAQ_KEYS.map((key) => ({ question: t(`duo.faq.${key}`) }));
 
     return (
         <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
@@ -29,14 +31,14 @@ export const DuoPage: React.FC = () => {
             <section className="bg-[#6B309B] text-white text-center py-20 px-4">
                 <div className="max-w-3xl mx-auto space-y-5">
                     <h1 className="font-['Inter'] text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-                        Premium Duo. Музика для двох
+                        {t('duo.heroTitle')}
                     </h1>
                     <p className="text-sm sm:text-base font-medium opacity-90 max-w-xl mx-auto leading-relaxed">
-                        2 акаунти Premium для двох осіб, що мешкають разом. 6.49 USD на місяць. Можна скасувати будь-коли.
+                        {t('duo.heroText')}
                     </p>
                     <div className="pt-2">
                         <button className="bg-white text-[#6B309B] font-extrabold py-3.5 px-24 rounded-full hover:bg-gray-50 transition shadow-md cursor-pointer text-base">
-                            Почати
+                            {t('duo.start')}
                         </button>
                     </div>
                 </div>
@@ -46,18 +48,18 @@ export const DuoPage: React.FC = () => {
             <section className="sm:px-12 max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-16">
                 <div className="max-w-lg space-y-5 text-left">
                     <h2 className="font-['Inter'] text-3xl sm:text-4xl font-extrabold text-[#120826] tracking-tight leading-tight">
-                        Слухайте разом.<br />Слухайте окремо.
+                        {t('duo.togetherTitle1')}<br />{t('duo.togetherTitle2')}
                     </h2>
                     <p className="text-[#120826] text-base sm:text-lg font-bold leading-snug">
-                        Уже немає потреби користуватись акаунтом по черзі.<br />
-                        Можна насолоджуватися своєю музикою завдяки двом окремим акаунтам.
+                        {t('duo.togetherText1')}<br />
+                        {t('duo.togetherText2')}
                     </p>
                 </div>
 
                 <div className="w-full md:w-auto flex justify-center shrink-0">
                     <img
                         src={duohero}
-                        alt="Duo hands"
+                        alt={t('duo.imgAlt')}
                         className="w-full max-w-[340px] sm:max-w-[380px] object-contain"
                     />
                 </div>
@@ -66,9 +68,9 @@ export const DuoPage: React.FC = () => {
             {/* Banner Section */}
             <section className="bg-[#6B309B] text-white text-center py-10 px-4">
                 <div className="max-w-4xl mx-auto space-y-2">
-                    <h2 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold tracking-tight">Найвигідніше для двох</h2>
+                    <h2 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold tracking-tight">{t('duo.bannerTitle')}</h2>
                     <p className="text-sm sm:text-base font-medium opacity-90">
-                        Два окремих акаунти Premium для пари, що живе разом, лише за 6.49 $ на місяць
+                        {t('duo.bannerText')}
                     </p>
                 </div>
             </section>
@@ -79,48 +81,32 @@ export const DuoPage: React.FC = () => {
 
                 <div className="space-y-6 md:pr-8">
                     <h3 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold text-[#120826] tracking-tight leading-snug">
-                        Навіщо переходити на<br />Premium Duo?
+                        {t('duo.whyTitle1')}<br />{t('duo.whyTitle2')}
                     </h3>
                     <ul className="space-y-5 text-sm sm:text-base text-gray-800">
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Завантажуйте музику. Слухайте її будь-де</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Музика без реклами</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Пропускайте треки без обмежень. Просто натисніть "Далі"</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Слухайте будь-які треки. Навіть на мобільному пристрої</span>
-                        </li>
+                        {WHY_ICONS_KEYS.map((i) => (
+                            <li key={i} className="flex items-start gap-4">
+                                <CheckIcon />
+                                <span>{t(`duo.whyItems.${i}`)}</span>
+                            </li>
+                        ))}
                     </ul>
                 </div>
 
                 <div className="space-y-6 md:pl-8">
                     <h3 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold text-[#120826] tracking-tight leading-snug">
-                        Уже маєте підписку<br />Sonora Premium?
+                        {t('duo.existingTitle1')}<br />{t('duo.existingTitle2')}
                     </h3>
                     <p className="text-sm sm:text-base text-gray-700">
-                        Якщо ви перейдете на Duo, буде збережено весь ваш контент, наведений нижче.
+                        {t('duo.existingText')}
                     </p>
                     <ul className="space-y-5 text-sm sm:text-base text-gray-800">
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Музика</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Плейлисти</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Рекомендації</span>
-                        </li>
+                        {EXISTING_KEYS.map((i) => (
+                            <li key={i} className="flex items-start gap-4">
+                                <CheckIcon />
+                                <span>{t(`duo.existingItems.${i}`)}</span>
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </section>
@@ -128,54 +114,38 @@ export const DuoPage: React.FC = () => {
             {/* Dark Middle Banner */}
             <section className="bg-[#280A3A] text-white py-16 px-8 flex flex-col md:flex-row items-center justify-center gap-12">
                 <div className="w-full md:w-auto flex justify-center">
-                    <img src={duofeature} alt="Duo couple" className="w-full max-w-[360px] object-contain" />
+                    <img src={duofeature} alt={t('duo.darkImgAlt')} className="w-full max-w-[360px] object-contain" />
                 </div>
                 <div className="max-w-md text-left space-y-3">
-                    <h2 className="font-['Inter'] text-3xl font-extrabold tracking-tight">Що таке Premium Duo?</h2>
+                    <h2 className="font-['Inter'] text-3xl font-extrabold tracking-tight">{t('duo.darkTitle')}</h2>
                     <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
-                        Premium Duo — підписка зі знижкою для двох людей, які живуть разом.
+                        {t('duo.darkText')}
                     </p>
                 </div>
             </section>
 
             {/* Cancel Anytime Section */}
             <section className="py-14 text-center px-4">
-                <h2 className="font-['Inter'] text-3xl font-extrabold mb-2 text-[#120826] tracking-tight">Можна скасувати будь-коли</h2>
-                <p className="text-gray-500 text-sm">Місячну підписку можна скасувати онлайн будь-коли</p>
+                <h2 className="font-['Inter'] text-3xl font-extrabold mb-2 text-[#120826] tracking-tight">{t('duo.cancelTitle')}</h2>
+                <p className="text-gray-500 text-sm">{t('duo.cancelText')}</p>
             </section>
 
             {/* Steps Section */}
             <section className="bg-[#6B309B] text-white py-20 px-6 text-center">
                 <h2 className="font-['Inter'] text-3xl sm:text-4xl font-extrabold mb-16 tracking-tight">
-                    Отримати підписку Premium Duo просто
+                    {t('duo.stepsTitle')}
                 </h2>
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-[#E869CA] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
-                            1
+                    {STEP_KEYS.map((i) => (
+                        <div key={i} className="flex flex-col items-center space-y-4">
+                            <div className="w-16 h-16 bg-[#E869CA] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
+                                {i + 1}
+                            </div>
+                            <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
+                                {t(`duo.steps.${i}`)}
+                            </p>
                         </div>
-                        <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
-                            Приєднайтеся до підписки Duo, зареєструвавшись або увійшовши в наявний акаунт
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-[#E869CA] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
-                            2
-                        </div>
-                        <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
-                            Запросіть співмешканця приєднатися до Duo за допомогою електронного листа, повідомлення у WhatsApp або іншого способу
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-[#E869CA] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
-                            3
-                        </div>
-                        <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
-                            Співмешканець прийме запрошення вдома, підтверджує адресу — і ви обоє отримаєте підписку Duo
-                        </p>
-                    </div>
+                    ))}
                 </div>
             </section>
 
