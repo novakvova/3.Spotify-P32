@@ -1,25 +1,22 @@
-import { useRef, useState, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, type ReactNode } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
     useForgotPasswordMutation,
     useResetPasswordMutation,
-    useVerifyResetCodeMutation,
 } from '../services/auth/authApi'
+import { ChevronRight, CircleCheck, Mail } from 'lucide-react'
 
 import logoSonoraIcon from '../assets/auth/logo-sonora-icon.png'
 import eyeClosedIcon from '../assets/auth/eye-closed.svg'
 import eyeOpenIcon from '../assets/auth/eye-open.svg'
 import backArrowIcon from '../assets/auth/back-arrow.svg'
 import errorIcon from '../assets/auth/error-icon.svg'
-import checkCircleIcon from '../assets/auth/check-circle.svg'
 
 const PASSWORD_MIN = 10
 const PASSWORD_MAX = 72
-const CODE_LENGTH = 6
-const CODE_ERROR = 'Цей код недійсний. Перевірте код і повторіть спробу'
 
 const emailSchema = z.object({
     email: z
@@ -27,15 +24,6 @@ const emailSchema = z.object({
         .trim()
         .min(1, 'Введіть коректну адресу електронної пошти')
         .email('Введіть коректну адресу електронної пошти'),
-})
-
-const codeSchema = z.object({
-    d0: z.string().regex(/^\d$/, CODE_ERROR),
-    d1: z.string().regex(/^\d$/, CODE_ERROR),
-    d2: z.string().regex(/^\d$/, CODE_ERROR),
-    d3: z.string().regex(/^\d$/, CODE_ERROR),
-    d4: z.string().regex(/^\d$/, CODE_ERROR),
-    d5: z.string().regex(/^\d$/, CODE_ERROR),
 })
 
 const passwordSchema = z
@@ -57,12 +45,7 @@ const passwordSchema = z
     })
 
 type EmailFormValues = z.infer<typeof emailSchema>
-type CodeFormValues = z.infer<typeof codeSchema>
 type PasswordFormValues = z.infer<typeof passwordSchema>
-
-type ResetStep = 'email' | 'code' | 'password' | 'done'
-
-const CODE_KEYS: Array<keyof CodeFormValues> = ['d0', 'd1', 'd2', 'd3', 'd4', 'd5']
 
 interface ApiErrorShape {
     status?: number
@@ -84,7 +67,7 @@ function ResetShell({ children }: { children: ReactNode }) {
             className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
             style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
         >
-            {children}
+            <div className="my-auto w-full flex flex-col items-center">{children}</div>
         </div>
     )
 }
@@ -101,6 +84,18 @@ function ErrorText({ message }: { message?: string }) {
     )
 }
 
+function ResetLogo() {
+    return (
+        <Link to="/" className="shrink-0" style={{ width: '60px', height: '60px' }}>
+            <img
+                src={logoSonoraIcon}
+                alt="Sonora"
+                className="w-full h-full object-cover block"
+            />
+        </Link>
+    )
+}
+
 function BackButton({ onClick }: { onClick: () => void }) {
     return (
         <button
@@ -108,43 +103,44 @@ function BackButton({ onClick }: { onClick: () => void }) {
             onClick={onClick}
             aria-label="Назад"
             className="cursor-pointer flex items-center justify-center"
-            style={{
-                position: 'absolute',
-                left: '-42px',
-                top: '4px',
-                width: '24px',
-                height: '24px',
-            }}
+            style={{ width: '24px', height: '24px' }}
         >
             <img src={backArrowIcon} alt="" className="block" />
         </button>
     )
 }
 
+function LoginLink({ marginTop }: { marginTop: string }) {
+    return (
+        <Link
+            to="/login"
+            className="font-bold text-white text-center hover:underline"
+            style={{ fontSize: '16px', lineHeight: '25px', marginTop }}
+        >
+            Згадали пароль?
+        </Link>
+    )
+}
+
 export default function ForgotPasswordPage() {
     const navigate = useNavigate()
+    const { token } = useParams<{ token: string }>()
 
-    const [step, setStep] = useState<ResetStep>('email')
-    const [email, setEmail] = useState('')
-    const [resetToken, setResetToken] = useState('')
+    const [linkSent, setLinkSent] = useState(false)
+    const [sentEmail, setSentEmail] = useState('')
+    const [devLink, setDevLink] = useState<string | null>(null)
+    const [sentNotice, setSentNotice] = useState('')
+    const [sentError, setSentError] = useState('')
+    const [done, setDone] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const [codeNotice, setCodeNotice] = useState('')
-    const [devCode, setDevCode] = useState<string | null>(null)
 
-    const [requestCode, { isLoading: isRequestingCode }] = useForgotPasswordMutation()
-    const [verifyCode, { isLoading: isVerifyingCode }] = useVerifyResetCodeMutation()
+    const [requestLink, { isLoading: isRequestingLink }] = useForgotPasswordMutation()
     const [resetPassword, { isLoading: isResettingPassword }] = useResetPasswordMutation()
 
     const emailForm = useForm<EmailFormValues>({
         resolver: zodResolver(emailSchema),
         defaultValues: { email: '' },
-        mode: 'onSubmit',
-    })
-
-    const codeForm = useForm<CodeFormValues>({
-        resolver: zodResolver(codeSchema),
-        defaultValues: { d0: '', d1: '', d2: '', d3: '', d4: '', d5: '' },
         mode: 'onSubmit',
     })
 
@@ -154,147 +150,58 @@ export default function ForgotPasswordPage() {
         mode: 'onSubmit',
     })
 
-    const codeInputRefs = [
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-    ]
-
     const passwordValue = passwordForm.watch('password') || ''
     const hasLetter = /\p{L}/u.test(passwordValue)
     const hasDigitOrSpecial = /[\d\p{P}\p{S}]/u.test(passwordValue)
-    const hasValidLength = passwordValue.length >= PASSWORD_MIN && passwordValue.length <= PASSWORD_MAX
-
-    const fillCodeFromDev = (code: string | null | undefined) => {
-        if (!code) return
-        code.split('').slice(0, CODE_LENGTH).forEach((digit, index) => {
-            codeForm.setValue(CODE_KEYS[index], digit)
-        })
-    }
-
-    const goToEmailStep = () => {
-        codeForm.reset()
-        passwordForm.reset()
-        codeForm.clearErrors()
-        passwordForm.clearErrors()
-        setCodeNotice('')
-        setDevCode(null)
-        setStep('email')
-    }
+    const hasValidLength =
+        passwordValue.length >= PASSWORD_MIN && passwordValue.length <= PASSWORD_MAX
 
     const onEmailSubmit = async (values: EmailFormValues) => {
         const trimmed = values.email.trim()
         emailForm.clearErrors()
 
         try {
-            const response = await requestCode({ email: trimmed }).unwrap()
-            setEmail(trimmed)
-            setDevCode(response.devCode ?? null)
-            setCodeNotice('')
-            codeForm.reset()
-            fillCodeFromDev(response.devCode)
-            setStep('code')
+            const response = await requestLink({ email: trimmed }).unwrap()
+            setSentEmail(trimmed)
+            setDevLink(response.devLink ?? null)
+            setSentNotice('')
+            setSentError('')
+            setLinkSent(true)
         } catch (err) {
-            const parsed = apiError(err)
-            if (parsed.status === 429) {
-                // код уже надіслано раніше — даємо змогу ввести його
-                setEmail(trimmed)
-                setStep('code')
-                setCodeNotice('')
-                codeForm.setError('root', {
-                    message: apiMessage(err, 'Код уже надіслано. Спробуйте за хвилину'),
-                })
-                return
-            }
             emailForm.setError('email', {
-                message: apiMessage(err, 'Не вдалося надіслати код. Спробуйте ще раз'),
+                message: apiMessage(err, 'Не вдалося надіслати лист. Спробуйте ще раз'),
             })
         }
     }
 
     const handleResend = async () => {
-        codeForm.clearErrors()
-        setCodeNotice('')
+        setSentNotice('')
+        setSentError('')
         try {
-            const response = await requestCode({ email }).unwrap()
-            setDevCode(response.devCode ?? null)
-            fillCodeFromDev(response.devCode)
-            setCodeNotice('Код надіслано повторно')
+            const response = await requestLink({ email: sentEmail }).unwrap()
+            setDevLink(response.devLink ?? null)
+            setSentNotice('Лист надіслано повторно')
         } catch (err) {
-            codeForm.setError('root', {
-                message: apiMessage(err, 'Код уже надіслано. Спробуйте за хвилину'),
-            })
-        }
-    }
-
-    const handleDigitChange = (index: number, rawValue: string) => {
-        const digit = rawValue.replace(/\D/g, '').slice(-1)
-        codeForm.setValue(CODE_KEYS[index], digit)
-        codeForm.clearErrors()
-        setCodeNotice('')
-
-        if (digit && index < CODE_LENGTH - 1) {
-            codeInputRefs[index + 1].current?.focus()
-        }
-    }
-
-    const handleDigitKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Backspace' && !codeForm.watch(CODE_KEYS[index]) && index > 0) {
-            codeInputRefs[index - 1].current?.focus()
-        }
-    }
-
-    const handleCodePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-        e.preventDefault()
-        const digits = e.clipboardData
-            .getData('text')
-            .replace(/\D/g, '')
-            .slice(0, CODE_LENGTH)
-            .split('')
-        if (digits.length === 0) return
-
-        CODE_KEYS.forEach((key, index) => {
-            codeForm.setValue(key, digits[index] || '')
-        })
-        codeForm.clearErrors()
-        setCodeNotice('')
-        codeInputRefs[Math.min(digits.length, CODE_LENGTH - 1)].current?.focus()
-    }
-
-    const onCodeSubmit = async (values: CodeFormValues) => {
-        codeForm.clearErrors('root')
-        setCodeNotice('')
-        const code = CODE_KEYS.map((key) => values[key]).join('')
-
-        try {
-            const response = await verifyCode({ email, code }).unwrap()
-            setResetToken(response.resetToken)
-            passwordForm.reset()
-            setStep('password')
-        } catch (err) {
-            codeForm.setError('root', { message: apiMessage(err, CODE_ERROR) })
+            setSentError(apiMessage(err, 'Не вдалося надіслати лист. Спробуйте ще раз'))
         }
     }
 
     const onPasswordSubmit = async (values: PasswordFormValues) => {
+        if (!token) return
         passwordForm.clearErrors('root')
 
         try {
-            await resetPassword({ resetToken, newPassword: values.password }).unwrap()
+            await resetPassword({ resetToken: token, newPassword: values.password }).unwrap()
             passwordForm.reset()
-            setStep('done')
+            setDone(true)
         } catch (err) {
             const parsed = apiError(err)
             if (parsed.status === 401 || parsed.data?.code === 'RESET_TOKEN_INVALID') {
-                setResetToken('')
                 passwordForm.setError('root', {
                     type: 'token',
                     message: apiMessage(
                         err,
-                        'Сеанс відновлення прострочено. Запросіть новий код'
+                        'Посилання для відновлення паролю недійсне або прострочене. Запросіть нове посилання'
                     ),
                 })
                 return
@@ -305,91 +212,45 @@ export default function ForgotPasswordPage() {
         }
     }
 
-    if (step === 'email') {
-        const hasError = Boolean(emailForm.formState.errors.email)
-
+    if (done) {
         return (
             <ResetShell>
                 <div
-                    className="w-full flex flex-col items-center"
-                    style={{ maxWidth: '355px', marginTop: '70px' }}
+                    className="w-full relative flex flex-col items-start sm:block"
+                    style={{ maxWidth: '500px' }}
                 >
-                    <Link to="/" className="shrink-0" style={{ width: '60px', height: '60px' }}>
-                        <img
-                            src={logoSonoraIcon}
-                            alt="Sonora"
-                            className="w-full h-full object-cover block"
+                    <div className="mb-4 sm:mb-0 sm:absolute sm:left-0 sm:top-0">
+                        <BackButton onClick={() => navigate('/login')} />
+                    </div>
+
+                    <div
+                        className="w-full mx-auto flex flex-col items-center text-center"
+                        style={{ maxWidth: '355px' }}
+                    >
+                        <CircleCheck
+                            strokeWidth={1.5}
+                            style={{ width: '80px', height: '80px', color: '#8b5cf6' }}
                         />
-                    </Link>
 
-                    <h1
-                        className="font-semibold text-center text-white w-full"
-                        style={{ fontSize: '30px', lineHeight: '50px', marginTop: '20px' }}
-                    >
-                        Відновлення паролю
-                    </h1>
+                        <h1
+                            className="font-semibold text-white"
+                            style={{ fontSize: '30px', lineHeight: '42px', marginTop: '24px' }}
+                        >
+                            Пароль оновлено!
+                        </h1>
 
-                    <p
-                        className="text-center text-white"
-                        style={{ fontSize: '15px', lineHeight: '22px', marginTop: '12px' }}
-                    >
-                        Введіть адресу електронної пошти, і ми надішлемо код для зміни паролю
-                    </p>
-
-                    <form
-                        onSubmit={emailForm.handleSubmit(onEmailSubmit)}
-                        noValidate
-                        className="w-full flex flex-col items-center"
-                        style={{ marginTop: '40px' }}
-                    >
-                        <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
-                            <label
-                                htmlFor="reset-email"
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
-                            >
-                                Електронна пошта
-                            </label>
-
-                            <div
-                                className="w-full flex items-center justify-between"
-                                style={{
-                                    height: '50px',
-                                    borderRadius: '5px',
-                                    paddingLeft: '20px',
-                                    paddingRight: '16px',
-                                    border: hasError ? '2px solid #dc2626' : '1px solid #ffffff',
-                                }}
-                            >
-                                <input
-                                    id="reset-email"
-                                    type="email"
-                                    placeholder="name@domain.com"
-                                    {...emailForm.register('email', {
-                                        onChange: () => {
-                                            if (hasError) emailForm.clearErrors('email')
-                                        },
-                                    })}
-                                    className="w-full bg-transparent outline-none font-bold text-white"
-                                    style={{ fontSize: '16px', lineHeight: '25px' }}
-                                />
-                                {hasError && (
-                                    <div
-                                        className="shrink-0 ml-2"
-                                        style={{ width: '25px', height: '25px' }}
-                                    >
-                                        <img src={errorIcon} alt="" className="block" />
-                                    </div>
-                                )}
-                            </div>
-
-                            <ErrorText message={emailForm.formState.errors.email?.message} />
-                        </div>
+                        <p
+                            className="text-white"
+                            style={{ fontSize: '16px', lineHeight: '24px', marginTop: '16px' }}
+                        >
+                            Ваш пароль успішно змінено. Тепер ви можете увійти у свій
+                            обліковий запис
+                        </p>
 
                         <button
-                            type="submit"
-                            disabled={isRequestingCode}
-                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                            type="button"
+                            onClick={() => navigate('/login')}
+                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
                             style={{
                                 width: '300px',
                                 height: '50px',
@@ -398,163 +259,15 @@ export default function ForgotPasswordPage() {
                                 marginTop: '36px',
                             }}
                         >
-                            {isRequestingCode ? 'Надсилання...' : 'Надіслати код'}
+                            Повернутися до входу
                         </button>
-                    </form>
-
-                    <Link
-                        to="/login"
-                        className="font-bold text-white text-center hover:underline"
-                        style={{ fontSize: '16px', lineHeight: '25px', marginTop: '70px' }}
-                    >
-                        Повернутися до входу
-                    </Link>
-                </div>
-            </ResetShell>
-        )
-    }
-
-    if (step === 'code') {
-        const hasError = Boolean(
-            codeForm.formState.errors.d0 ||
-                codeForm.formState.errors.d1 ||
-                codeForm.formState.errors.d2 ||
-                codeForm.formState.errors.d3 ||
-                codeForm.formState.errors.d4 ||
-                codeForm.formState.errors.d5 ||
-                codeForm.formState.errors.root
-        )
-
-        return (
-            <ResetShell>
-                <div
-                    className="w-full flex flex-col items-start"
-                    style={{ maxWidth: '355px', marginTop: '110px' }}
-                >
-                    <div className="w-full relative flex items-start">
-                        <BackButton onClick={goToEmailStep} />
-                        <h1
-                            className="font-bold text-white"
-                            style={{ fontSize: '20px', lineHeight: '30px' }}
-                        >
-                            Введіть код, надісланий на вашу електронну пошту
-                        </h1>
                     </div>
-
-                    <p className="text-white" style={{ fontSize: '14px', lineHeight: '20px', marginTop: '12px' }}>
-                        Лист надіслано на <span className="font-bold">{email}</span>
-                    </p>
-
-                    <form
-                        onSubmit={codeForm.handleSubmit(onCodeSubmit)}
-                        noValidate
-                        className="w-full flex flex-col items-center"
-                        style={{ marginTop: '28px' }}
-                    >
-                        <div className="w-full flex items-center justify-between">
-                            {CODE_KEYS.map((key, index) => (
-                                <input
-                                    key={key}
-                                    ref={codeInputRefs[index]}
-                                    type="text"
-                                    inputMode="numeric"
-                                    autoComplete="one-time-code"
-                                    maxLength={1}
-                                    value={codeForm.watch(key)}
-                                    onChange={(e) => handleDigitChange(index, e.target.value)}
-                                    onKeyDown={(e) => handleDigitKeyDown(index, e)}
-                                    onPaste={handleCodePaste}
-                                    className="bg-transparent outline-none font-bold text-center"
-                                    style={{
-                                        width: '48px',
-                                        height: '58px',
-                                        borderRadius: '5px',
-                                        fontSize: '20px',
-                                        lineHeight: '24px',
-                                        color: hasError ? '#dc2626' : '#ffffff',
-                                        border: hasError
-                                            ? '2px solid #dc2626'
-                                            : '1px solid #ffffff',
-                                    }}
-                                />
-                            ))}
-                        </div>
-
-                        <ErrorText message={codeForm.formState.errors.root?.message} />
-
-                        {codeNotice && !hasError && (
-                            <p
-                                className="font-semibold w-full text-center"
-                                style={{
-                                    fontSize: '14px',
-                                    lineHeight: '18px',
-                                    color: '#10b981',
-                                    marginTop: '14px',
-                                }}
-                            >
-                                {codeNotice}
-                            </p>
-                        )}
-
-                        {devCode && (
-                            <p
-                                className="text-center w-full"
-                                style={{
-                                    fontSize: '13px',
-                                    lineHeight: '18px',
-                                    color: '#c4a7d8',
-                                    marginTop: '14px',
-                                }}
-                            >
-                                DEV-код: <span className="font-bold">{devCode}</span>
-                            </p>
-                        )}
-
-                        <button
-                            type="button"
-                            disabled={isRequestingCode}
-                            onClick={handleResend}
-                            className="cursor-pointer flex items-center justify-center font-bold text-white border border-white transition-opacity hover:opacity-85 disabled:opacity-60"
-                            style={{
-                                width: '230px',
-                                height: '50px',
-                                borderRadius: '35px',
-                                fontSize: '16px',
-                                marginTop: hasError ? '32px' : '40px',
-                            }}
-                        >
-                            {isRequestingCode ? 'Надсилання...' : 'Надіслати код ще раз'}
-                        </button>
-
-                        <button
-                            type="submit"
-                            disabled={isVerifyingCode}
-                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                            style={{
-                                width: '300px',
-                                height: '50px',
-                                borderRadius: '35px',
-                                fontSize: '16px',
-                                marginTop: '24px',
-                            }}
-                        >
-                            {isVerifyingCode ? 'Перевірка...' : 'Далі'}
-                        </button>
-
-                        <Link
-                            to="/login"
-                            className="font-bold text-white text-center hover:underline"
-                            style={{ fontSize: '16px', lineHeight: '25px', marginTop: '56px' }}
-                        >
-                            Згадали пароль? Увійти
-                        </Link>
-                    </form>
                 </div>
             </ResetShell>
         )
     }
 
-    if (step === 'password') {
+    if (token) {
         const tokenExpired = passwordForm.formState.errors.root?.type === 'token'
         const hasError = Boolean(
             passwordForm.formState.errors.password ||
@@ -565,37 +278,34 @@ export default function ForgotPasswordPage() {
         return (
             <ResetShell>
                 <div
-                    className="w-full flex flex-col items-start"
-                    style={{ maxWidth: '355px', marginTop: '90px' }}
+                    className="w-full flex flex-col items-center"
+                    style={{ maxWidth: '355px', marginTop: '70px' }}
                 >
-                    <div className="w-full relative flex items-start">
-                        <BackButton
-                            onClick={() => {
-                                passwordForm.reset()
-                                setStep('code')
-                            }}
-                        />
-                        <h1
-                            className="font-bold text-white"
-                            style={{ fontSize: '20px', lineHeight: '30px' }}
-                        >
-                            Новий пароль
-                        </h1>
-                    </div>
+                    <ResetLogo />
 
-                    <p
-                        className="text-white"
-                        style={{ fontSize: '14px', lineHeight: '20px', marginTop: '12px' }}
+                    <h1
+                        className="font-semibold text-center text-white w-full"
+                        style={{ fontSize: '30px', lineHeight: '50px', marginTop: '20px' }}
                     >
-                        Для акаунта <span className="font-bold">{email}</span>
-                    </p>
+                        Створіть новий пароль
+                    </h1>
+
+                    {/*<p
+                        className="text-center text-white"
+                        style={{ fontSize: '15px', lineHeight: '22px', marginTop: '12px' }}
+                    >
+                        Придумайте новий пароль для свого акаунта
+                    </p>*/}
 
                     {tokenExpired ? (
-                        <div className="w-full flex flex-col items-center" style={{ marginTop: '32px' }}>
+                        <div
+                            className="w-full flex flex-col items-center"
+                            style={{ marginTop: '32px' }}
+                        >
                             <ErrorText message={passwordForm.formState.errors.root?.message} />
                             <button
                                 type="button"
-                                onClick={goToEmailStep}
+                                onClick={() => navigate('/forgot-password')}
                                 className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
                                 style={{
                                     width: '300px',
@@ -605,7 +315,7 @@ export default function ForgotPasswordPage() {
                                     marginTop: '24px',
                                 }}
                             >
-                                Запросити новий код
+                                Запросити нове посилання
                             </button>
                         </div>
                     ) : (
@@ -615,13 +325,16 @@ export default function ForgotPasswordPage() {
                             className="w-full flex flex-col items-start"
                             style={{ marginTop: '28px' }}
                         >
-                            <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                            <div
+                                className="w-full flex flex-col items-start"
+                                style={{ gap: '12px' }}
+                            >
                                 <label
                                     htmlFor="reset-password"
                                     className="font-bold text-white"
                                     style={{ fontSize: '16px', lineHeight: '25px' }}
                                 >
-                                    Новий пароль
+                                    Створіть новий пароль
                                 </label>
 
                                 <div
@@ -654,7 +367,9 @@ export default function ForgotPasswordPage() {
                                         onClick={() => setShowPassword((prev) => !prev)}
                                         className="cursor-pointer shrink-0 ml-2 flex items-center justify-center"
                                         style={{ width: '25px', height: '25px' }}
-                                        aria-label={showPassword ? 'Сховати пароль' : 'Показати пароль'}
+                                        aria-label={
+                                            showPassword ? 'Сховати пароль' : 'Показати пароль'
+                                        }
                                     >
                                         <img
                                             src={showPassword ? eyeOpenIcon : eyeClosedIcon}
@@ -664,7 +379,9 @@ export default function ForgotPasswordPage() {
                                     </button>
                                 </div>
 
-                                <ErrorText message={passwordForm.formState.errors.password?.message} />
+                                <ErrorText
+                                    message={passwordForm.formState.errors.password?.message}
+                                />
 
                                 <div
                                     className="w-full flex flex-col items-start"
@@ -691,7 +408,7 @@ export default function ForgotPasswordPage() {
                                     className="font-bold text-white"
                                     style={{ fontSize: '16px', lineHeight: '25px' }}
                                 >
-                                    Підтвердіть пароль
+                                    Повторіть пароль
                                 </label>
 
                                 <div
@@ -733,13 +450,18 @@ export default function ForgotPasswordPage() {
                                 </div>
 
                                 <ErrorText
-                                    message={passwordForm.formState.errors.confirmPassword?.message}
+                                    message={
+                                        passwordForm.formState.errors.confirmPassword?.message
+                                    }
                                 />
                             </div>
 
                             <ErrorText message={passwordForm.formState.errors.root?.message} />
 
-                            <div className="w-full flex justify-center" style={{ marginTop: '36px' }}>
+                            <div
+                                className="w-full flex justify-center"
+                                style={{ marginTop: '36px' }}
+                            >
                                 <button
                                     type="submit"
                                     disabled={isResettingPassword}
@@ -751,54 +473,243 @@ export default function ForgotPasswordPage() {
                                         fontSize: '16px',
                                     }}
                                 >
-                                    {isResettingPassword ? 'Збереження...' : 'Змінити пароль'}
+                                    {isResettingPassword
+                                        ? 'Збереження...'
+                                        : 'Змінити пароль'}
                                 </button>
                             </div>
                         </form>
                     )}
+
+                    <LoginLink marginTop="56px" />
                 </div>
             </ResetShell>
         )
     }
 
+    if (linkSent) {
+        return (
+            <ResetShell>
+                <div
+                    className="w-full relative flex flex-col items-start sm:block"
+                    style={{ maxWidth: '500px' }}
+                >
+                    <div className="mb-4 sm:mb-0 sm:absolute sm:left-0 sm:top-0">
+                        <BackButton
+                            onClick={() => {
+                                setLinkSent(false)
+                                setSentNotice('')
+                                setSentError('')
+                                setDevLink(null)
+                            }}
+                        />
+                    </div>
+
+                    <div
+                        className="w-full mx-auto flex flex-col items-center text-center"
+                        style={{ maxWidth: '355px' }}
+                    >
+                        <Mail
+                            strokeWidth={1.5}
+                            style={{ width: '80px', height: '80px', color: '#8b5cf6' }}
+                        />
+
+                        <h1
+                            className="font-semibold text-white"
+                            style={{ fontSize: '30px', lineHeight: '42px', marginTop: '24px' }}
+                        >
+                            Перевірте свою пошту
+                        </h1>
+
+                        <p
+                            className="text-white"
+                            style={{ fontSize: '16px', lineHeight: '24px', marginTop: '16px' }}
+                        >
+                            Ми надіслали посилання для відновлення паролю на вашу
+                            електронну адресу
+                        </p>
+
+                        {sentNotice && (
+                            <p
+                                className="font-semibold w-full text-center"
+                                style={{
+                                    fontSize: '14px',
+                                    lineHeight: '18px',
+                                    color: '#10b981',
+                                    marginTop: '14px',
+                                }}
+                            >
+                                {sentNotice}
+                            </p>
+                        )}
+
+                        {sentError && <ErrorText message={sentError} />}
+
+                        <button
+                            type="button"
+                            onClick={() => navigate('/login')}
+                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
+                            style={{
+                                width: '300px',
+                                height: '50px',
+                                borderRadius: '35px',
+                                fontSize: '16px',
+                                marginTop: '36px',
+                            }}
+                        >
+                            Повернутися до входу
+                        </button>
+
+                        <button
+                            type="button"
+                            disabled={isRequestingLink}
+                            onClick={handleResend}
+                            className="cursor-pointer inline-flex items-center justify-center gap-1 font-bold transition-opacity hover:opacity-80 disabled:opacity-60"
+                            style={{
+                                fontSize: '16px',
+                                lineHeight: '25px',
+                                color: '#8b5cf6',
+                                marginTop: '28px',
+                            }}
+                        >
+                            {isRequestingLink ? 'Надсилання...' : 'Надіслати ще раз'}
+                            {!isRequestingLink && <ChevronRight size={18} />}
+                        </button>
+
+                        {devLink && (
+                            <a
+                                href={devLink}
+                                className="font-semibold text-center break-all hover:underline"
+                                style={{
+                                    fontSize: '13px',
+                                    lineHeight: '18px',
+                                    color: '#c4a7d8',
+                                    marginTop: '14px',
+                                }}
+                            >
+                                DEV: відкрити посилання
+                            </a>
+                        )}
+                    </div>
+                </div>
+            </ResetShell>
+        )
+    }
+
+    const hasEmailError = Boolean(emailForm.formState.errors.email)
+
     return (
         <ResetShell>
             <div
-                className="w-full flex flex-col items-center text-center"
-                style={{ maxWidth: '355px', marginTop: '120px' }}
+                className="w-full relative flex flex-col items-start sm:block"
+                style={{ maxWidth: '500px' }}
             >
-                <div style={{ width: '80px', height: '80px' }}>
-                    <img src={checkCircleIcon} alt="" className="w-full h-full block" />
+                <div className="mb-4 sm:mb-0 sm:absolute sm:left-0 sm:top-0">
+                    <BackButton onClick={() => navigate('/login')} />
                 </div>
 
-                <h1
-                    className="font-semibold text-white"
-                    style={{ fontSize: '30px', lineHeight: '42px', marginTop: '24px' }}
+                <div
+                    className="w-full mx-auto flex flex-col items-center"
+                    style={{ maxWidth: '355px' }}
                 >
-                    Пароль змінено
-                </h1>
+                    <ResetLogo />
 
-                <p
-                    className="text-white"
-                    style={{ fontSize: '16px', lineHeight: '24px', marginTop: '16px' }}
-                >
-                    Тепер увійдіть у свій акаунт із новим паролем
-                </p>
+                    <h1
+                        className="font-semibold text-center text-white w-full"
+                        style={{ fontSize: '30px', lineHeight: '50px', marginTop: '20px' }}
+                    >
+                        Відновити пароль
+                    </h1>
 
-                <button
-                    type="button"
-                    onClick={() => navigate('/login')}
-                    className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
-                    style={{
-                        width: '300px',
-                        height: '50px',
-                        borderRadius: '35px',
-                        fontSize: '16px',
-                        marginTop: '36px',
-                    }}
-                >
-                    Увійти
-                </button>
+                    <form
+                        onSubmit={emailForm.handleSubmit(onEmailSubmit)}
+                        noValidate
+                        className="w-full flex flex-col items-center"
+                        style={{ marginTop: '40px' }}
+                    >
+                        <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                            <label
+                                htmlFor="reset-email"
+                                className="font-bold text-white"
+                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                            >
+                                Електронна пошта
+                            </label>
+
+                            <div
+                                className="w-full flex items-center justify-between"
+                                style={{
+                                    height: '50px',
+                                    borderRadius: '5px',
+                                    paddingLeft: '20px',
+                                    paddingRight: '16px',
+                                    border: hasEmailError
+                                        ? '2px solid #dc2626'
+                                        : '1px solid #ffffff',
+                                }}
+                            >
+                                <input
+                                    id="reset-email"
+                                    type="email"
+                                    placeholder="name@domain.com"
+                                    {...emailForm.register('email', {
+                                        onChange: () => {
+                                            if (hasEmailError) emailForm.clearErrors('email')
+                                        },
+                                    })}
+                                    className="w-full bg-transparent outline-none font-bold text-white"
+                                    style={{ fontSize: '16px', lineHeight: '25px' }}
+                                />
+                                {hasEmailError && (
+                                    <div
+                                        className="shrink-0 ml-2"
+                                        style={{ width: '25px', height: '25px' }}
+                                    >
+                                        <img src={errorIcon} alt="" className="block" />
+                                    </div>
+                                )}
+                            </div>
+
+                            <p
+                                className="text-left"
+                                style={{
+                                    fontSize: '12px',
+                                    lineHeight: '17px',
+                                    color: '#b3a1c3',
+                                }}
+                            >
+                                Введіть свою електронну пошту і ми надішлемо посилання для
+                                скидання паролю
+                            </p>
+
+                            <ErrorText message={emailForm.formState.errors.email?.message} />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isRequestingLink}
+                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                            style={{
+                                width: '300px',
+                                height: '50px',
+                                borderRadius: '35px',
+                                fontSize: '16px',
+                                marginTop: '36px',
+                            }}
+                        >
+                            {isRequestingLink ? 'Надсилання...' : 'Надіслати'}
+                        </button>
+                    </form>
+
+                    <p
+                        className="font-bold text-center text-white w-full"
+                        style={{ fontSize: '16px', lineHeight: '25px', marginTop: '28px' }}
+                    >
+                        або
+                    </p>
+
+                    <LoginLink marginTop="40px" />
+                </div>
             </div>
         </ResetShell>
     )

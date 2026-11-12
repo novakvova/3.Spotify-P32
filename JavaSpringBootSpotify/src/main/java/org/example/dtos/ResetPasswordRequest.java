@@ -4,11 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import org.example.validation.ValidPassword;
 
-@Schema(description = "Встановлення нового паролю після підтвердження коду")
+@Schema(description = "Встановлення нового паролю за посиланням із листа")
 public record ResetPasswordRequest(
 
         @Schema(
-                description = "Токен, отриманий у відповіді /api/auth/password/verify",
+                description = "Токен із посилання для відновлення паролю",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "Посилання для відновлення паролю недійсне")
         String resetToken,

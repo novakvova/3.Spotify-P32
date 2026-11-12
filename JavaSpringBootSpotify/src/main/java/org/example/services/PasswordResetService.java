@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.entities.UserEntity;
 import org.example.exceptions.AuthException;
 import org.example.repositories.IUserRepository;
-import org.example.services.otp.OtpPolicy;
-import org.example.services.otp.OtpService;
-import org.example.services.otp.PasswordResetCodeStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,67 +16,59 @@ import java.util.HexFormat;
 import java.util.Locale;
 
 /**
- * Патерн <b>Facade</b>: ховає від контролера складний сценарій
- * «email → OTP → reset-token → новий пароль».
+ * Патерн <b>Facade</b>: ховає від контролера сценарій
+ * «email → лист із посиланням → новий пароль».
  *
  * Кроки:
- * 1. {@link #requestCode(String)} — надсилає код (не розкриваючи, чи існує акаунт).
- * 2. {@link #verifyCode(String, String)} — перевіряє код і видає короткоживучий JWT.
- * 3. {@link #resetPassword(String, String)} — змінює пароль лише за валідним reset-токеном.
+ * 1. {@link #requestResetLink(String)} — генерує короткоживучий токен і надсилає
+ *    посилання на email. Для невідомої адреси лист не надсилається, але відповідь
+ *    API однакова — це захищає від перевірки існування акаунта.
+ * 2. {@link #resetPassword(String, String)} — змінює пароль лише за валідним токеном.
  *
  * Reset-токен зберігається в БД у вигляді SHA-256 хешу, тому він одноразовий:
- * після успішної зміни паролю поле очищується.
+ * після успішної зміни паролю поле очищується. Термін дії токена задається
+ * властивістю {@code jwt.password-reset-expiration-ms}.
  */
 @Service
 @RequiredArgsConstructor
 public class PasswordResetService {
 
-    private static final OtpPolicy POLICY = OtpPolicy.PASSWORD_RESET;
-
     private final IUserRepository userRepository;
-    private final PasswordResetCodeStore codeStore;
-    private final OtpService otpService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final MailService mailService;
 
+    @Value("${app.password-reset.link-base-url:http://localhost:5173/forgot-password}")
+    private String resetLinkBaseUrl;
+
+    @Value("${jwt.password-reset-expiration-ms:1800000}")
+    private long resetTokenTtlMs;
+
     /**
-     * @return сирий код для dev-режиму або {@code null}, якщо адреса невідома.
+     * Надсилає посилання для відновлення паролю, якщо акаунт із такою адресою існує.
+     *
+     * @return посилання для dev-режиму або {@code null}, якщо адреса невідома.
      *         Контролер у будь-якому разі відповідає однаково (захист від enumeration).
      */
     @Transactional
-    public String requestCode(String rawEmail) {
+    public String requestResetLink(String rawEmail) {
         String email = normalize(rawEmail);
 
-        if (userRepository.findByEmailIgnoreCase(email).isEmpty()) {
+        UserEntity user = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        if (user == null) {
             return null;
         }
 
-        return otpService.issue(
-                POLICY,
-                codeStore,
-                email,
-                code -> mailService.sendPasswordResetCode(email, code));
-    }
+        String resetToken = jwtUtil.generatePasswordResetToken(user.getEmail());
 
-    /**
-     * Перевіряє OTP і повертає reset-токен, який не дає доступу до інших API.
-     * Хеш токена зберігається в користувача — це робить токен одноразовим.
-     */
-    @Transactional
-    public String verifyCode(String rawEmail, String code) {
-        String email = normalize(rawEmail);
-
-        UserEntity user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(AuthException::invalidCode);
-
-        otpService.verify(POLICY, codeStore, email, code);
-
-        String resetToken = jwtUtil.generatePasswordResetToken(email);
+        // новий токен робить попереднє посилання недійсним
         user.setResetPasswordToken(sha256(resetToken));
         userRepository.save(user);
 
-        return resetToken;
+        String link = buildResetLink(resetToken);
+        mailService.sendPasswordResetLink(user.getEmail(), link, ttlMinutes());
+
+        return link;
     }
 
     /**
@@ -104,9 +94,18 @@ public class PasswordResetService {
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetPasswordToken(null);
         userRepository.save(user);
+    }
 
-        // після успішної зміни всі коди для цієї адреси стають непотрібними
-        codeStore.deleteAll(email);
+    private String buildResetLink(String resetToken) {
+        String base = resetLinkBaseUrl == null ? "" : resetLinkBaseUrl.trim();
+        while (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        return base + "/" + resetToken;
+    }
+
+    private long ttlMinutes() {
+        return Math.max(1, resetTokenTtlMs / 60_000);
     }
 
     private String normalize(String email) {

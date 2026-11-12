@@ -18,11 +18,7 @@ export interface ILoginStartResponse {
 
 export interface IForgotPasswordResponse {
     sent: boolean;
-    devCode?: string | null;
-}
-
-export interface IResetTokenResponse {
-    resetToken: string;
+    devLink?: string | null;
 }
 
 export interface IResetPasswordResponse {
