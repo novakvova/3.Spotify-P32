@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Footer } from '../components/Footer'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
-import { selectLanguage, toggleLanguage } from '../store/slices/languageSlice'
+import { toggleLanguage } from '../store/slices/languageSlice'
 import imgLogoSonora from '../assets/home/logo-sonora.png'
 import imgCard from '../assets/support/card.svg'
 import imgPerson from '../assets/support/person.svg'
@@ -14,17 +15,18 @@ import imgLock from '../assets/support/lock.svg'
 import imgArrowDown from '../assets/support/arrow-down.svg'
 import imgArrowWhite from '../assets/support/arrow-white.svg'
 
+// Текст береться з i18n (support.categories), тут лишаються ідентифікатори, іконки і посилання.
+interface ArticleRef {
+    to?: string
+}
+
 interface SubSection {
     id: string
-    titleUk: string
-    titleEn: string
-    articles: { labelUk: string; labelEn: string; to?: string }[]
+    articles: ArticleRef[]
 }
 
 interface HelpCategory {
     id: string
-    titleUk: string
-    titleEn: string
     icon: string
     iconHeight: number
     subSections: SubSection[]
@@ -33,161 +35,82 @@ interface HelpCategory {
 const HELP_CATEGORIES: HelpCategory[] = [
     {
         id: 'payments',
-        titleUk: 'Платежі й виставлення рахунків',
-        titleEn: 'Payments & billing',
         icon: imgCard,
         iconHeight: 20,
         subSections: [
-            {
-                id: 'recommended',
-                titleUk: 'Рекомендовані теми',
-                titleEn: 'Recommended topics',
-                articles: [
-                    { labelUk: 'Допомога в разі помилки оплати', labelEn: 'Failed payment help' },
-                    { labelUk: 'Стягнуто забагато коштів', labelEn: 'Charged too much' },
-                ],
-            },
+            { id: 'recommended', articles: [{}, {}] },
             {
                 id: 'manage-payments',
-                titleUk: 'Керування платежами',
-                titleEn: 'Manage payments',
-                articles: [
-                    { labelUk: 'Підтримувані способи оплати', labelEn: 'Supported payment methods', to: '/support/payment-methods' },
-                    { labelUk: 'Оплата Sonora за допомогою PayPal', labelEn: 'Paying for Sonora with PayPal' },
-                    { labelUk: 'Оплата Sonora за допомогою Google Play Billing', labelEn: 'Paying for Sonora with Google Play Billing' },
-                ],
+                articles: [{ to: '/support/payment-methods' }, {}, {}],
             },
             {
                 id: 'payment-methods',
-                titleUk: 'Способи оплати',
-                titleEn: 'Payment methods',
-                articles: [
-                    { labelUk: 'Підтримувані способи оплати', labelEn: 'Supported payment methods', to: '/support/payment-methods' },
-                    { labelUk: 'Як змінити платіжні дані', labelEn: 'How to update payment details' },
-                ],
+                articles: [{ to: '/support/payment-methods' }, {}],
             },
-            {
-                id: 'billing-help',
-                titleUk: 'Довідка щодо списання коштів',
-                titleEn: 'Charge help',
-                articles: [
-                    { labelUk: 'Політика відшкодування', labelEn: 'Refund policy' },
-                    { labelUk: 'Перевірка квитанцій та рахунків', labelEn: 'Check receipts and invoices' },
-                ],
-            },
+            { id: 'billing-help', articles: [{}, {}] },
         ],
     },
     {
         id: 'account',
-        titleUk: 'Керуйте своїм акаунтом',
-        titleEn: 'Manage your account',
         icon: imgPerson,
         iconHeight: 25,
-        subSections: [
-            {
-                id: 'account-login',
-                titleUk: 'Вхід та безпека акаунту',
-                titleEn: 'Login & account security',
-                articles: [
-                    { labelUk: 'Не вдається увійти в акаунт Sonora', labelEn: 'Can’t log in to Sonora account' },
-                    { labelUk: 'Скидання або зміна пароля', labelEn: 'Reset or change password' },
-                    { labelUk: 'Налаштування профілю', labelEn: 'Profile settings' },
-                ],
-            },
-        ],
+        subSections: [{ id: 'account-login', articles: [{}, {}, {}] }],
     },
     {
         id: 'premium',
-        titleUk: 'Преміум підписки',
-        titleEn: 'Premium plans',
         icon: imgSettings,
         iconHeight: 25,
         subSections: [
             {
                 id: 'premium-plans',
-                titleUk: 'Доступні плани Premium',
-                titleEn: 'Available Premium plans',
                 articles: [
-                    { labelUk: 'Підписка Premium Individual', labelEn: 'Premium Individual plan', to: '/premium' },
-                    { labelUk: 'Підписка Premium Duo', labelEn: 'Premium Duo plan', to: '/premium/duo' },
-                    { labelUk: 'Підписка Premium Family', labelEn: 'Premium Family plan', to: '/premium/family' },
-                    { labelUk: 'Підписка Premium Student', labelEn: 'Premium Student plan', to: '/premium/student' },
-                    { labelUk: 'Підписка Sonora Kids+', labelEn: 'Sonora Kids+ plan', to: '/premium/kids' },
+                    { to: '/premium' },
+                    { to: '/premium/duo' },
+                    { to: '/premium/family' },
+                    { to: '/premium/student' },
+                    { to: '/premium/kids' },
                 ],
             },
         ],
     },
     {
         id: 'features',
-        titleUk: 'Функції в додатку',
-        titleEn: 'In-app features',
         icon: imgBlock,
         iconHeight: 25,
-        subSections: [
-            {
-                id: 'app-features',
-                titleUk: 'Основні можливості',
-                titleEn: 'Core features',
-                articles: [
-                    { labelUk: 'Пошук треків, альбомів та виконавців', labelEn: 'Search songs, albums, and artists' },
-                    { labelUk: 'Перегляд музичних жанрів', labelEn: 'Browse music genres' },
-                ],
-            },
-        ],
+        subSections: [{ id: 'app-features', articles: [{}, {}] }],
     },
     {
         id: 'devices',
-        titleUk: 'Пристрої та усунення несправностей',
-        titleEn: 'Devices & troubleshooting',
         icon: imgDevices,
         iconHeight: 20,
-        subSections: [
-            {
-                id: 'devices-help',
-                titleUk: 'Підтримувані платформи',
-                titleEn: 'Supported platforms',
-                articles: [
-                    { labelUk: 'Використання вебпрогравача Sonora', labelEn: 'Using Sonora Web Player' },
-                    { labelUk: 'Підтримувані способи оплати', labelEn: 'Supported payment methods', to: '/support/payment-methods' },
-                ],
-            },
-        ],
+        subSections: [{ id: 'devices-help', articles: [{}, { to: '/support/payment-methods' }] }],
     },
     {
         id: 'security',
-        titleUk: 'Безпека й конфіденційність',
-        titleEn: 'Safety & privacy',
         icon: imgLock,
         iconHeight: 25,
-        subSections: [
-            {
-                id: 'security-help',
-                titleUk: 'Захист даних',
-                titleEn: 'Data protection',
-                articles: [
-                    { labelUk: 'Захист вашого облікового запису', labelEn: 'Protecting your account' },
-                    { labelUk: 'Про компанію Sonora', labelEn: 'About Sonora', to: '/about' },
-                ],
-            },
-        ],
+        subSections: [{ id: 'security-help', articles: [{}, { to: '/about' }] }],
     },
 ]
 
-const QUICK_HELP_ITEMS = [
-    { uk: 'Не вдається увійти в акаунт Spotify', en: 'Can’t log in to Spotify account' },
-    { uk: 'Допомога в разі помилки оплати', en: 'Failed payment help' },
-    { uk: 'Стягнуто забагато коштів', en: 'Charged too much' },
-    { uk: 'Запрошуйте або вилучайте учасників підписки Family', en: 'Invite or remove Family plan members' },
-    { uk: 'Як змінити платіжні дані', en: 'How to update payment details' },
-]
+const DEFAULT_OPEN_SUBSECTIONS: Record<string, boolean> = {
+    'manage-payments': true,
+    'payment-methods': true,
+    'account-login': true,
+    'premium-plans': true,
+    'app-features': true,
+    'devices-help': true,
+    'security-help': true,
+}
+
+const QUICK_HELP_INDEXES = [0, 1, 2, 3, 4] as const
 
 export const SupportHeader: React.FC = () => {
+    const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const isAuthenticated = useAppSelector(selectIsAuthenticated)
     const user = useAppSelector(selectCurrentUser)
-    const lang = useAppSelector(selectLanguage)
-    const isEn = lang === 'en'
-    const displayName = user?.fullName || user?.username || user?.email || (isEn ? 'Profile' : 'Профіль')
+    const displayName = user?.fullName || user?.username || user?.email || t('support.profile')
     const userInitial = displayName.charAt(0).toUpperCase()
 
     return (
@@ -214,7 +137,7 @@ export const SupportHeader: React.FC = () => {
                     </Link>
 
                     <span className="hidden sm:inline-block font-semibold text-base text-white cursor-default">
-                        {isEn ? 'Install App' : 'Установити додаток'}
+                        {t('support.installApp')}
                     </span>
                 </div>
 
@@ -244,7 +167,7 @@ export const SupportHeader: React.FC = () => {
                                     borderRadius: 35,
                                 }}
                             >
-                                {isEn ? 'Log out' : 'Вийти'}
+                                {t('support.logOut')}
                             </button>
                         </>
                     ) : (
@@ -253,7 +176,7 @@ export const SupportHeader: React.FC = () => {
                                 to="/register"
                                 className="font-semibold text-base text-white hover:opacity-80 transition-opacity"
                             >
-                                {isEn ? 'Sign up' : 'Зареєструватися'}
+                                {t('support.signUp')}
                             </Link>
                             <Link
                                 to="/login"
@@ -265,7 +188,7 @@ export const SupportHeader: React.FC = () => {
                                     borderRadius: 35,
                                 }}
                             >
-                                {isEn ? 'Log in' : 'Увійти'}
+                                {t('support.logIn')}
                             </Link>
                         </>
                     )}
@@ -275,7 +198,7 @@ export const SupportHeader: React.FC = () => {
                         onClick={() => dispatch(toggleLanguage())}
                         className="font-normal text-sm text-white cursor-pointer hover:opacity-80 transition-opacity"
                     >
-                        {isEn ? 'Eng' : 'Укр'}
+                        {t('support.langShort')}
                     </button>
                 </div>
             </div>
@@ -284,20 +207,11 @@ export const SupportHeader: React.FC = () => {
 }
 
 export default function SupportPage() {
-    const lang = useAppSelector(selectLanguage)
-    const isEn = lang === 'en'
+    const { t } = useTranslation()
     const [aiQuery, setAiQuery] = useState('')
     const [aiSubmitted, setAiSubmitted] = useState(false)
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({})
-    const [openSubSections, setOpenSubSections] = useState<Record<string, boolean>>({
-        'manage-payments': true,
-        'payment-methods': true,
-        'account-login': true,
-        'premium-plans': true,
-        'app-features': true,
-        'devices-help': true,
-        'security-help': true,
-    })
+    const [openSubSections, setOpenSubSections] = useState<Record<string, boolean>>(DEFAULT_OPEN_SUBSECTIONS)
 
     const hasQuery = aiQuery.trim().length > 0
 
@@ -322,7 +236,7 @@ export default function SupportPage() {
             <main className="flex-1 w-full">
                 <section className="mx-auto px-4 sm:px-8 pt-14 sm:pt-16 pb-12" style={{ maxWidth: 1101 }}>
                     <h1 className="font-extrabold text-center mb-10" style={{ lineHeight: '55px' }}>
-                        <span style={{ fontSize: 40 }}>{isEn ? 'Support ' : 'Підтримка '}</span>
+                        <span style={{ fontSize: 40 }}>{t('support.title')} </span>
                         <span style={{ fontSize: 48 }}>Sonora</span>
                     </h1>
 
@@ -342,7 +256,7 @@ export default function SupportPage() {
                                         className="absolute left-0 top-0 pointer-events-none select-none font-bold text-base"
                                         style={{ color: '#280a3a', lineHeight: '25px' }}
                                     >
-                                        {isEn ? 'How can I help you?' : 'Чим я можу допомогти?'}
+                                        {t('support.aiPlaceholder')}
                                     </span>
                                 )}
                                 <textarea
@@ -374,13 +288,13 @@ export default function SupportPage() {
                                         cursor: hasQuery ? 'pointer' : 'default',
                                     }}
                                 >
-                                    {isEn ? 'Send request' : 'Надіслати запит'}
+                                    {t('support.send')}
                                 </button>
                             </div>
                         </form>
 
                         <p className="mt-3 text-base font-normal" style={{ lineHeight: '30px' }}>
-                            {isEn ? 'You are using an AI-powered tool' : 'Ви використовуєте інструмент на основі ШІ'}
+                            {t('support.aiNote')}
                         </p>
 
                         {aiSubmitted && (
@@ -392,22 +306,14 @@ export default function SupportPage() {
                                     backgroundColor: '#f8f4ff',
                                 }}
                             >
-                                <p className="font-bold mb-1">
-                                    {isEn ? 'Your request has been received!' : 'Ваш запит прийнято в обробку!'}
-                                </p>
-                                <p className="font-normal mb-3">
-                                    {isEn
-                                        ? 'While we review your inquiry, check out our help article on payments and payment methods:'
-                                        : 'Поки ми перевіряємо деталі вашого звернення, перегляньте довідкову статтю щодо платежів та способів оплати:'}
-                                </p>
+                                <p className="font-bold mb-1">{t('support.receivedTitle')}</p>
+                                <p className="font-normal mb-3">{t('support.receivedText')}</p>
                                 <Link
                                     to="/support/payment-methods"
                                     className="font-bold underline"
                                     style={{ color: '#6829c6' }}
                                 >
-                                    {isEn
-                                        ? 'Go to “Supported payment methods”'
-                                        : 'Перейти до статті «Підтримувані способи оплати»'}
+                                    {t('support.receivedLink')}
                                 </Link>
                             </div>
                         )}
@@ -417,7 +323,7 @@ export default function SupportPage() {
                 <section className="mx-auto px-4 sm:px-8 pt-6 pb-20" style={{ maxWidth: 1101 }}>
                     <div className="mx-auto mb-12" style={{ maxWidth: 725 }}>
                         <h2 className="font-semibold" style={{ fontSize: 30, lineHeight: '50px' }}>
-                            {isEn ? 'Browse help articles' : 'Огляд довідкових статей'}
+                            {t('support.browseTitle')}
                         </h2>
                     </div>
 
@@ -447,7 +353,7 @@ export default function SupportPage() {
                                                 className="font-bold text-xl"
                                                 style={{ lineHeight: '35px', color: '#280a3a' }}
                                             >
-                                                {isEn ? category.titleEn : category.titleUk}
+                                                {t(`support.categories.${category.id}.title`)}
                                             </span>
                                         </div>
 
@@ -474,6 +380,7 @@ export default function SupportPage() {
                                         >
                                             {category.subSections.map((sub) => {
                                                 const isSubOpen = !!openSubSections[sub.id]
+                                                const base = `support.categories.${category.id}.subs.${sub.id}`
                                                 return (
                                                     <div key={sub.id} className="w-full flex flex-col">
                                                         <button
@@ -485,7 +392,7 @@ export default function SupportPage() {
                                                                 className="font-bold text-xl"
                                                                 style={{ lineHeight: '30px', color: '#280a3a' }}
                                                             >
-                                                                {isEn ? sub.titleEn : sub.titleUk}
+                                                                {t(`${base}.title`)}
                                                             </span>
                                                             <div
                                                                 className="relative shrink-0 transition-transform duration-200"
@@ -508,11 +415,11 @@ export default function SupportPage() {
                                                                 className="flex flex-col pt-4"
                                                                 style={{ gap: 20 }}
                                                             >
-                                                                {sub.articles.map((article) => {
-                                                                    const text = isEn ? article.labelEn : article.labelUk
+                                                                {sub.articles.map((article, idx) => {
+                                                                    const text = t(`${base}.articles.${idx}`)
                                                                     return article.to ? (
                                                                         <Link
-                                                                            key={article.labelUk}
+                                                                            key={idx}
                                                                             to={article.to}
                                                                             className="font-medium text-xl hover:underline transition-opacity"
                                                                             style={{ lineHeight: '30px', color: '#280a3a' }}
@@ -521,7 +428,7 @@ export default function SupportPage() {
                                                                         </Link>
                                                                     ) : (
                                                                         <span
-                                                                            key={article.labelUk}
+                                                                            key={idx}
                                                                             className="font-medium text-xl cursor-default"
                                                                             style={{ lineHeight: '30px', color: '#280a3a' }}
                                                                         >
@@ -548,17 +455,17 @@ export default function SupportPage() {
                             className="font-extrabold text-white"
                             style={{ fontSize: 30, lineHeight: '50px' }}
                         >
-                            {isEn ? 'Quick help' : 'Експрес-довідка'}
+                            {t('support.quickHelpTitle')}
                         </h2>
 
                         <div className="flex flex-col" style={{ gap: 35 }}>
-                            {QUICK_HELP_ITEMS.map((item) => (
+                            {QUICK_HELP_INDEXES.map((index) => (
                                 <div
-                                    key={item.uk}
+                                    key={index}
                                     className="w-full flex items-center justify-between text-white cursor-default"
                                 >
                                     <span className="font-medium text-xl" style={{ lineHeight: '35px' }}>
-                                        {isEn ? item.en : item.uk}
+                                        {t(`support.quickHelpItems.${index}`)}
                                     </span>
                                     <div
                                         className="shrink-0 flex items-center justify-center"
@@ -585,16 +492,14 @@ export default function SupportPage() {
                         className="font-extrabold mb-8"
                         style={{ fontSize: 40, lineHeight: '55px', color: '#280a3a' }}
                     >
-                        {isEn ? 'Visit our community' : 'Завітайте до нашої спільноти'}
+                        {t('support.communityTitle')}
                     </h2>
 
                     <p
                         className="font-bold text-xl mb-10"
                         style={{ maxWidth: 914, lineHeight: '25px', color: '#280a3a' }}
                     >
-                        {isEn
-                            ? 'Have questions? Find answers from our worldwide community of expert fans'
-                            : 'Маєте запитання? Знайдіть на них відповіді, порадившись із нашою спільнотою досвідчених фанів з усього світу'}
+                        {t('support.communityText')}
                     </p>
 
                     <Link
@@ -607,7 +512,7 @@ export default function SupportPage() {
                             borderRadius: 35,
                         }}
                     >
-                        {isEn ? 'Go to community' : 'Перейти в спільноту'}
+                        {t('support.communityCta')}
                     </Link>
                 </section>
             </main>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import imgPhoto1 from '../assets/home/photo1.png'
 import imgPhoto2 from '../assets/home/photo2.png'
 import imgFrame11 from '../assets/home/frame11.png'
@@ -12,49 +13,23 @@ import { Header } from '../components/Header.tsx'
 import { Footer } from '../components/Footer.tsx'
 import { useAppSelector } from '../store/hooks'
 import { selectIsAuthenticated } from '../store/slices/authSlice'
-import { selectLanguage } from '../store/slices/languageSlice'
+
+const BENEFIT_ICONS = [imgPlay, imgPlaylists, imgHeart, imgSaveMobileData]
+const FAQ_INDEXES = [0, 1, 2] as const
 
 export default function HomePage() {
+    const { t } = useTranslation()
     const PURPLE_BG = '#280a3a'
     const isAuthenticated = useAppSelector(selectIsAuthenticated)
-    const lang = useAppSelector(selectLanguage)
-    const isEn = lang === 'en'
     const [openFaq, setOpenFaq] = useState<Record<number, boolean>>({})
 
-    const BENEFITS = [
-        {
-            icon: imgPlay,
-            title: isEn ? 'Listen to new music' : 'Слухайте нове',
-            description: isEn
-                ? 'Your choice — your hits. Discover millions of tracks in one click'
-                : 'Твій вибір — твої хіти. Відкривай мільйони треків в один клік',
-        },
-        {
-            icon: imgPlaylists,
-            title: isEn ? 'Create your mood' : 'Створюйте настрій',
-            description: isEn
-                ? 'Your rules — your playlists. Control your music the way you want'
-                : 'Твої правила — твої плейлісти. Керуй музикою так, як хочеш ти',
-        },
-        {
-            icon: imgHeart,
-            title: isEn ? 'Find what’s yours' : 'Знаходьте своє',
-            description: isEn
-                ? 'Your likes — your vibe. Find the perfect music\njust for you'
-                : 'Твої лайки — твій настрій. Знаходь ідеальну музику \nлише для себе',
-        },
-        {
-            icon: imgSaveMobileData,
-            title: isEn ? 'Save mobile data' : 'Зберігайте трафік',
-            description: isEn
-                ? 'Your internet — your data. Listen to favorite songs without extra costs'
-                : 'Твій інтернет — твої дані. Слухай улюблені пісні без зайвих витрат',
-        },
-    ]
+    const benefits = t('home.benefits', { returnObjects: true }) as { title: string; description: string }[]
 
     const toggleFaq = (index: number) => {
         setOpenFaq((prev) => ({ ...prev, [index]: !prev[index] }))
     }
+
+    const primaryCta = isAuthenticated ? t('home.myProfile') : t('home.signUpFree')
 
     return (
         <div
@@ -79,9 +54,7 @@ export default function HomePage() {
                     style={{ maxWidth: 1100 }}
                 >
                     <div className="flex flex-col font-extrabold justify-center text-3xl sm:text-4xl text-center text-white">
-                        <p className="leading-tight">
-                            {isEn ? 'Feel your rhythm' : 'Відчуй свій ритм'}
-                        </p>
+                        <p className="leading-tight">{t('home.heroTitle')}</p>
                     </div>
 
                     <Link
@@ -90,13 +63,7 @@ export default function HomePage() {
                         style={{ maxWidth: 300, height: 50, color: PURPLE_BG }}
                     >
                         <span className="font-bold text-base leading-none text-center whitespace-nowrap">
-                            {isAuthenticated
-                                ? isEn
-                                    ? 'My profile'
-                                    : 'Мій профіль'
-                                : isEn
-                                ? 'Sign up free'
-                                : 'Зареєструватися безкоштовно'}
+                            {primaryCta}
                         </span>
                     </Link>
                 </div>
@@ -110,20 +77,20 @@ export default function HomePage() {
                     className="flex flex-col font-semibold justify-center text-2xl md:text-3xl text-center w-full mx-auto"
                     style={{ maxWidth: 1100 }}
                 >
-                    <p className="leading-tight">{isEn ? 'Benefits' : 'Переваги'}</p>
+                    <p className="leading-tight">{t('home.benefitsTitle')}</p>
                 </div>
 
                 <div
                     className="mt-10 md:mt-16 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-10 xl:gap-5 w-full mx-auto"
                     style={{ maxWidth: 1100 }}
                 >
-                    {BENEFITS.map((item) => (
+                    {benefits.map((item, index) => (
                         <div
                             key={item.title}
                             className="flex flex-col items-center w-full mx-auto"
                         >
                             <div className="relative shrink-0" style={{ width: 140, height: 140 }}>
-                                <img alt="" className="block max-w-none" src={item.icon} />
+                                <img alt="" className="block max-w-none" src={BENEFIT_ICONS[index]} />
                             </div>
 
                             <div className="mt-6 xl:mt-10 flex flex-col justify-center w-full text-center">
@@ -166,9 +133,7 @@ export default function HomePage() {
                         className="relative z-10 pt-8 sm:pt-12 md:pt-16 px-4 mx-auto flex flex-col font-extrabold justify-center text-2xl sm:text-3xl md:text-4xl text-center text-white w-full"
                         style={{ maxWidth: 1100 }}
                     >
-                        <p className="leading-tight">
-                            {isEn ? 'On the same wavelength with friends' : 'На одній хвилі з друзями'}
-                        </p>
+                        <p className="leading-tight">{t('home.photoTitle')}</p>
                     </div>
                 </div>
             </section>
@@ -181,9 +146,7 @@ export default function HomePage() {
                     className="px-4 flex flex-col font-semibold justify-center text-2xl md:text-3xl text-center w-full mx-auto"
                     style={{ maxWidth: 1100 }}
                 >
-                    <p className="leading-tight">
-                        {isEn ? 'Got questions?' : 'Маєте запитання?'}
-                    </p>
+                    <p className="leading-tight">{t('faq.title')}</p>
                 </div>
 
                 <div className="mt-10 md:mt-20 flex flex-col gap-14 md:gap-24 items-start w-full">
@@ -192,80 +155,32 @@ export default function HomePage() {
                             className="flex flex-col gap-8 md:gap-10 items-start w-full"
                             style={{ maxWidth: 1098 }}
                         >
-                            <div className="flex flex-col gap-2.5 items-start w-full">
-                                <button
-                                    type="button"
-                                    onClick={() => toggleFaq(0)}
-                                    className="cursor-pointer flex items-center justify-between gap-4 w-full text-left"
-                                >
-                                    <span className="font-bold text-lg md:text-xl leading-7">
-                                        {isEn ? 'How do I create a playlist?' : 'Як створити плейліст?'}
-                                    </span>
-                                    <div
-                                        className={`relative shrink-0 transition-transform duration-200 ${
-                                            openFaq[0] ? 'rotate-180' : ''
-                                        }`}
-                                        style={{ width: 25, height: 10 }}
+                            {FAQ_INDEXES.map((index) => (
+                                <div key={index} className="flex flex-col gap-2.5 items-start w-full">
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleFaq(index)}
+                                        className="cursor-pointer flex items-center justify-between gap-4 w-full text-left"
                                     >
-                                        <img alt="" className="block max-w-none" src={imgArrow} />
-                                    </div>
-                                </button>
+                                        <span className="font-bold text-lg md:text-xl leading-7">
+                                            {t(`home.faqQuestions.${index}`)}
+                                        </span>
+                                        <div
+                                            className={`relative shrink-0 transition-transform duration-200 ${
+                                                openFaq[index] ? 'rotate-180' : ''
+                                            }`}
+                                            style={{ width: 25, height: 10 }}
+                                        >
+                                            <img alt="" className="block max-w-none" src={imgArrow} />
+                                        </div>
+                                    </button>
 
-                                {openFaq[0] && (
-                                    <div className="font-normal text-base leading-7 text-left w-full pt-1">
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-2.5 items-start w-full">
-                                <button
-                                    type="button"
-                                    onClick={() => toggleFaq(1)}
-                                    className="cursor-pointer flex items-center justify-between gap-4 w-full text-left"
-                                >
-                                    <span className="font-bold text-lg md:text-xl leading-7">
-                                        {isEn ? 'How do I turn on Data Saver?' : 'Як увімкнути економію трафіку?'}
-                                    </span>
-                                    <div
-                                        className={`relative shrink-0 transition-transform duration-200 ${
-                                            openFaq[1] ? 'rotate-180' : ''
-                                        }`}
-                                        style={{ width: 25, height: 10 }}
-                                    >
-                                        <img alt="" className="block max-w-none" src={imgArrow} />
-                                    </div>
-                                </button>
-
-                                {openFaq[1] && (
-                                    <div className="font-normal text-base leading-7 text-left w-full pt-1">
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-2.5 items-start w-full">
-                                <button
-                                    type="button"
-                                    onClick={() => toggleFaq(2)}
-                                    className="cursor-pointer flex items-center justify-between gap-4 w-full text-left"
-                                >
-                                    <span className="font-bold text-lg md:text-xl leading-7">
-                                        {isEn ? 'Where can I find podcasts?' : 'Де знайти подкасти?'}
-                                    </span>
-                                    <div
-                                        className={`relative shrink-0 transition-transform duration-200 ${
-                                            openFaq[2] ? 'rotate-180' : ''
-                                        }`}
-                                        style={{ width: 25, height: 10 }}
-                                    >
-                                        <img alt="" className="block max-w-none" src={imgArrow} />
-                                    </div>
-                                </button>
-
-                                {openFaq[2] && (
-                                    <div className="font-normal text-base leading-7 text-left w-full pt-1">
-                                    </div>
-                                )}
-                            </div>
+                                    {openFaq[index] && (
+                                        <div className="font-normal text-base leading-7 text-left w-full pt-1">
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
 
@@ -291,9 +206,7 @@ export default function HomePage() {
                             className="flex flex-col font-extrabold justify-center relative z-10 shrink-0 text-3xl sm:text-4xl text-center text-white w-full"
                             style={{ maxWidth: 1100 }}
                         >
-                            <p className="leading-tight">
-                                {isEn ? 'Ready? Let’s play' : 'Готові? Нумо слухати'}
-                            </p>
+                            <p className="leading-tight">{t('home.readyTitle')}</p>
                         </div>
 
                         <Link
@@ -302,13 +215,7 @@ export default function HomePage() {
                             style={{ maxWidth: 300, height: 50, color: PURPLE_BG }}
                         >
                             <span className="font-bold text-base leading-none text-center whitespace-nowrap">
-                                {isAuthenticated
-                                    ? isEn
-                                        ? 'My profile'
-                                        : 'Мій профіль'
-                                    : isEn
-                                    ? 'Sign up free'
-                                    : 'Зареєструватися безкоштовно'}
+                                {primaryCta}
                             </span>
                         </Link>
                     </div>

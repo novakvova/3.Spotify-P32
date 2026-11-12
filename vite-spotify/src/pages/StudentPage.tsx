@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FAQ } from '../components/FAQ';
 import studenthero from '../assets/home/student-hero.png';
 import { Header } from "../components/Header.tsx";
@@ -102,13 +103,15 @@ const IconLove: React.FC = () => (
     </svg>
 );
 
+const FEATURE_ICONS = [IconNoAds, IconOffline, IconMood, IconLove]
+const FEATURE_KEYS = ['noAds', 'offline', 'mood', 'love'] as const
+const STEP_KEYS = [0, 1, 2] as const
+const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4'] as const
+
 export const StudentPage: React.FC = () => {
-    const faqList = [
-        { question: "Чи я відповідаю вимогам для цієї підписки?" },
-        { question: "Як ви перевірите мій статус студента?" },
-        { question: "Що станеться з моїм акаунтом, коли я закінчу навчальний заклад?" },
-        { question: "Яка сума стягуватиметься та коли?" }
-    ];
+    const { t } = useTranslation();
+
+    const faqList = FAQ_KEYS.map((key) => ({ question: t(`student.faq.${key}`) }));
 
     return (
         <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
@@ -118,14 +121,14 @@ export const StudentPage: React.FC = () => {
             <section className="bg-[#6829C6] text-white text-center py-20 px-4">
                 <div className="max-w-3xl mx-auto space-y-5">
                     <h1 className="font-['Inter'] text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-                        Студенти отримують Premium<br />безкоштовно на 1 місяць
+                        {t('student.heroTitle1')}<br />{t('student.heroTitle2')}
                     </h1>
                     <p className="text-sm sm:text-base font-medium opacity-95 max-w-xl mx-auto leading-relaxed">
-                        Потім лише 2,49 $ на місяць. Скасувати можна будь-коли.
+                        {t('student.heroText')}
                     </p>
                     <div className="pt-4">
                         <button className="bg-white text-[#6829C6] font-extrabold py-3.5 px-24 rounded-full hover:bg-gray-50 transition shadow-md cursor-pointer text-base">
-                            Отримати Premium
+                            {t('student.cta')}
                         </button>
                     </div>
                 </div>
@@ -135,17 +138,17 @@ export const StudentPage: React.FC = () => {
             <section className="sm:px-12 max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-16">
                 <div className="max-w-lg space-y-5 text-left">
                     <h2 className="font-['Inter'] text-3xl sm:text-4xl font-extrabold text-[#120826] tracking-tight leading-tight">
-                        З музикою<br />навчатися веселіше
+                        {t('student.secondTitle1')}<br />{t('student.secondTitle2')}
                     </h2>
                     <p className="text-[#120826] text-base sm:text-lg font-bold leading-snug">
-                        Забудьте про перерви на рекламу під час підготовки до пар. Насолоджуйтеся плейлистами без жодних відволікань
+                        {t('student.secondText')}
                     </p>
                 </div>
 
                 <div className="w-full md:w-auto flex justify-center shrink-0">
                     <img
                         src={studenthero}
-                        alt="Student study"
+                        alt={t('student.imgAlt')}
                         className="w-full max-w-[340px] sm:max-w-[380px] object-contain"
                     />
                 </div>
@@ -154,9 +157,9 @@ export const StudentPage: React.FC = () => {
             {/* Banner Section */}
             <section className="bg-[#6829C6] text-white text-center py-10 px-4">
                 <div className="max-w-4xl mx-auto space-y-2">
-                    <h2 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold tracking-tight">Спеціальна ціна для студентів</h2>
+                    <h2 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold tracking-tight">{t('student.bannerTitle')}</h2>
                     <p className="text-sm sm:text-base font-medium opacity-95">
-                        Всі переваги Premium зі знижкою 50% протягом навчання. Лише 2,49 $ на місяць
+                        {t('student.bannerText')}
                     </p>
                 </div>
             </section>
@@ -164,72 +167,49 @@ export const StudentPage: React.FC = () => {
             {/* 4 Features Section with Custom SVG Icons */}
             <section className="py-20 px-6 text-center max-w-6xl mx-auto">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-                    <div className="flex flex-col items-center text-center space-y-3">
-                        <IconNoAds />
-                        <h3 className="font-extrabold text-lg text-[#120826]">Музика без реклами</h3>
-                        <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-[180px]">
-                            Навчайтеся вдень.<br />Танцюйте вночі
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col items-center text-center space-y-3">
-                        <IconOffline />
-                        <h3 className="font-extrabold text-lg text-[#120826]">Музика офлайн</h3>
-                        <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-[200px]">
-                            Не бійтеся вичерпати трафік, де б ви не були
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col items-center text-center space-y-3">
-                        <IconMood />
-                        <h3 className="font-extrabold text-lg text-[#120826]">Музика під настрій</h3>
-                        <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-[190px]">
-                            Мільйони пісень, чудові плейлісти
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col items-center text-center space-y-3">
-                        <IconLove />
-                        <h3 className="font-extrabold text-lg text-[#120826]">Насолода від музики</h3>
-                        <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-[200px]">
-                            Відчуйте ще кращу якість музики в кожній пісні
-                        </p>
-                    </div>
+                    {FEATURE_KEYS.map((key, idx) => {
+                        const Icon = FEATURE_ICONS[idx]
+                        const f = t(`student.features.${key}`, { returnObjects: true }) as {
+                            title: string
+                            text?: string
+                            line1?: string
+                            line2?: string
+                        }
+                        return (
+                            <div key={key} className="flex flex-col items-center text-center space-y-3">
+                                <Icon />
+                                <h3 className="font-extrabold text-lg text-[#120826]">{f.title}</h3>
+                                <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-[180px]">
+                                    {f.line1 ? (
+                                        <>
+                                            {f.line1}<br />{f.line2}
+                                        </>
+                                    ) : (
+                                        f.text
+                                    )}
+                                </p>
+                            </div>
+                        )
+                    })}
                 </div>
             </section>
 
             {/* Steps Section */}
             <section className="bg-[#6829C6] text-white py-20 px-6 text-center">
                 <h2 className="font-['Inter'] text-3xl sm:text-4xl font-extrabold mb-16 tracking-tight">
-                    Отримати підписку Premium Student просто
+                    {t('student.stepsTitle')}
                 </h2>
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-[#E869CA] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
-                            1
+                    {STEP_KEYS.map((i) => (
+                        <div key={i} className="flex flex-col items-center space-y-4">
+                            <div className="w-16 h-16 bg-[#E869CA] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
+                                {i + 1}
+                            </div>
+                            <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
+                                {t(`student.steps.${i}`)}
+                            </p>
                         </div>
-                        <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
-                            Зареєструйтесь або ввійдіть у наявний акаунт
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-[#E869CA] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
-                            2
-                        </div>
-                        <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
-                            Підтвердьте свій статус студента акредитованого вищого навчального закладу
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-[#E869CA] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
-                            3
-                        </div>
-                        <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
-                            Додайте спосіб оплати й насолоджуйтеся всіма перевагами Premium
-                        </p>
-                    </div>
+                    ))}
                 </div>
             </section>
 

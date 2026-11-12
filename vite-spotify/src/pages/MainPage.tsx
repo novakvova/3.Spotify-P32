@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { FAQ } from '../components/FAQ';
 import heroCollages from '../assets/home/hero-collages.png';
 import sonoraCircleLogo from '../assets/home/sonoraCircleLogo.png';
@@ -36,26 +37,111 @@ const PaymentMethodsIcon: React.FC = () => (
 );
 
 // SVG Бейдж "0 USD за 1 місяць"
-const BadgeTag: React.FC<{ color: string }> = ({ color }) => (
-    <div className="absolute top-0 left-0 z-10 pointer-events-none">
-        <svg width="163" height="30" viewBox="0 0 163 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 0H163V20C163 25.5228 158.523 30 153 30H0V0Z" fill={color}/>
-            <text x="12" y="20" fill="white" fontSize="11" fontWeight="bold" fontFamily="sans-serif">
-                0 USD за 1 місяць
-            </text>
-        </svg>
-    </div>
-);
+const BadgeTag: React.FC<{ color: string }> = ({ color }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="absolute top-0 left-0 z-10 pointer-events-none">
+            <svg width="163" height="30" viewBox="0 0 163 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 0H163V20C163 25.5228 158.523 30 153 30H0V0Z" fill={color}/>
+                <text x="12" y="20" fill="white" fontSize="11" fontWeight="bold" fontFamily="sans-serif">
+                    {t('main.badge')}
+                </text>
+            </svg>
+        </div>
+    );
+};
+
+const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'] as const;
+const ROW_KEYS = ['ads', 'offline', 'order', 'quality', 'friends'] as const;
+
+type PlanId = 'individual' | 'duo' | 'family' | 'student' | 'kids';
+
+const PLAN_STYLE: Record<PlanId, { color: string; badge: boolean; to?: string }> = {
+    individual: { color: '#CD51CA', badge: true },
+    duo: { color: '#6B309B', badge: false, to: '/premium/duo' },
+    family: { color: '#E869CA', badge: false, to: '/premium/family' },
+    student: { color: '#6829C6', badge: true, to: '/premium/student' },
+    kids: { color: '#AA71FF', badge: true, to: '/premium/kids' },
+};
+
+interface PlanText {
+    title: string;
+    price: string;
+    after?: string;
+    desc?: string;
+    bullets: string[];
+    cta: string;
+}
+
+const PlanCard: React.FC<{ id: PlanId }> = ({ id }) => {
+    const { t } = useTranslation();
+    const style = PLAN_STYLE[id];
+    const plan = t(`main.cards.${id}`, { returnObjects: true }) as PlanText;
+
+    return (
+        <div
+            className="relative bg-white border-[4px] rounded-3xl p-7 pt-12 shadow-sm flex flex-col justify-between overflow-hidden"
+            style={{ borderColor: style.color }}
+        >
+            {style.badge && <BadgeTag color={style.color} />}
+
+            <div>
+                <div className="flex items-center gap-2 mb-3">
+                    <img src={sonoraCircleLogo} alt="Sonora" className="w-6 h-6 object-contain" />
+                    <span className="font-extrabold text-base" style={{ color: style.color }}>
+                        {t('main.premiumLabel')}
+                    </span>
+                </div>
+
+                <h3
+                    className="font-['Inter'] text-4xl font-extrabold tracking-tight mb-2"
+                    style={{ color: style.color }}
+                >
+                    {plan.title}
+                </h3>
+
+                <p className="font-bold text-base mb-0.5" style={{ color: style.color }}>
+                    {plan.price}
+                </p>
+                {plan.after && <p className="text-xs text-gray-500 mb-5">{plan.after}</p>}
+                {plan.desc && <p className="text-xs text-gray-500 mb-5 leading-tight">{plan.desc}</p>}
+
+                <div className="-mx-7 border-t-[3px] mb-6 opacity-90" style={{ borderColor: style.color }} />
+
+                <ul className="text-xs space-y-3.5 text-left font-semibold mb-8" style={{ color: style.color }}>
+                    {plan.bullets.map((bullet) => (
+                        <li key={bullet} className="flex items-start gap-2">
+                            <span>•</span> {bullet}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {style.to ? (
+                <Link
+                    to={style.to}
+                    className="w-full text-white font-bold py-3 rounded-full hover:opacity-90 transition text-center text-sm block"
+                    style={{ backgroundColor: style.color }}
+                >
+                    {plan.cta}
+                </Link>
+            ) : (
+                <button
+                    type="button"
+                    className="w-full text-white font-bold py-3 rounded-full hover:opacity-90 transition text-sm"
+                    style={{ backgroundColor: style.color }}
+                >
+                    {plan.cta}
+                </button>
+            )}
+        </div>
+    );
+};
 
 export const MainPage: React.FC = () => {
-    const faqList = [
-        { question: "Як працює пробна версія Sonora Premium?" },
-        { question: "Як скасувати мою підписку Premium?" },
-        { question: "Як працює підписка Premium Duo?" },
-        { question: "Як працює підписка Premium Family?" },
-        { question: "Як працює підписка Premium Student?" },
-        { question: "Яка вартість Sonora Premium у вашому регіоні?" }
-    ];
+    const { t } = useTranslation();
+
+    const faqList = FAQ_KEYS.map((key) => ({ question: t(`main.faq.${key}`) }));
 
     return (
         <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
@@ -86,7 +172,7 @@ export const MainPage: React.FC = () => {
                     >
                         <img
                             src={heroCollages}
-                            alt="Музичні альбоми"
+                            alt={t('main.heroAlt')}
                             className="w-full h-full object-contain object-right-top"
                             style={{ boxShadow: 'none', filter: 'none' }}
                         />
@@ -98,23 +184,23 @@ export const MainPage: React.FC = () => {
                                 className="font-['Inter'] font-extrabold text-[#120826] tracking-tight"
                                 style={{ fontSize: '40px', lineHeight: '55px' }}
                             >
-                                Слухайте без обмежень. Спробуйте 1 місяць Premium Individual за 0 USD
+                                {t('main.heroTitle')}
                             </h1>
                             <p className="text-[#120826] text-base font-medium">
-                                Потім усього 4,99 USD\ на місяць. Можна скасувати будь-коли
+                                {t('main.heroSub')}
                             </p>
 
                             <div className="flex flex-row items-center gap-4 pt-2">
                                 <button className="bg-[#120826] text-white font-bold py-3.5 px-7 rounded-full hover:bg-opacity-90 transition whitespace-nowrap cursor-pointer">
-                                    Спробувати 1 місяць за 0 USD
+                                    {t('main.tryFree')}
                                 </button>
                                 <button className="border border-[#120826] text-[#120826] font-bold py-3.5 px-7 rounded-full hover:bg-black/5 transition whitespace-nowrap cursor-pointer">
-                                    Переглянути всі підписки
+                                    {t('main.allPlans')}
                                 </button>
                             </div>
 
                             <p className="text-xs text-gray-500 pt-1 leading-relaxed">
-                                0 USD за 1 місяць, потім 4,99 USD на місяць. Пропозиція доступна, лише якщо ви раніше не користувалися Premium-підпискою
+                                {t('main.heroFinePrint')}
                             </p>
                         </div>
                     </div>
@@ -123,62 +209,39 @@ export const MainPage: React.FC = () => {
 
             {/* Comparison Section */}
             <section className="py-10 px-4 max-w-4xl mx-auto text-center relative z-20">
-                <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-[#120826]">Відчуйте різницю</h2>
+                <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-[#120826]">{t('main.comparisonTitle')}</h2>
 
                 <p className="text-[#120826] font-bold text-lg md:text-xl mb-12 leading-relaxed max-w-2xl mx-auto">
-                    Перейдіть на <span className="text-[#6829C6]">Premium</span> і насолоджуйтеся повним контролем над<br className="hidden sm:inline" />
-                    музикою. Можна скасувати будь-коли
+                    {t('main.comparisonText1')} <span className="text-[#6829C6]">{t('main.premiumLabel')}</span> {t('main.comparisonText2')}<br className="hidden sm:inline" />
+                    {t('main.comparisonText3')}
                 </p>
 
                 <div className="max-w-[500px] mx-auto">
                     <div className="grid grid-cols-3 pb-4 text-left items-end">
-                        <div className="font-bold text-[#120826] text-sm md:text-base">Ви отримаєте:</div>
+                        <div className="font-bold text-[#120826] text-sm md:text-base">{t('main.youGet')}</div>
                         <div className="text-center font-bold text-[#120826] text-xs md:text-sm leading-tight">
-                            Підписка<br />Sonora Free
+                            {t('main.colFreeTop')}<br />{t('main.colFreeBottom')}
                         </div>
                         <div className="text-center font-bold text-[#6829C6] text-xs md:text-sm leading-tight">
-                            Підписка<br />Sonora Premium
+                            {t('main.colPremiumTop')}<br />{t('main.colPremiumBottom')}
                         </div>
                     </div>
 
                     <div className="border-t-[3px] border-[#6B309B]">
-                        <div className="grid grid-cols-3 py-4 text-left items-center border-b-[3px] border-[#6B309B]">
-                            <div className="font-medium text-[#120826] text-xs md:text-sm">
-                                Прослуховування<br />музики без реклами
+                        {ROW_KEYS.map((key) => (
+                            <div key={key} className="grid grid-cols-3 py-4 text-left items-center border-b-[3px] border-[#6B309B]">
+                                <div className="font-medium text-[#120826] text-xs md:text-sm">
+                                    {(t(`main.rows.${key}`, { returnObjects: true }) as string[]).map((line, i, arr) => (
+                                        <React.Fragment key={line}>
+                                            {line}
+                                            {i < arr.length - 1 && <br />}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                                <div className="flex justify-center"><DashIcon /></div>
+                                <div className="flex justify-center"><CheckIcon /></div>
                             </div>
-                            <div className="flex justify-center"><DashIcon /></div>
-                            <div className="flex justify-center"><CheckIcon /></div>
-                        </div>
-
-                        <div className="grid grid-cols-3 py-4 text-left items-center border-b-[3px] border-[#6B309B]">
-                            <div className="font-medium text-[#120826] text-xs md:text-sm">
-                                Завантажуйте, щоб<br />слухати офлайн
-                            </div>
-                            <div className="flex justify-center"><DashIcon /></div>
-                            <div className="flex justify-center"><CheckIcon /></div>
-                        </div>
-
-                        <div className="grid grid-cols-3 py-4 text-left items-center border-b-[3px] border-[#6B309B]">
-                            <div className="font-medium text-[#120826] text-xs md:text-sm">
-                                Слухайте треки в<br />будь-якому порядку
-                            </div>
-                            <div className="flex justify-center"><DashIcon /></div>
-                            <div className="flex justify-center"><CheckIcon /></div>
-                        </div>
-
-                        <div className="grid grid-cols-3 py-4 text-left items-center border-b-[3px] border-[#6B309B]">
-                            <div className="font-medium text-[#120826] text-xs md:text-sm">Висока якість звуку</div>
-                            <div className="flex justify-center"><DashIcon /></div>
-                            <div className="flex justify-center"><CheckIcon /></div>
-                        </div>
-
-                        <div className="grid grid-cols-3 py-4 text-left items-center border-b-[3px] border-[#6B309B]">
-                            <div className="font-medium text-[#120826] text-xs md:text-sm">
-                                Прослуховування<br />разом із друзями<br />в реальному часі
-                            </div>
-                            <div className="flex justify-center"><DashIcon /></div>
-                            <div className="flex justify-center"><CheckIcon /></div>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </section>
@@ -186,10 +249,10 @@ export const MainPage: React.FC = () => {
             {/* Subscription Cards Section */}
             <section className="py-20 bg-white px-4">
                 <div className="max-w-6xl mx-auto text-center mb-10">
-                    <h2 className="text-3xl md:text-4xl font-extrabold mb-3 text-[#120826]">Доступні підписки на будь-який випадок</h2>
+                    <h2 className="text-3xl md:text-4xl font-extrabold mb-3 text-[#120826]">{t('main.availableTitle')}</h2>
 
                     <p className="text-[#120826] font-bold max-w-2xl mx-auto mb-6 text-sm md:text-base leading-snug">
-                        Виберіть <span className="text-[#6829C6]">Premium</span>-підписку й слухайте музику без реклами й обмежень на телефоні, колонці чи інших пристроях. Оплачуйте зручним для вас способом. Можна скасувати будь-коли
+                        {t('main.availableText1')} <span className="text-[#6829C6]">{t('main.premiumLabel')}</span>{t('main.availableText2')}
                     </p>
 
                     <div className="flex justify-center mb-16">
@@ -197,167 +260,17 @@ export const MainPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* First Row: 3 Cards (вужчі за шириною - max-w-5xl) */}
+                {/* First Row: 3 Cards */}
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-stretch">
-
-                    {/* Card 1: Individual */}
-                    <div className="relative bg-white border-[4px] border-[#CD51CA] rounded-3xl p-7 pt-12 shadow-sm flex flex-col justify-between overflow-hidden">
-                        <BadgeTag color="#CD51CA" />
-
-                        <div>
-                            {/* Logo + Larger Premium Text */}
-                            <div className="flex items-center gap-2 mb-3">
-                                <img src={sonoraCircleLogo} alt="Sonora" className="w-6 h-6 object-contain" />
-                                <span className="font-extrabold text-[#CD51CA] text-base">Premium</span>
-                            </div>
-
-                            {/* Заголовок шрифтом Inter */}
-                            <h3 className="font-['Inter'] text-4xl font-extrabold text-[#CD51CA] tracking-tight mb-2">Individual</h3>
-
-                            <p className="font-bold text-[#CD51CA] text-base mb-0.5">0 USD за 1 місяць</p>
-                            <p className="text-xs text-gray-500 mb-5">Потім 4,99 USD на місяць</p>
-
-                            {/* Розділювальна смужка від краю до краю, товста (#CD51CA) */}
-                            <div className="-mx-7 border-t-[3px] border-[#CD51CA] mb-6 opacity-90" />
-
-                            {/* Список переваг кольору картки (#CD51CA) */}
-                            <ul className="text-xs space-y-3.5 text-left font-semibold text-[#CD51CA] mb-8">
-                                <li className="flex items-start gap-2"><span>•</span> 1 акаунт Premium</li>
-                                <li className="flex items-start gap-2"><span>•</span> Можна скасувати будь-коли</li>
-                            </ul>
-                        </div>
-
-                        <button className="w-full bg-[#CD51CA] text-white font-bold py-3 rounded-full hover:opacity-90 transition text-sm">
-                            Спробувати 1 місяць за 0 USD
-                        </button>
-                    </div>
-
-                    {/* Card 2: Duo */}
-                    <div className="relative bg-white border-[4px] border-[#6B309B] rounded-3xl p-7 pt-12 shadow-sm flex flex-col justify-between overflow-hidden">
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <img src={sonoraCircleLogo} alt="Sonora" className="w-6 h-6 object-contain" />
-                                <span className="font-extrabold text-[#6B309B] text-base">Premium</span>
-                            </div>
-
-                            <h3 className="font-['Inter'] text-4xl font-extrabold text-[#6B309B] tracking-tight mb-2">Duo</h3>
-
-                            <p className="font-bold text-[#6B309B] text-base mb-0.5">6,49 USD на місяць</p>
-                            <p className="text-xs text-gray-500 mb-5 leading-tight">Для двох користувачів, які проживають за однією адресою</p>
-
-                            <div className="-mx-7 border-t-[3px] border-[#6B309B] mb-6 opacity-90" />
-
-                            <ul className="text-xs space-y-3.5 text-left font-semibold text-[#6B309B] mb-8">
-                                <li className="flex items-start gap-2"><span>•</span> 2 акаунти Premium</li>
-                                <li className="flex items-start gap-2"><span>•</span> Можна скасувати будь-коли</li>
-                            </ul>
-                        </div>
-
-                        <Link
-                            to="/premium/duo"
-                            className="w-full bg-[#6B309B] text-white font-bold py-3 rounded-full hover:opacity-90 transition text-center text-sm block"
-                        >
-                            Отримати Premium Duo
-                        </Link>
-                    </div>
-
-                    {/* Card 3: Family */}
-                    <div className="relative bg-white border-[4px] border-[#E869CA] rounded-3xl p-7 pt-12 shadow-sm flex flex-col justify-between overflow-hidden">
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <img src={sonoraCircleLogo} alt="Sonora" className="w-6 h-6 object-contain" />
-                                <span className="font-extrabold text-[#E869CA] text-base">Premium</span>
-                            </div>
-
-                            <h3 className="font-['Inter'] text-4xl font-extrabold text-[#E869CA] tracking-tight mb-2">Family</h3>
-
-                            <p className="font-bold text-[#E869CA] text-base mb-0.5">7,99 USD на місяць</p>
-                            <p className="text-xs text-gray-500 mb-5 leading-tight">Для 6 членів сім’ї, які проживають за однією адресою.</p>
-
-                            <div className="-mx-7 border-t-[3px] border-[#E869CA] mb-6 opacity-90" />
-
-                            <ul className="text-xs space-y-3.5 text-left font-semibold text-[#E869CA] mb-8">
-                                <li className="flex items-start gap-2"><span>•</span> До 6 акаунтів Premium</li>
-                                <li className="flex items-start gap-2"><span>•</span> Можна скасувати будь-коли</li>
-                            </ul>
-                        </div>
-
-                        <Link
-                            to="/premium/family"
-                            className="w-full bg-[#E869CA] text-white font-bold py-3 rounded-full hover:opacity-90 transition text-center text-sm block"
-                        >
-                            Отримати Premium Family
-                        </Link>
-                    </div>
-
+                    <PlanCard id="individual" />
+                    <PlanCard id="duo" />
+                    <PlanCard id="family" />
                 </div>
 
-                {/* Second Row: 2 Cards (вужчий блок - max-w-[660px]) */}
+                {/* Second Row: 2 Cards */}
                 <div className="max-w-[660px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-
-                    {/* Card 4: Student */}
-                    <div className="relative bg-white border-[4px] border-[#6829C6] rounded-3xl p-7 pt-12 shadow-sm flex flex-col justify-between overflow-hidden">
-                        <BadgeTag color="#6829C6" />
-
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <img src={sonoraCircleLogo} alt="Sonora" className="w-6 h-6 object-contain" />
-                                <span className="font-extrabold text-[#6829C6] text-base">Premium</span>
-                            </div>
-
-                            <h3 className="font-['Inter'] text-4xl font-extrabold text-[#6829C6] tracking-tight mb-2">Student</h3>
-
-                            <p className="font-bold text-[#6829C6] text-base mb-0.5">0 USD за 1 місяць</p>
-                            <p className="text-xs text-gray-500 mb-5">Потім 2,49 USD на місяць</p>
-
-                            <div className="-mx-7 border-t-[3px] border-[#6829C6] mb-6 opacity-90" />
-
-                            <ul className="text-xs space-y-3.5 text-left font-semibold text-[#6829C6] mb-8">
-                                <li className="flex items-start gap-2"><span>•</span> 1 підтверджений акаунт Premium</li>
-                                <li className="flex items-start gap-2"><span>•</span> Можна скасувати будь-коли</li>
-                            </ul>
-                        </div>
-
-                        <Link
-                            to="/premium/student"
-                            className="w-full bg-[#6829C6] text-white font-bold py-3 rounded-full hover:opacity-90 transition text-center text-sm block"
-                        >
-                            Спробувати 1 місяць за 0 USD
-                        </Link>
-                    </div>
-
-                    {/* Card 5: Kids+ */}
-                    <div className="relative bg-white border-[4px] border-[#AA71FF] rounded-3xl p-7 pt-12 shadow-sm flex flex-col justify-between overflow-hidden">
-                        <BadgeTag color="#AA71FF" />
-
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <img src={sonoraCircleLogo} alt="Sonora" className="w-6 h-6 object-contain" />
-                                <span className="font-extrabold text-[#AA71FF] text-base">Premium</span>
-                            </div>
-
-                            <h3 className="font-['Inter'] text-4xl font-extrabold text-[#AA71FF] tracking-tight mb-2">Kids+</h3>
-
-                            <p className="font-bold text-[#AA71FF] text-base mb-0.5">0 USD за 1 місяць</p>
-                            <p className="text-xs text-gray-500 mb-5">Потім 0,99 USD на місяць</p>
-
-                            <div className="-mx-7 border-t-[3px] border-[#AA71FF] mb-6 opacity-90" />
-
-                            <ul className="text-xs space-y-3.5 text-left font-semibold text-[#AA71FF] mb-8">
-                                <li className="flex items-start gap-2"><span>•</span> Доступ до українських казок</li>
-                                <li className="flex items-start gap-2"><span>•</span> Безпечний контент</li>
-                                <li className="flex items-start gap-2"><span>•</span> Батьківський контроль</li>
-                            </ul>
-                        </div>
-
-                        <Link
-                            to="/premium/kids"
-                            className="w-full bg-[#AA71FF] text-white font-bold py-3 rounded-full hover:opacity-90 transition text-center text-sm block"
-                        >
-                            Спробувати 1 місяць за 0 USD
-                        </Link>
-                    </div>
-
+                    <PlanCard id="student" />
+                    <PlanCard id="kids" />
                 </div>
             </section>
 

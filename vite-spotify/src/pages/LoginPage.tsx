@@ -1,8 +1,10 @@
-import { useState, useRef } from 'react'
+import { useMemo, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import {
     useLoginEmailMutation,
     useLoginWithCodeMutation,
@@ -19,37 +21,43 @@ import eyeOpenIcon from '../assets/auth/eye-open.svg'
 import backArrowIcon from '../assets/auth/back-arrow.svg'
 import errorIcon from '../assets/auth/error-icon.svg'
 
-const loginSchema = z.object({
-    email: z
-        .string()
-        .trim()
-        .min(1, 'Введіть коректну адресу електронної пошти')
-        .email('Введіть коректну адресу електронної пошти'),
-    password: z
-        .string()
-        .min(1, 'Неправильні адреса електронної пошти або пароль'),
-})
+function buildLoginSchema(t: TFunction) {
+    return z.object({
+        email: z
+            .string()
+            .trim()
+            .min(1, t('login.errors.emailInvalid'))
+            .email(t('login.errors.emailInvalid')),
+        password: z.string().min(1, t('login.errors.invalidCredentials')),
+    })
+}
 
-type LoginFormValues = z.infer<typeof loginSchema>
+function buildCodeSchema(t: TFunction) {
+    const message = t('login.errors.invalidCode')
+    return z.object({
+        d0: z.string().regex(/^\d$/, message),
+        d1: z.string().regex(/^\d$/, message),
+        d2: z.string().regex(/^\d$/, message),
+        d3: z.string().regex(/^\d$/, message),
+    })
+}
 
-const codeLoginSchema = z.object({
-    d0: z.string().regex(/^\d$/, 'Цей код недійсний. Перевірте код і повторіть спробу'),
-    d1: z.string().regex(/^\d$/, 'Цей код недійсний. Перевірте код і повторіть спробу'),
-    d2: z.string().regex(/^\d$/, 'Цей код недійсний. Перевірте код і повторіть спробу'),
-    d3: z.string().regex(/^\d$/, 'Цей код недійсний. Перевірте код і повторіть спробу'),
-})
-
-type CodeLoginFormValues = z.infer<typeof codeLoginSchema>
+type LoginFormValues = z.infer<ReturnType<typeof buildLoginSchema>>
+type CodeLoginFormValues = z.infer<ReturnType<typeof buildCodeSchema>>
 
 const CODE_KEYS: Array<keyof CodeLoginFormValues> = ['d0', 'd1', 'd2', 'd3']
 
 export default function LoginPage() {
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
+    const { t } = useTranslation()
     const [loginEmail, { isLoading: isSendingCode }] = useLoginEmailMutation()
     const [loginWithCode, { isLoading: isVerifyingCode }] = useLoginWithCodeMutation()
     const [loginWithPassword, { isLoading: isLoggingInPassword }] =
         useLoginWithPasswordMutation()
+
+    const loginSchema = useMemo(() => buildLoginSchema(t), [t])
+    const codeLoginSchema = useMemo(() => buildCodeSchema(t), [t])
 
     const [view, setView] = useState<'email' | 'password' | 'code'>('email')
     const [showPassword, setShowPassword] = useState(false)
@@ -155,9 +163,7 @@ export default function LoginPage() {
             }
             if (errorObj?.status === 400) {
                 setError('email', {
-                    message:
-                        errorObj?.data?.message ||
-                        'Введіть коректну адресу електронної пошти',
+                    message: errorObj?.data?.message || t('login.errors.emailInvalid'),
                 })
                 return
             }
@@ -187,7 +193,7 @@ export default function LoginPage() {
                 message:
                     errorObj?.data?.message ||
                     errorObj?.data?.error ||
-                    'Неправильні адреса електронної пошти або пароль',
+                    t('login.errors.invalidCredentials'),
             })
         }
     }
@@ -235,15 +241,13 @@ export default function LoginPage() {
 
         try {
             await loginEmail({ email: trimmedEmail }).unwrap()
-            setCodeResentMessage('Код надіслано повторно')
+            setCodeResentMessage(t('login.codeResent'))
         } catch (err: unknown) {
             const errorObj = err as {
                 data?: { message?: string }
             }
             setCodeFormError('root', {
-                message:
-                    errorObj?.data?.message ||
-                    'Код уже надіслано. Спробуйте за хвилину',
+                message: errorObj?.data?.message || t('login.errors.codeAlreadySent'),
             })
         }
     }
@@ -266,9 +270,7 @@ export default function LoginPage() {
                 data?: { message?: string }
             }
             setCodeFormError('root', {
-                message:
-                    errorObj?.data?.message ||
-                    'Цей код недійсний. Перевірте код і повторіть спробу',
+                message: errorObj?.data?.message || t('login.errors.invalidCode'),
             })
         }
     }
@@ -298,7 +300,7 @@ export default function LoginPage() {
                             marginTop: '20px',
                         }}
                     >
-                        Раді бачити вас знову!
+                        {t('login.emailTitle')}
                     </h1>
 
                     <form
@@ -313,7 +315,7 @@ export default function LoginPage() {
                                 className="font-bold text-white"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                Електронна пошта
+                                {t('login.emailLabel')}
                             </label>
 
                             <div
@@ -374,14 +376,14 @@ export default function LoginPage() {
                                     fontSize: '16px',
                                 }}
                             >
-                                {isSendingCode ? 'Зачекайте...' : 'Далі'}
+                                {isSendingCode ? t('login.waiting') : t('login.next')}
                             </button>
 
                             <p
                                 className="font-bold text-center text-white"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                або
+                                {t('login.or')}
                             </p>
                         </div>
                     </form>
@@ -400,12 +402,12 @@ export default function LoginPage() {
                             }}
                         >
                             <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
-                                <img src={googleIcon} alt="Google" className="block" />
+                                <img src={googleIcon} alt={t('login.google')} className="block" />
                             </span>
                             <span className="flex-1 text-center">
-                                Зареєструватися через
+                                {t('login.signUpWithGoogle1')}
                                 <br />
-                                Google
+                                {t('login.google')}
                             </span>
                         </button>
 
@@ -424,7 +426,7 @@ export default function LoginPage() {
                             <span className="shrink-0" style={{ width: '20px', height: '22px' }}>
                                 <img src={appleIcon} alt="Apple" className="block" />
                             </span>
-                            <span className="flex-1 text-center">Вхід через Apple</span>
+                            <span className="flex-1 text-center">{t('login.loginWithApple')}</span>
                         </button>
                     </div>
 
@@ -433,14 +435,14 @@ export default function LoginPage() {
                         style={{ marginTop: '70px', gap: '16px' }}
                     >
                         <p className="font-normal text-white" style={{ fontSize: '16px', lineHeight: '30px' }}>
-                            Немає акаунту?
+                            {t('login.noAccount')}
                         </p>
                         <Link
                             to="/register"
                             className="font-bold text-white hover:underline"
                             style={{ fontSize: '16px', lineHeight: '25px' }}
                         >
-                            Зареєструватися
+                            {t('login.signUp')}
                         </Link>
                     </div>
                 </div>
@@ -456,7 +458,7 @@ export default function LoginPage() {
             errors.root?.message ||
             errors.email?.message ||
             errors.password?.message ||
-            'Неправильні адреса електронної пошти або пароль'
+            t('login.errors.invalidCredentials')
 
         return (
             <div
@@ -472,7 +474,7 @@ export default function LoginPage() {
                                 clearErrors()
                                 setView('code')
                             }}
-                            aria-label="Назад"
+                            aria-label={t('login.back')}
                             className="cursor-pointer flex items-center justify-center"
                             style={{
                                 position: 'absolute',
@@ -491,7 +493,7 @@ export default function LoginPage() {
                             className="font-bold text-white"
                             style={{ fontSize: '20px', lineHeight: '30px' }}
                         >
-                            Увійти за допомогою пароля
+                            {t('login.passwordTitle')}
                         </h1>
                     </div>
 
@@ -507,7 +509,7 @@ export default function LoginPage() {
                                 className="font-bold text-white"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                Електронна пошта
+                                {t('login.emailLabel')}
                             </label>
 
                             <input
@@ -544,7 +546,7 @@ export default function LoginPage() {
                                 className="font-bold text-white"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                Пароль
+                                {t('login.passwordLabel')}
                             </label>
 
                             <div
@@ -615,7 +617,7 @@ export default function LoginPage() {
                                     fontSize: '16px',
                                 }}
                             >
-                                {isLoggingInPassword ? 'Вхід...' : 'Увійти'}
+                                {isLoggingInPassword ? t('login.loggingIn') : t('login.logIn')}
                             </button>
                         </div>
 
@@ -639,7 +641,7 @@ export default function LoginPage() {
                                 className="cursor-pointer font-bold text-white text-center hover:underline"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                Увійти без пароля
+                                {t('login.loginWithoutPassword')}
                             </button>
 
                             <Link
@@ -647,7 +649,7 @@ export default function LoginPage() {
                                 className="font-bold text-white text-center hover:underline"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                Забули пароль?
+                                {t('login.forgotPassword')}
                             </Link>
                         </div>
                     </form>
@@ -659,8 +661,7 @@ export default function LoginPage() {
     const hasCodeError = Boolean(
         codeErrors.d0 || codeErrors.d1 || codeErrors.d2 || codeErrors.d3 || codeErrors.root
     )
-    const codeErrorMessage =
-        codeErrors.root?.message || 'Цей код недійсний. Перевірте код і повторіть спробу'
+    const codeErrorMessage = codeErrors.root?.message || t('login.errors.invalidCode')
 
     return (
         <div
@@ -676,7 +677,7 @@ export default function LoginPage() {
                             setCodeResentMessage('')
                             setView('email')
                         }}
-                        aria-label="Назад"
+                        aria-label={t('login.back')}
                         className="cursor-pointer flex items-center justify-center"
                         style={{
                             position: 'absolute',
@@ -693,7 +694,7 @@ export default function LoginPage() {
                         className="font-bold text-white"
                         style={{ fontSize: '20px', lineHeight: '30px' }}
                     >
-                        Введіть код, надісланий на вашу електронну пошту
+                        {t('login.codeTitle')}
                     </h1>
                 </div>
 
@@ -770,7 +771,7 @@ export default function LoginPage() {
                             marginTop: hasCodeError ? '40px' : '56px',
                         }}
                     >
-                        {isSendingCode ? 'Надсилання...' : 'Надіслати код ще раз'}
+                        {isSendingCode ? t('login.sendingCode') : t('login.resendCode')}
                     </button>
 
                     <button
@@ -785,7 +786,7 @@ export default function LoginPage() {
                             marginTop: '40px',
                         }}
                     >
-                        {isVerifyingCode ? 'Перевірка...' : 'Далі'}
+                        {isVerifyingCode ? t('login.verifying') : t('login.next')}
                     </button>
 
                     <button
@@ -797,7 +798,7 @@ export default function LoginPage() {
                         className="cursor-pointer font-bold text-white text-center hover:underline"
                         style={{ fontSize: '16px', lineHeight: '25px', marginTop: '70px' }}
                     >
-                        Увійти за допомогою пароля
+                        {t('login.usePassword')}
                     </button>
                 </form>
             </div>

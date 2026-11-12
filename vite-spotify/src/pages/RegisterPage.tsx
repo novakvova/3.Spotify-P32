@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useCheckEmailMutation, useRegisterMutation } from '../services/auth/authApi'
 import { setCredentials } from '../store/slices/authSlice'
 import { useAppDispatch } from '../store/hooks'
@@ -19,20 +21,8 @@ import checkboxCheckedIcon from '../assets/auth/checkbox-checked.svg'
 import monthArrowIcon from '../assets/auth/month-arrow.svg'
 import errorIcon from '../assets/auth/error-icon.svg'
 
-const MONTHS = [
-    { value: '01', label: 'Січень' },
-    { value: '02', label: 'Лютий' },
-    { value: '03', label: 'Березень' },
-    { value: '04', label: 'Квітень' },
-    { value: '05', label: 'Травень' },
-    { value: '06', label: 'Червень' },
-    { value: '07', label: 'Липень' },
-    { value: '08', label: 'Серпень' },
-    { value: '09', label: 'Вересень' },
-    { value: '10', label: 'Жовтень' },
-    { value: '11', label: 'Листопад' },
-    { value: '12', label: 'Грудень' },
-]
+const MONTH_VALUES = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as const
+const GENDER_KEYS: Gender[] = ['MALE', 'FEMALE', 'NONEBINARY', 'OTHER', 'UNDISCLOSED']
 
 function formatValidBirthDate(dayStr: string, monthStr: string, yearStr: string): string | null {
     const days = parseInt(dayStr, 10)
@@ -67,58 +57,64 @@ function formatValidBirthDate(dayStr: string, monthStr: string, yearStr: string)
     return `${years}-${paddedMonth}-${paddedDay}`
 }
 
-const registerSchema = z
-    .object({
-        email: z
-            .string()
-            .trim()
-            .min(1, 'Введіть коректну адресу електронної пошти')
-            .email('Введіть коректну адресу електронної пошти')
-            .max(100, 'Введіть коректну адресу електронної пошти'),
-        password: z
-            .string()
-            .min(10, 'Пароль має містити щонайменше 10 символів')
-            .max(72, 'Пароль занадто довгий')
-            .refine((val) => /\p{L}/u.test(val), 'Пароль має містити принаймні 1 літеру')
-            .refine(
-                (val) => /[\d\p{P}\p{S}]/u.test(val),
-                'Пароль має містити принаймні 1 число або 1 спеціальний символ'
-            ),
-        fullName: z
-            .string()
-            .trim()
-            .min(1, "Введіть своє ім'я")
-            .max(120, "Ім'я: до 120 символів"),
-        birthDay: z.string().min(1, 'Виберіть дату народження'),
-        birthMonth: z.string().min(1, 'Виберіть дату народження'),
-        birthYear: z.string().min(1, 'Виберіть дату народження'),
-        gender: z
-            .enum(['MALE', 'FEMALE', 'OTHER', 'NONEBINARY', 'UNDISCLOSED'])
-            .nullable()
-            .refine((val): val is Gender => val !== null, 'Оберіть стать'),
-        acceptTerms: z.boolean().refine((val) => val === true, {
-            message: 'Щоб продовжити, необхідно прийняти Умови використання',
-        }),
-        acceptNews: z.boolean(),
-        acceptData: z.boolean(),
-    })
-    .superRefine((data, ctx) => {
-        if (!formatValidBirthDate(data.birthDay, data.birthMonth, data.birthYear)) {
-            ctx.addIssue({
-                code: 'custom',
-                path: ['birthDay'],
-                message: 'Виберіть дату народження',
-            })
-        }
-    })
+function buildRegisterSchema(t: TFunction) {
+    const birthRequired = t('register.errors.birthRequired')
+    return z
+        .object({
+            email: z
+                .string()
+                .trim()
+                .min(1, t('register.errors.emailInvalid'))
+                .email(t('register.errors.emailInvalid'))
+                .max(100, t('register.errors.emailInvalid')),
+            password: z
+                .string()
+                .min(10, t('register.errors.passwordMin'))
+                .max(72, t('register.errors.passwordMax'))
+                .refine((val) => /\p{L}/u.test(val), t('register.errors.passwordLetter'))
+                .refine(
+                    (val) => /[\d\p{P}\p{S}]/u.test(val),
+                    t('register.errors.passwordDigitOrSpecial')
+                ),
+            fullName: z
+                .string()
+                .trim()
+                .min(1, t('register.errors.nameRequired'))
+                .max(120, t('register.errors.nameMax')),
+            birthDay: z.string().min(1, birthRequired),
+            birthMonth: z.string().min(1, birthRequired),
+            birthYear: z.string().min(1, birthRequired),
+            gender: z
+                .enum(['MALE', 'FEMALE', 'OTHER', 'NONEBINARY', 'UNDISCLOSED'])
+                .nullable()
+                .refine((val): val is Gender => val !== null, t('register.errors.genderRequired')),
+            acceptTerms: z.boolean().refine((val) => val === true, {
+                message: t('register.errors.termsRequired'),
+            }),
+            acceptNews: z.boolean(),
+            acceptData: z.boolean(),
+        })
+        .superRefine((data, ctx) => {
+            if (!formatValidBirthDate(data.birthDay, data.birthMonth, data.birthYear)) {
+                ctx.addIssue({
+                    code: 'custom',
+                    path: ['birthDay'],
+                    message: birthRequired,
+                })
+            }
+        })
+}
 
-type RegisterFormValues = z.input<typeof registerSchema>
+type RegisterFormValues = z.input<ReturnType<typeof buildRegisterSchema>>
 
 export default function RegisterPage() {
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
+    const { t } = useTranslation()
     const [checkEmail, { isLoading: isCheckingEmail }] = useCheckEmailMutation()
     const [registerUser, { isLoading: isRegistering }] = useRegisterMutation()
+
+    const registerSchema = useMemo(() => buildRegisterSchema(t), [t])
 
     const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
     const [showPassword, setShowPassword] = useState(false)
@@ -181,8 +177,7 @@ export default function RegisterPage() {
             } else {
                 setError('email', {
                     type: 'taken',
-                    message:
-                        'Такий користувач уже зареєстрований. Увійдіть або використайте іншу адресу',
+                    message: t('register.errors.emailTaken'),
                 })
             }
         } catch (err: unknown) {
@@ -193,14 +188,12 @@ export default function RegisterPage() {
             if (errorObj?.status === 409 || errorObj?.data?.code === 'EMAIL_TAKEN') {
                 setError('email', {
                     type: 'taken',
-                    message:
-                        'Такий користувач уже зареєстрований. Увійдіть або використайте іншу адресу',
+                    message: t('register.errors.emailTaken'),
                 })
             } else if (errorObj?.status === 400) {
                 setError('email', {
                     type: 'invalid',
-                    message:
-                        errorObj?.data?.message || 'Введіть коректну адресу електронної пошти',
+                    message: errorObj?.data?.message || t('register.errors.emailInvalid'),
                 })
             } else {
                 setStep(1)
@@ -234,7 +227,7 @@ export default function RegisterPage() {
         if (!birthDateFormatted) {
             setError('birthDay', {
                 type: 'manual',
-                message: 'Виберіть дату народження',
+                message: t('register.errors.birthRequired'),
             })
             return
         }
@@ -297,8 +290,7 @@ export default function RegisterPage() {
             if (errorObj?.status === 409 || errorObj?.data?.code === 'EMAIL_TAKEN') {
                 setError('email', {
                     type: 'taken',
-                    message:
-                        'Такий користувач уже зареєстрований. Увійдіть або використайте іншу адресу',
+                    message: t('register.errors.emailTaken'),
                 })
                 setStep(0)
                 return
@@ -307,7 +299,7 @@ export default function RegisterPage() {
                 message:
                     errorObj?.data?.message ||
                     errorObj?.data?.error ||
-                    'Помилка реєстрації. Спробуйте ще раз',
+                    t('register.errors.generic'),
             })
         }
     }
@@ -338,7 +330,7 @@ export default function RegisterPage() {
                             marginTop: '25px',
                         }}
                     >
-                        Зареєструйтеся, щоб почати слухати
+                        {t('register.emailTitle')}
                     </h1>
 
                     <form
@@ -353,7 +345,7 @@ export default function RegisterPage() {
                                 className="font-bold text-white"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                Адреса електронної пошти
+                                {t('register.emailLabel')}
                             </label>
 
                             <div
@@ -422,14 +414,14 @@ export default function RegisterPage() {
                                     fontSize: '16px',
                                 }}
                             >
-                                {isCheckingEmail ? 'Перевірка...' : 'Далі'}
+                                {isCheckingEmail ? t('register.checking') : t('register.next')}
                             </button>
 
                             <p
                                 className="font-bold text-center text-white"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                або
+                                {t('register.or')}
                             </p>
                         </div>
                     </form>
@@ -448,12 +440,12 @@ export default function RegisterPage() {
                             }}
                         >
                             <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
-                                <img src={googleIcon} alt="Google" className="block" />
+                                <img src={googleIcon} alt={t('register.google')} className="block" />
                             </span>
                             <span className="flex-1 text-center">
-                                Зареєструватися через
+                                {t('register.signUpWithGoogle1')}
                                 <br />
-                                Google
+                                {t('register.google')}
                             </span>
                         </button>
 
@@ -472,7 +464,7 @@ export default function RegisterPage() {
                             <span className="shrink-0" style={{ width: '20px', height: '22px' }}>
                                 <img src={appleIcon} alt="Apple" className="block" />
                             </span>
-                            <span className="flex-1 text-center">Вхід через Apple</span>
+                            <span className="flex-1 text-center">{t('register.loginWithApple')}</span>
                         </button>
                     </div>
 
@@ -481,14 +473,14 @@ export default function RegisterPage() {
                         style={{ marginTop: '70px', gap: '16px' }}
                     >
                         <p className="font-normal text-white" style={{ fontSize: '16px', lineHeight: '30px' }}>
-                            Уже маєте акаунт?
+                            {t('register.haveAccount')}
                         </p>
                         <Link
                             to="/login"
                             className="font-bold text-white hover:underline"
                             style={{ fontSize: '16px', lineHeight: '25px' }}
                         >
-                            Увійти
+                            {t('register.logIn')}
                         </Link>
                     </div>
                 </div>
@@ -535,7 +527,7 @@ export default function RegisterPage() {
                         <button
                             type="button"
                             onClick={() => setStep(0)}
-                            aria-label="Назад"
+                            aria-label={t('register.back')}
                             className="cursor-pointer flex items-center justify-center mb-3 sm:mb-0"
                             style={{
                                 position: 'absolute',
@@ -549,13 +541,13 @@ export default function RegisterPage() {
                         </button>
 
                         <p className="font-normal text-white" style={{ fontSize: '14px', lineHeight: '20px' }}>
-                            Крок 1 з 3
+                            {t('register.stepOf1')}
                         </p>
                         <h1
                             className="font-bold text-white"
                             style={{ fontSize: '16px', lineHeight: '25px', marginTop: '4px' }}
                         >
-                            Створіть пароль
+                            {t('register.passwordTitle')}
                         </h1>
                     </div>
 
@@ -570,7 +562,7 @@ export default function RegisterPage() {
                             className="font-bold text-white"
                             style={{ fontSize: '16px', lineHeight: '25px' }}
                         >
-                            Пароль
+                            {t('register.passwordLabel')}
                         </label>
 
                         <div
@@ -611,7 +603,7 @@ export default function RegisterPage() {
 
                         <div className="w-full flex flex-col items-start" style={{ marginTop: '28px' }}>
                             <p className="font-bold text-white" style={{ fontSize: '16px', lineHeight: '25px' }}>
-                                Пароль має містити принаймні:
+                                {t('register.passwordRequirements')}
                             </p>
 
                             <div className="w-full flex flex-col" style={{ marginTop: '16px', gap: '16px' }}>
@@ -634,7 +626,7 @@ export default function RegisterPage() {
                                             color: passwordSubmitted && !hasLetter ? '#dc2626' : '#ffffff',
                                         }}
                                     >
-                                        1 літеру
+                                        {t('register.reqLetter')}
                                     </span>
                                 </div>
 
@@ -663,7 +655,7 @@ export default function RegisterPage() {
                                                     : '#ffffff',
                                         }}
                                     >
-                                        1 число або 1 спеціальний символ (наприклад: #?!&)
+                                        {t('register.reqDigitOrSpecial')}
                                     </span>
                                 </div>
 
@@ -686,7 +678,7 @@ export default function RegisterPage() {
                                             color: passwordSubmitted && !hasMinLength ? '#dc2626' : '#ffffff',
                                         }}
                                     >
-                                        10 символів
+                                        {t('register.reqLength')}
                                     </span>
                                 </div>
                             </div>
@@ -703,7 +695,7 @@ export default function RegisterPage() {
                                     fontSize: '16px',
                                 }}
                             >
-                                Далі
+                                {t('register.next')}
                             </button>
                         </div>
                     </form>
@@ -755,7 +747,7 @@ export default function RegisterPage() {
                         <button
                             type="button"
                             onClick={() => setStep(1)}
-                            aria-label="Назад"
+                            aria-label={t('register.back')}
                             className="cursor-pointer flex items-center justify-center"
                             style={{
                                 position: 'absolute',
@@ -769,13 +761,13 @@ export default function RegisterPage() {
                         </button>
 
                         <p className="font-normal text-white" style={{ fontSize: '14px', lineHeight: '20px' }}>
-                            Крок 2 з 3
+                            {t('register.stepOf2')}
                         </p>
                         <h1
                             className="font-bold text-white"
                             style={{ fontSize: '16px', lineHeight: '25px', marginTop: '4px' }}
                         >
-                            Розкажіть про себе
+                            {t('register.personalTitle')}
                         </h1>
                     </div>
 
@@ -791,13 +783,13 @@ export default function RegisterPage() {
                                 className="font-bold text-white"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                Ім&apos;я
+                                {t('register.nameLabel')}
                             </label>
                             <p
                                 className="font-normal text-white"
                                 style={{ fontSize: '14px', lineHeight: '20px', marginTop: '2px' }}
                             >
-                                Це ім&apos;я відображатиметься в профілі
+                                {t('register.nameHint')}
                             </p>
 
                             <input
@@ -831,7 +823,7 @@ export default function RegisterPage() {
                                         marginTop: '10px',
                                     }}
                                 >
-                                    {errors.fullName?.message || "Введіть своє ім'я"}
+                                    {errors.fullName?.message || t('register.errors.nameRequired')}
                                 </p>
                             )}
                         </div>
@@ -841,7 +833,7 @@ export default function RegisterPage() {
                                 className="font-bold text-white"
                                 style={{ fontSize: '16px', lineHeight: '25px' }}
                             >
-                                Дата народження
+                                {t('register.birthLabel')}
                             </label>
 
                             {showBirthDateError && (
@@ -854,7 +846,7 @@ export default function RegisterPage() {
                                         marginTop: '6px',
                                     }}
                                 >
-                                    Виберіть дату народження
+                                    {t('register.errors.birthRequired')}
                                 </p>
                             )}
 
@@ -866,7 +858,7 @@ export default function RegisterPage() {
                                     type="text"
                                     inputMode="numeric"
                                     maxLength={2}
-                                    placeholder="дд"
+                                    placeholder={t('register.dayPlaceholder')}
                                     {...register('birthDay', {
                                         onChange: (e) => {
                                             e.target.value = e.target.value.replace(/\D/g, '')
@@ -910,15 +902,15 @@ export default function RegisterPage() {
                                         }}
                                     >
                                         <option value="" disabled style={{ backgroundColor: '#280a3a', color: '#ffffff' }}>
-                                            Місяць
+                                            {t('register.monthPlaceholder')}
                                         </option>
-                                        {MONTHS.map((month) => (
+                                        {MONTH_VALUES.map((value, index) => (
                                             <option
-                                                key={month.value}
-                                                value={month.value}
+                                                key={value}
+                                                value={value}
                                                 style={{ backgroundColor: '#280a3a', color: '#ffffff' }}
                                             >
-                                                {month.label}
+                                                {t(`register.months.${index}`)}
                                             </option>
                                         ))}
                                     </select>
@@ -934,7 +926,7 @@ export default function RegisterPage() {
                                     type="text"
                                     inputMode="numeric"
                                     maxLength={4}
-                                    placeholder="рррр"
+                                    placeholder={t('register.yearPlaceholder')}
                                     {...register('birthYear', {
                                         onChange: (e) => {
                                             e.target.value = e.target.value.replace(/\D/g, '')
@@ -958,29 +950,21 @@ export default function RegisterPage() {
 
                         <div className="w-full flex flex-col items-start" style={{ marginTop: '28px' }}>
                             <p className="font-bold text-white" style={{ fontSize: '16px', lineHeight: '25px' }}>
-                                Стать
+                                {t('register.genderLabel')}
                             </p>
 
                             <div
                                 className="w-full flex flex-wrap items-center"
                                 style={{ marginTop: '14px', columnGap: '24px', rowGap: '18px' }}
                             >
-                                {(
-                                    [
-                                        { value: 'MALE' as Gender, label: 'Чоловік' },
-                                        { value: 'FEMALE' as Gender, label: 'Жінка' },
-                                        { value: 'NONEBINARY' as Gender, label: 'Небінарна' },
-                                        { value: 'OTHER' as Gender, label: 'Інше' },
-                                        { value: 'UNDISCLOSED' as Gender, label: 'Не хочу вказувати' },
-                                    ]
-                                ).map((option) => {
-                                    const isSelected = genderValue === option.value
+                                {GENDER_KEYS.map((genderKey) => {
+                                    const isSelected = genderValue === genderKey
                                     return (
                                         <button
-                                            key={option.value}
+                                            key={genderKey}
                                             type="button"
                                             onClick={() => {
-                                                setValue('gender', option.value)
+                                                setValue('gender', genderKey)
                                                 clearErrors('gender')
                                             }}
                                             className="cursor-pointer flex items-center text-left"
@@ -1002,7 +986,7 @@ export default function RegisterPage() {
                                                 className="font-normal text-white"
                                                 style={{ fontSize: '14px', lineHeight: '20px' }}
                                             >
-                                                {option.label}
+                                                {t(`register.genders.${genderKey}`)}
                                             </span>
                                         </button>
                                     )
@@ -1019,7 +1003,7 @@ export default function RegisterPage() {
                                         marginTop: '10px',
                                     }}
                                 >
-                                    {errors.gender?.message || 'Оберіть стать'}
+                                    {errors.gender?.message || t('register.errors.genderRequired')}
                                 </p>
                             )}
                         </div>
@@ -1035,7 +1019,7 @@ export default function RegisterPage() {
                                     fontSize: '16px',
                                 }}
                             >
-                                Далі
+                                {t('register.next')}
                             </button>
                         </div>
                     </form>
@@ -1082,7 +1066,7 @@ export default function RegisterPage() {
                     <button
                         type="button"
                         onClick={() => setStep(2)}
-                        aria-label="Назад"
+                        aria-label={t('register.back')}
                         className="cursor-pointer flex items-center justify-center"
                         style={{
                             position: 'absolute',
@@ -1096,13 +1080,13 @@ export default function RegisterPage() {
                     </button>
 
                     <p className="font-normal text-white" style={{ fontSize: '14px', lineHeight: '20px' }}>
-                        Крок 3 з 3
+                        {t('register.stepOf3')}
                     </p>
                     <h1
                         className="font-bold text-white"
                         style={{ fontSize: '16px', lineHeight: '25px', marginTop: '4px' }}
                     >
-                        Умови використання
+                        {t('register.termsTitle')}
                     </h1>
                 </div>
 
@@ -1146,7 +1130,7 @@ export default function RegisterPage() {
                                     className="font-normal text-white"
                                     style={{ fontSize: '14px', lineHeight: '20px' }}
                                 >
-                                    Я погоджуюся з Умовами використання та Політикою конфідеційності
+                                    {t('register.acceptTerms')}
                                 </span>
                             </button>
 
@@ -1160,8 +1144,7 @@ export default function RegisterPage() {
                                         marginTop: '10px',
                                     }}
                                 >
-                                    {errors.acceptTerms?.message ||
-                                        'Щоб продовжити, необхідно прийняти Умови використання'}
+                                    {errors.acceptTerms?.message || t('register.errors.termsRequired')}
                                 </p>
                             )}
                         </div>
@@ -1194,7 +1177,7 @@ export default function RegisterPage() {
                                 className="font-normal text-white"
                                 style={{ fontSize: '14px', lineHeight: '20px' }}
                             >
-                                Я погоджуюся отримувати новини та персональні пропозиції
+                                {t('register.acceptNews')}
                             </span>
                         </button>
 
@@ -1226,7 +1209,7 @@ export default function RegisterPage() {
                                 className="font-normal text-white"
                                 style={{ fontSize: '14px', lineHeight: '20px' }}
                             >
-                                Я погоджуюся на обробку моїх даних для покращення сервісу (необов&apos;язково)
+                                {t('register.acceptData')}
                             </span>
                         </button>
                     </div>
@@ -1257,7 +1240,7 @@ export default function RegisterPage() {
                                 fontSize: '16px',
                             }}
                         >
-                            {isRegistering ? 'Зачекайте...' : 'Зареєструватися'}
+                            {isRegistering ? t('register.submitting') : t('register.signUp')}
                         </button>
                     </div>
                 </form>

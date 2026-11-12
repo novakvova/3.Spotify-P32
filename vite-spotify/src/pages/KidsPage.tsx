@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FAQ } from '../components/FAQ';
 import kidshero from '../assets/home/kids-hero.png';
 import kidsfeature from '../assets/home/kids-feature.png';
@@ -12,13 +13,15 @@ const CheckIcon: React.FC = () => (
     </svg>
 );
 
+const WHY_KEYS = [0, 1, 2, 3] as const;
+const EXISTING_KEYS = [0, 1, 2] as const;
+const STEP_KEYS = [0, 1, 2] as const;
+const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4'] as const;
+
 export const KidsPage: React.FC = () => {
-    const faqList = [
-        { question: "Ми отримаємо спільний акаунт чи окремий для кожного?" },
-        { question: "У мене вже є Premium-підписка. Що станеться з моєю збереженою музикою?" },
-        { question: "Чи можна слухати контент без інтернету?" },
-        { question: "Як скасувати підписку, якщо дитині не сподобається?" }
-    ];
+    const { t } = useTranslation();
+
+    const faqList = FAQ_KEYS.map((key) => ({ question: t(`kids.faq.${key}`) }));
 
     return (
         <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
@@ -31,11 +34,11 @@ export const KidsPage: React.FC = () => {
                         Kids+
                     </h1>
                     <p className="text-sm sm:text-base font-medium opacity-95 max-w-xl mx-auto leading-relaxed">
-                        Додайте Premium Kids до своєї підписки та подаруйте дітям безпечний простір для прослуховування. До 3 акаунтів Premium для дітей, що мешкають разом. Усього за 0,99 $ на місяць.
+                        {t('kids.heroText')}
                     </p>
                     <div className="pt-4">
                         <button className="bg-white text-[#AA71FF] font-extrabold py-3.5 px-24 rounded-full hover:bg-gray-50 transition shadow-md cursor-pointer text-base">
-                            Підключити Kids+
+                            {t('kids.cta')}
                         </button>
                     </div>
                 </div>
@@ -45,15 +48,15 @@ export const KidsPage: React.FC = () => {
             <section className="sm:px-12 max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-16">
                 <div className="max-w-lg space-y-5 text-left">
                     <h2 className="font-['Inter'] text-3xl sm:text-4xl font-extrabold text-[#120826] tracking-tight leading-tight">
-                        Чарівний світ казок<br />та колискових
+                        {t('kids.featuresTitle1')}<br />{t('kids.featuresTitle2')}
                     </h2>
                     <p className="text-[#120826] text-base sm:text-lg font-bold leading-snug">
-                        Величезна бібліотека українських народних та авторських казок, колискових і дитячих пісень
+                        {t('kids.featuresText')}
                     </p>
                 </div>
 
                 <div className="w-full md:w-auto flex justify-center shrink-0">
-                    <img src={kidsfeature} alt="Parental control" className="w-full max-w-[340px] sm:max-w-[380px] object-contain"
+                    <img src={kidsfeature} alt={t('kids.featureImgAlt')} className="w-full max-w-[340px] sm:max-w-[380px] object-contain"
                     />
                 </div>
             </section>
@@ -61,9 +64,9 @@ export const KidsPage: React.FC = () => {
             {/* Banner Section */}
             <section className="bg-[#AA71FF] text-white text-center py-10 px-4">
                 <div className="max-w-4xl mx-auto space-y-2">
-                    <h2 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold tracking-tight">Найкраще для вашої малечі</h2>
+                    <h2 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold tracking-tight">{t('kids.bannerTitle')}</h2>
                     <p className="text-sm sm:text-base font-medium opacity-95">
-                        До 3 акаунтів Premium для дітей усього за 0.99 $ на місяць з змогою скасування в будь-який момент
+                        {t('kids.bannerText')}
                     </p>
                 </div>
             </section>
@@ -74,48 +77,32 @@ export const KidsPage: React.FC = () => {
 
                 <div className="space-y-6 md:pr-8">
                     <h3 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold text-[#120826] tracking-tight leading-snug">
-                        Чому варто підключити<br />Kids+?
+                        {t('kids.whyTitle1')}<br />{t('kids.whyTitle2')}
                     </h3>
                     <ul className="space-y-5 text-sm sm:text-base text-gray-800">
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Слухайте офлайн будь-де</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Казки та колискові без реклами</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Батьківський контроль</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Безпечний простір</span>
-                        </li>
+                        {WHY_KEYS.map((i) => (
+                            <li key={i} className="flex items-start gap-4">
+                                <CheckIcon />
+                                <span>{t(`kids.whyItems.${i}`)}</span>
+                            </li>
+                        ))}
                     </ul>
                 </div>
 
                 <div className="space-y-6 md:pl-8">
                     <h3 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold text-[#120826] tracking-tight leading-snug">
-                        Уже маєте підписку<br />Sonora Premium?
+                        {t('kids.existingTitle1')}<br />{t('kids.existingTitle2')}
                     </h3>
                     <p className="text-sm sm:text-base text-gray-700">
-                        Коли ви додаєте Kids+, ваші власні миті, плейлисти й збережені:
+                        {t('kids.existingText')}
                     </p>
                     <ul className="space-y-5 text-sm sm:text-base text-gray-800">
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Основна підписка не змінюється</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Усі ваші треки та плейлисти зберігаються</span>
-                        </li>
-                        <li className="flex items-start gap-4">
-                            <CheckIcon />
-                            <span>Дитячі профілі підключаються в один клік</span>
-                        </li>
+                        {EXISTING_KEYS.map((i) => (
+                            <li key={i} className="flex items-start gap-4">
+                                <CheckIcon />
+                                <span>{t(`kids.existingItems.${i}`)}</span>
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </section>
@@ -123,53 +110,37 @@ export const KidsPage: React.FC = () => {
             {/* Parental control block */}
             <section className="bg-[#AA71FF] text-white flex flex-col md:flex-row items-center justify-center gap-12">
                 <div className="w-full md:w-auto flex justify-center">
-                    <img src={kidshero} alt="Kids hero" className="w-full max-w-[280px] object-contain" />
+                    <img src={kidshero} alt={t('kids.heroImgAlt')} className="w-full max-w-[280px] object-contain" />
                 </div>
                 <div className="max-w-md text-left space-y-3">
-                    <h2 className="font-['Inter'] text-3xl font-extrabold tracking-tight">Батьківський контроль</h2>
+                    <h2 className="font-['Inter'] text-3xl font-extrabold tracking-tight">{t('kids.parentalTitle')}</h2>
                     <p className="text-purple-100 text-sm sm:text-base leading-relaxed">
-                        Легко керуйте контентом та створюйте безпечний простір, щоб завжди бути впевненими в тому, що слухають ваші діти.
+                        {t('kids.parentalText')}
                     </p>
                 </div>
             </section>
 
             <section className="py-14 text-center px-4">
-                <h2 className="font-['Inter'] text-3xl font-extrabold mb-2 text-[#120826] tracking-tight">Можна скасувати будь-коли</h2>
-                <p className="text-gray-500 text-sm">Kids+ не для вас? Не проблема. Підписку можна скасувати будь-коли</p>
+                <h2 className="font-['Inter'] text-3xl font-extrabold mb-2 text-[#120826] tracking-tight">{t('kids.cancelTitle')}</h2>
+                <p className="text-gray-500 text-sm">{t('kids.cancelText')}</p>
             </section>
 
             {/* Steps Section */}
             <section className="bg-[#AA71FF] text-white py-20 px-6 text-center">
                 <h2 className="font-['Inter'] text-3xl sm:text-4xl font-extrabold mb-16 tracking-tight">
-                    Підключити Kids+ — це легко
+                    {t('kids.stepsTitle')}
                 </h2>
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-[#6B309B] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
-                            1
+                    {STEP_KEYS.map((i) => (
+                        <div key={i} className="flex flex-col items-center space-y-4">
+                            <div className="w-16 h-16 bg-[#6B309B] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
+                                {i + 1}
+                            </div>
+                            <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
+                                {t(`kids.steps.${i}`)}
+                            </p>
                         </div>
-                        <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
-                            Увійдіть у свій акаунт у додатку або на сайті
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-[#6B309B] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
-                            2
-                        </div>
-                        <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
-                            Додайте опцію Kids+ у налаштуваннях підписки
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-[#6B309B] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
-                            3
-                        </div>
-                        <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
-                            Насолоджуйтеся спеціальним дитячим додатком та казками
-                        </p>
-                    </div>
+                    ))}
                 </div>
             </section>
 

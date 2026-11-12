@@ -2,22 +2,14 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Footer } from '../components/Footer'
 import { SupportHeader } from './SupportPage'
-import { useAppSelector } from '../store/hooks'
-import { selectLanguage } from '../store/slices/languageSlice'
+import { useTranslation } from 'react-i18next'
 import imgArrowDown from '../assets/support/arrow-down.svg'
 import imgArrowWhite from '../assets/support/arrow-white.svg'
 
-const RELATED_ARTICLES = [
-    { uk: 'Допомога в разі помилки оплати', en: 'Failed payment help' },
-    { uk: 'Зміна платіжних даних', en: 'Updating payment details' },
-    { uk: 'Перехід на іншу підписку Premium', en: 'Switching to another Premium plan' },
-    { uk: 'Зміна налаштувань країни або регіону', en: 'Changing country or region settings' },
-    { uk: 'Політика відшкодування', en: 'Refund policy' },
-]
+const ARTICLE_INDEXES = [0, 1, 2, 3, 4] as const
 
 export default function SupportPaymentMethodsPage() {
-    const lang = useAppSelector(selectLanguage)
-    const isEn = lang === 'en'
+    const { t } = useTranslation()
     const [aiQuery, setAiQuery] = useState('')
     const [aiSubmitted, setAiSubmitted] = useState(false)
     const hasQuery = aiQuery.trim().length > 0
@@ -40,7 +32,7 @@ export default function SupportPaymentMethodsPage() {
                             className="font-semibold text-base hover:underline"
                             style={{ color: '#280a3a' }}
                         >
-                            {isEn ? 'Home' : 'Головна'}
+                            {t('supportPayment.home')}
                         </Link>
                         <img
                             src={imgArrowDown}
@@ -69,7 +61,7 @@ export default function SupportPaymentMethodsPage() {
                                         className="absolute left-0 top-0 pointer-events-none select-none font-bold text-base"
                                         style={{ color: '#280a3a', lineHeight: '25px' }}
                                     >
-                                        {isEn ? 'How can I help you?' : 'Чим я можу допомогти?'}
+                                        {t('support.aiPlaceholder')}
                                     </span>
                                 )}
                                 <textarea
@@ -101,13 +93,13 @@ export default function SupportPaymentMethodsPage() {
                                         cursor: hasQuery ? 'pointer' : 'default',
                                     }}
                                 >
-                                    {isEn ? 'Send request' : 'Надіслати запит'}
+                                    {t('support.send')}
                                 </button>
                             </div>
                         </form>
 
                         <p className="mt-3 text-base font-normal" style={{ lineHeight: '30px' }}>
-                            {isEn ? 'You are using an AI-powered tool' : 'Ви використовуєте інструмент на основі ШІ'}
+                            {t('support.aiNote')}
                         </p>
 
                         {aiSubmitted && (
@@ -119,9 +111,7 @@ export default function SupportPaymentMethodsPage() {
                                 }}
                             >
                                 <p className="font-bold">
-                                    {isEn
-                                        ? 'Your request has been sent to Sonora Support!'
-                                        : 'Ваш запит надіслано до служби підтримки Sonora!'}
+                                    {t('supportPayment.sent')}
                                 </p>
                             </div>
                         )}
@@ -177,10 +167,10 @@ export default function SupportPaymentMethodsPage() {
 
                             <div className="flex flex-col text-white">
                                 <span className="font-bold text-base" style={{ lineHeight: '24px' }}>
-                                    {isEn ? 'Manage account' : 'Керування акаунтом'}
+                                    {t('supportPayment.manageTitle')}
                                 </span>
                                 <span className="font-normal text-base" style={{ lineHeight: '24px' }}>
-                                    {isEn ? 'Profile, payments, and more' : 'Профіль, оплата тощо'}
+                                    {t('supportPayment.manageText')}
                                 </span>
                             </div>
                         </div>
@@ -209,31 +199,25 @@ export default function SupportPaymentMethodsPage() {
                                 className="font-extrabold text-white"
                                 style={{ fontSize: 36, lineHeight: '45px' }}
                             >
-                                {isEn ? 'Supported payment methods' : 'Підтримувані способи оплати'}
+                                {t('supportPayment.title')}
                             </h1>
 
                             <p className="font-bold text-xl text-white" style={{ lineHeight: '28px' }}>
-                                {isEn
-                                    ? 'There are several ways to pay for Sonora Premium'
-                                    : 'Існує кілька способів оплати підписки Sonora Premium'}
+                                {t('supportPayment.intro')}
                             </p>
 
                             <p className="text-base text-white" style={{ lineHeight: '25px' }}>
-                                <span className="font-bold">{isEn ? 'Note.' : 'Примітка.'}</span>{' '}
-                                {isEn
-                                    ? 'We offer different payment methods depending on the country or region you are in.'
-                                    : 'Ми пропонуємо різні способи оплати залежно від країни чи регіону, у яких ви перебуваєте.'}
+                                <span className="font-bold">{t('supportPayment.note')}</span>{' '}
+                                {t('supportPayment.noteRegion')}
                             </p>
 
                             <div className="flex flex-col gap-3 text-base text-white" style={{ lineHeight: '25px' }}>
                                 <p className="font-semibold">
-                                    {isEn
-                                        ? 'To view available payment methods for your location:'
-                                        : 'Щоб переглянути доступні способи оплати для вашого місцезнаходження:'}
+                                    {t('supportPayment.howTo')}
                                 </p>
                                 <ol className="list-decimal pl-5 flex flex-col gap-1 font-normal">
                                     <li>
-                                        {isEn ? 'Open ' : 'Відкрийте сторінку '}
+                                        {t('supportPayment.step1Open')}
                                         <Link
                                             to="/premium"
                                             className="underline font-bold text-white hover:opacity-85"
@@ -242,21 +226,17 @@ export default function SupportPaymentMethodsPage() {
                                         </Link>
                                         .
                                     </li>
-                                    <li>{isEn ? 'Choose a Premium plan.' : 'Виберіть підписку Premium.'}</li>
+                                    <li>{t('supportPayment.step2')}</li>
                                 </ol>
                             </div>
 
                             <p className="text-base font-normal text-white" style={{ lineHeight: '25px' }}>
-                                {isEn
-                                    ? 'All payment methods for your account in your location will be listed on the next page.'
-                                    : 'Всі способи оплати для вашого акаунту за вашим місцезнаходженням будуть наведені на наступній сторінці.'}
+                                {t('supportPayment.listed')}
                             </p>
 
                             <p className="text-base text-white" style={{ lineHeight: '25px' }}>
-                                <span className="font-bold">{isEn ? 'Note.' : 'Примітка.'}</span>{' '}
-                                {isEn
-                                    ? 'You will not be charged until you submit your payment details.'
-                                    : 'З вас не списуватимуться кошти, доки ви не надасте платіжні відомості.'}
+                                <span className="font-bold">{t('supportPayment.note')}</span>{' '}
+                                {t('supportPayment.noteCharge')}
                             </p>
                         </div>
                     </article>
@@ -270,17 +250,17 @@ export default function SupportPaymentMethodsPage() {
                         }}
                     >
                         <h2 className="font-bold text-xl mb-6 text-white" style={{ lineHeight: '28px' }}>
-                            {isEn ? 'Related articles' : 'Схожі статті'}
+                            {t('supportPayment.related')}
                         </h2>
 
                         <div className="flex flex-col gap-5">
-                            {RELATED_ARTICLES.map((item) => (
+                            {ARTICLE_INDEXES.map((index) => (
                                 <span
-                                    key={item.uk}
+                                    key={index}
                                     className="font-medium text-base text-white cursor-default"
                                     style={{ lineHeight: '22px' }}
                                 >
-                                    {isEn ? item.en : item.uk}
+                                    {t(`supportPayment.articles.${index}`)}
                                 </span>
                             ))}
                         </div>
