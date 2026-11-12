@@ -25,6 +25,7 @@ import SupportPaymentMethodsPage from "./pages/SupportPaymentMethodsPage.tsx";
 import AboutPage from "./pages/AboutPage.tsx";
 import {ScrollToTop} from "./components/ScrollToTop.tsx";
 import {LanguageTranslator} from "./components/LanguageTranslator.tsx";
+import CommunityPage from "./pages/CommunityPage.tsx";
 
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
                     <Route path="/support" element={<SupportPage />} />
                     <Route path="/support/payment-methods" element={<SupportPaymentMethodsPage />} />
                     <Route path="/about" element={<AboutPage />} />
+                    <Route path="/community" element={<CommunityPage/>}/>
                     <Route element={<MainLayout />}>
                         <Route path="/songs"   element={<SongsPage />} />
                         <Route path="/genres"  element={<GenresPage />} />

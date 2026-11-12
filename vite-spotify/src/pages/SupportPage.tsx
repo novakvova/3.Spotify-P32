@@ -597,9 +597,9 @@ export default function SupportPage() {
                             : 'Маєте запитання? Знайдіть на них відповіді, порадившись із нашою спільнотою досвідчених фанів з усього світу'}
                     </p>
 
-                    <button
-                        type="button"
-                        className="flex items-center justify-center font-semibold text-base text-white cursor-default"
+                    <Link
+                        to="/community"
+                        className="flex items-center justify-center font-semibold text-base text-white cursor-pointer no-underline"
                         style={{
                             backgroundColor: '#6829c6',
                             width: 255,
@@ -608,7 +608,7 @@ export default function SupportPage() {
                         }}
                     >
                         {isEn ? 'Go to community' : 'Перейти в спільноту'}
-                    </button>
+                    </Link>
                 </section>
             </main>
 
