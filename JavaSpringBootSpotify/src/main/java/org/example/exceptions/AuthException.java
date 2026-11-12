@@ -56,7 +56,7 @@ public class AuthException extends RuntimeException {
 
     public static AuthException invalidResetToken() {
         return new AuthException("RESET_TOKEN_INVALID", "resetToken",
-            "Посилання для відновлення паролю недійсне або прострочене. Запросіть новий код",
+            "Посилання для відновлення паролю недійсне або прострочене. Запросіть нове посилання",
             HttpStatus.UNAUTHORIZED);
     }
 

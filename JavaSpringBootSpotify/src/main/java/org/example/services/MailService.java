@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Year;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -44,7 +45,7 @@ public class MailService {
         this.logoUrl = logoUrl == null ? "" : logoUrl.trim();
 
         this.loginTemplate = loadTemplate("login-code.html");
-        this.passwordResetTemplate = loadTemplate("password-reset-code.html");
+        this.passwordResetTemplate = loadTemplate("password-reset-link.html");
 
         Resource logo = resolveLogo();
         this.logoBytes = logo == null ? null : StreamUtils.copyToByteArray(logo.getInputStream());
@@ -77,31 +78,38 @@ public class MailService {
     }
 
     public void sendLoginCode(String to, String code) {
-        sendCodeEmail(
+        sendHtmlEmail(
                 to,
-                code,
                 "Код входу в " + APP_NAME + " — " + code,
                 loginTemplate,
                 "Ваш код входу в " + APP_NAME + ": " + code
                         + "\nКод дійсний 10 хвилин."
-                        + "\nЯкщо ви не намагалися увійти, просто проігноруйте цей лист.");
+                        + "\nЯкщо ви не намагалися увійти, просто проігноруйте цей лист.",
+                Map.of("[[CODE]]", code));
     }
 
-    public void sendPasswordResetCode(String to, String code) {
-        sendCodeEmail(
+    public void sendPasswordResetLink(String to, String link, long ttlMinutes) {
+        sendHtmlEmail(
                 to,
-                code,
-                "Відновлення паролю в " + APP_NAME + " — " + code,
+                "Відновлення паролю в " + APP_NAME,
                 passwordResetTemplate,
-                "Код для відновлення паролю в " + APP_NAME + ": " + code
-                        + "\nКод дійсний 10 хвилин."
+                "Щоб встановити новий пароль у " + APP_NAME + ", перейдіть за посиланням:\n"
+                        + link
+                        + "\nПосилання дійсне " + ttlMinutes + " хвилин і може бути використане лише один раз."
                         + "\nЯкщо ви не запитували зміну паролю, просто проігноруйте цей лист —"
-                        + " ваш пароль залишиться незмінним.");
+                        + " ваш пароль залишиться незмінним.",
+                Map.of(
+                        "[[LINK]]", link,
+                        "[[TTL]]", String.valueOf(ttlMinutes)));
     }
 
-    private void sendCodeEmail(String to, String code, String subject, String template, String plain) {
+    private void sendHtmlEmail(String to,
+                               String subject,
+                               String template,
+                               String plain,
+                               Map<String, String> replacements) {
         if (!enabled || sender == null) {
-            log.warn("=== DEV: {} для {} -> {} (лист не надіслано) ===", subject, to, code);
+            log.warn("=== DEV: {} для {} (лист не надіслано) ===\n{}", subject, to, plain);
             return;
         }
         try {
@@ -113,9 +121,12 @@ public class MailService {
 
             String html = template
                     .replace("[[LOGO]]", logoBlock())
-                    .replace("[[CODE]]", code)
                     .replace("[[EMAIL]]", to)
                     .replace("[[YEAR]]", String.valueOf(Year.now().getValue()));
+
+            for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+                html = html.replace(replacement.getKey(), replacement.getValue());
+            }
 
             helper.setText(plain, html);
 

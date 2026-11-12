@@ -7,7 +7,6 @@ import type {
     ILoginStartResponse,
     IRegisterRequest,
     IResetPasswordResponse,
-    IResetTokenResponse,
 } from '../../types/IAuthResponse'
 import type { IProfile } from '../../types/IProfile.ts'
 
@@ -64,14 +63,6 @@ export const authApi = createApi({
             }),
         }),
 
-        verifyResetCode: builder.mutation<IResetTokenResponse, { email: string; code: string }>({
-            query: (body) => ({
-                url: '/api/auth/password/verify',
-                method: 'POST',
-                body,
-            }),
-        }),
-
         resetPassword: builder.mutation<
             IResetPasswordResponse,
             { resetToken: string; newPassword: string }
@@ -114,7 +105,6 @@ export const {
     useLoginWithCodeMutation,
     useLoginWithPasswordMutation,
     useForgotPasswordMutation,
-    useVerifyResetCodeMutation,
     useResetPasswordMutation,
     useLoginMutation,
     useGetProfileQuery,
