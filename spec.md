@@ -88,6 +88,7 @@
 - **Форми:** react-hook-form 7.91, @hookform/resolvers, zod 4
 - **Стилі:** Tailwind CSS 4.3 (через `@tailwindcss/vite`)
 - **Іконки:** lucide-react
+- **Інтернаціоналізація:** i18next 27.1, react-i18next 18.0, i18next-browser-languagedetector 8.3 (налаштування в `src/i18n/`, див. 6.5)
 - **Збірка і dev-сервер:** Vite 6, @vitejs/plugin-react 4
 - **Лінтинг:** ESLint 9 (flat config), typescript-eslint 8, eslint-plugin-react-hooks, eslint-plugin-react-refresh
 
@@ -199,7 +200,8 @@ Controller  →  Service  →  Repository (Spring Data JPA)  →  Entity (Postgr
 Інтерфейси в `src/types/` (`ISong`, `IAlbum`, `IArtist`, `IGenre`, `IUser`, `IProfile`, `IPageResponse`, …) описують DTO бекенду вручну. Зміна DTO на сервері потребує оновлення типів вручну.
 
 ### 6.5. Інтернаціоналізація і теми
-- `LanguageTranslator` і `languageSlice` керують мовою інтерфейсу.
+- **Поточний механізм перекладу:** `components/LanguageTranslator.tsx` замінює текст у DOM за словником `EXACT_TRANSLATIONS` (українська → англійська) і за частковими збігами. Мова зберігається в `languageSlice` (`uk` / `en`) і в `localStorage` під ключем `lang`.- **i18next:** `src/i18n/index.ts` ініціалізує i18next з `LanguageDetector` (тільки `localStorage`, ключ `lang`, fallback `uk`). Переклади лежать у `src/i18n/locales/{uk,en}.ts`. `main.tsx` синхронізує `languageSlice` з i18next. Підключено `Footer.tsx`, `Header.tsx`, `FAQ.tsx`. Питання й відповіді FAQ, що передаються зі сторінок як props, ще не перекладені в i18next.
+- **Залишок:** інші сторінки ще перекладаються словником `EXACT_TRANSLATIONS`. Їх варто поступово перевести на i18next і тоді прибрати словник.
 - `themeSlice` керує темою оформлення.
 - `ScrollToTop` монтується глобально.
 
@@ -234,3 +236,6 @@ Controller  →  Service  →  Repository (Spring Data JPA)  →  Entity (Postgr
 8. **Медіа в git.** Файли `mp3songs/` і `uploads/` відстежуються, що роздуває репозиторій.
 9. **Відсутній Maven Wrapper** (`mvnw`), тому збірка залежить від локально встановленого Maven.
 10. **Змішана мова коментарів і інтерфейсу** (переважно українська, частково англійська).
+11. **Два механізми перекладу.** Словник у `LanguageTranslator` для решти сторінок і i18next для `Footer.tsx` працюють одночасно. Потрібно перевести решту сторінок на i18next.
+12. **Незакомічені зміни.** Додані i18next-залежності, `src/i18n/` і зміни в `Footer.tsx`/`main.tsx` ще не закомічені.
+13. **Непослідовність сервісів.** `SongService.getSongById` повертає `null` замість винятку, тоді як автентифікація використовує `AuthException`.

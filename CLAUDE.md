@@ -52,7 +52,7 @@ There is no root-level build; run commands from the subproject directory.
 - **Routing (`App.tsx`):** Three groups. Public marketing and support pages (`/`, `/premium/*`, `/support`, `/about`, `/community`). App pages wrapped in `layouts/MainLayout` (`/songs`, `/artists`, `/albums`, `/genres`, `/me`, `/search` and their `/:id` detail routes). Auth pages (`/login`, `/register`, `/forgot-password[/:token]`).
 - **Player:** `playerSlice` holds playback state, `hooks/useAudio` wraps audio playback, and `layouts/PlayerBar` is the UI.
 - **Types:** `src/types/I*.ts` describe the backend DTOs by hand. When an API shape changes, update both sides.
-- **i18n:** `LanguageTranslator` and `languageSlice` handle the UI language. `ScrollToTop` is mounted globally.
+- **i18n:** `languageSlice` holds `uk`/`en` (persisted in `localStorage` as `lang`) and is the source of truth. `main.tsx` mirrors it into i18next via `store.subscribe`. i18next setup is in `src/i18n/index.ts` with translations in `src/i18n/locales/{uk,en}.ts`; `Footer.tsx`, `Header.tsx` and `FAQ.tsx` use `useTranslation`. `LanguageTranslator` still swaps DOM text using the `EXACT_TRANSLATIONS` dictionary for the other pages. `ScrollToTop` is mounted globally.
 - **Lint scope:** `eslint.config.js` covers `**/*.{ts,tsx}`, and `dist` is ignored.
 
 ## Coding rules
@@ -83,6 +83,7 @@ These follow the conventions already used in the code. Match the file you are ed
 ### Language
 - Existing comments and UI strings are mostly Ukrainian. Write new comments and user-facing text in the same language as the surrounding code.
 - Identifiers stay in English.
+- Components that already use i18next (`Footer.tsx`, `Header.tsx`, `FAQ.tsx`) take text from `src/i18n/locales/{uk,en}.ts` via `t('key')`; add both languages there. Other components still rely on the `EXACT_TRANSLATIONS` dictionary in `LanguageTranslator.tsx`. Do not hard-code English in components.
 
 ## Architecture rules
 

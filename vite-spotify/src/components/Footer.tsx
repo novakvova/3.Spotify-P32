@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useAppSelector } from '../store/hooks'
-import { selectLanguage } from '../store/slices/languageSlice'
+import { useTranslation } from 'react-i18next'
 import imgLogoSonora042 from '../assets/home/logo-sonora.png'
 import imgFaceb from '../assets/home/faceb.svg'
 import imgInst from '../assets/home/inst.svg'
@@ -9,8 +8,7 @@ import imgTikTok from '../assets/home/tiktok.svg'
 
 export const Footer: React.FC = () => {
     const location = useLocation()
-    const lang = useAppSelector(selectLanguage)
-    const isEn = lang === 'en'
+    const { t } = useTranslation()
     const PURPLE_BG = '#280a3a'
 
     const getColors = () => {
@@ -61,64 +59,64 @@ export const Footer: React.FC = () => {
                     >
                         <div className="flex flex-col gap-7 items-start shrink-0">
                             <div className="flex flex-col font-bold justify-center w-full">
-                                <p className="leading-6">{isEn ? 'Company' : 'Компанія'}</p>
+                                <p className="leading-6">{t('footer.company')}</p>
                             </div>
                             <Link to="/about" className="flex flex-col font-normal justify-center w-full hover:underline">
-                                <span className="leading-7">{isEn ? 'About' : 'Про нас'}</span>
+                                <span className="leading-7">{t('footer.about')}</span>
                             </Link>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'Jobs' : 'Вакансії'}</p>
+                                <p className="leading-7">{t('footer.jobs')}</p>
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-7 items-start shrink-0">
                             <div className="flex flex-col font-bold justify-center w-full">
-                                <p className="leading-6">{isEn ? 'Communities' : 'Спільноти'}</p>
+                                <p className="leading-6">{t('footer.communities')}</p>
                             </div>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'For Artists' : 'Виконавців'}</p>
+                                <p className="leading-7">{t('footer.forArtists')}</p>
                             </div>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'Creators' : 'Творців'}</p>
+                                <p className="leading-7">{t('footer.creators')}</p>
                             </div>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'Authors' : 'Авторів'}</p>
+                                <p className="leading-7">{t('footer.authors')}</p>
                             </div>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'Developers' : 'Розробників'}</p>
+                                <p className="leading-7">{t('footer.developers')}</p>
                             </div>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'Advertising' : 'Рекламодавців'}</p>
+                                <p className="leading-7">{t('footer.advertising')}</p>
                             </div>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'Investors' : 'Iнвесторів'}</p>
+                                <p className="leading-7">{t('footer.investors')}</p>
                             </div>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'Vendors' : 'Постачальників'}</p>
+                                <p className="leading-7">{t('footer.vendors')}</p>
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-7 items-start shrink-0">
                             <div className="flex flex-col font-bold justify-center w-full">
-                                <p className="leading-6">{isEn ? 'Useful links' : 'Корисні посилання'}</p>
+                                <p className="leading-6">{t('footer.usefulLinks')}</p>
                             </div>
                             <Link to="/support" className="flex flex-col font-normal justify-center w-full hover:underline">
-                                <span className="leading-7">{isEn ? 'Support' : 'Підтримка'}</span>
+                                <span className="leading-7">{t('footer.support')}</span>
                             </Link>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <span className="leading-7">{isEn ? 'Web Player' : 'Вебпрогравач'}</span>
+                                <span className="leading-7">{t('footer.webPlayer')}</span>
                             </div>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'Mobile App' : 'Мобільний додаток'}</p>
+                                <p className="leading-7">{t('footer.mobileApp')}</p>
                             </div>
                             <div className="flex flex-col font-normal justify-center w-full">
-                                <p className="leading-7">{isEn ? 'Import your music' : 'Iмпорт власної музики'}</p>
+                                <p className="leading-7">{t('footer.importMusic')}</p>
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-7 items-start shrink-0">
                             <div className="flex flex-col font-bold justify-center w-full">
-                                <p className="leading-6">{isEn ? 'Plans' : 'Підписки'}</p>
+                                <p className="leading-6">{t('footer.plans')}</p>
                             </div>
                             <Link to="/premium" className="flex flex-col font-normal justify-center w-full hover:underline">
                                 <span className="leading-7">Premium</span>

@@ -2,49 +2,49 @@ import React, { useEffect, useRef, useState } from 'react'
 import imgLogoSonora042 from '../assets/home/logo-sonora.png'
 import { Menu, X } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
-import { selectLanguage, toggleLanguage } from '../store/slices/languageSlice'
+import { toggleLanguage } from '../store/slices/languageSlice'
 
 export const Header: React.FC = () => {
     const dispatch = useAppDispatch()
+    const { t } = useTranslation()
     const isAuthenticated = useAppSelector(selectIsAuthenticated)
     const user = useAppSelector(selectCurrentUser)
-    const lang = useAppSelector(selectLanguage)
-    const isEn = lang === 'en'
     const [openPremium, setOpenPremium] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const PURPLE_BG = '#280a3a'
     const premiumRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
 
-    const displayName = user?.fullName || user?.username || user?.email || (isEn ? 'Profile' : 'Профіль')
+    const displayName = user?.fullName || user?.username || user?.email || t('header.profile')
     const userInitial = displayName.charAt(0).toUpperCase()
 
     const PREMIUM_PLANS = [
         {
             title: 'Individual',
-            desc: isEn ? '1 account for one person' : '1 акаунт для однієї людини',
+            desc: t('header.planDesc.individual'),
             redirectlink: '/premium',
         },
         {
             title: 'Duo',
-            desc: isEn ? '2 accounts for couples under one roof' : '2 акаунти для пар, що мешкають разом',
+            desc: t('header.planDesc.duo'),
             redirectlink: '/premium/duo',
         },
         {
             title: 'Family',
-            desc: isEn ? 'Up to 6 accounts for family members under one roof' : "До 6 акаунтів для членів сім'ї, що мешкають разом",
+            desc: t('header.planDesc.family'),
             redirectlink: '/premium/family',
         },
         {
             title: 'Student',
-            desc: isEn ? '1 account, discount for eligible students' : '1 акаунт, знижка для студентів',
+            desc: t('header.planDesc.student'),
             redirectlink: '/premium/student',
         },
         {
             title: 'Kids+',
-            desc: isEn ? 'Up to 3 accounts for kids under one roof' : 'До 3 акаунтів для дітей, що мешкають разом',
+            desc: t('header.planDesc.kids'),
             redirectlink: '/premium/kids',
         },
     ]
@@ -89,7 +89,7 @@ export const Header: React.FC = () => {
                             className="cursor-pointer flex flex-col font-semibold justify-center text-base text-left hover:opacity-80 transition-opacity"
                         >
                             <span className="leading-normal whitespace-nowrap">
-                                {isEn ? 'Premium Plans' : 'Підписки Premium'}
+                                {t('header.premiumPlans')}
                             </span>
                         </button>
 
@@ -119,11 +119,11 @@ export const Header: React.FC = () => {
                     </div>
 
                     <Link to="/support" className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity">
-                        <span className="leading-normal">{isEn ? 'Support' : 'Підтримка'}</span>
+                        <span className="leading-normal">{t('header.support')}</span>
                     </Link>
 
                     <Link to="/download" className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity">
-                        <span className="leading-normal">{isEn ? 'Download' : 'Завантажити'}</span>
+                        <span className="leading-normal">{t('header.download')}</span>
                     </Link>
 
                     {isAuthenticated ? (
@@ -146,17 +146,17 @@ export const Header: React.FC = () => {
                                 onClick={() => dispatch(logout())}
                                 className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity"
                             >
-                                <span className="leading-normal">{isEn ? 'Log out' : 'Вийти'}</span>
+                                <span className="leading-normal">{t('header.logOut')}</span>
                             </button>
                         </>
                     ) : (
                         <>
                             <Link to="/register" className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity">
-                                <span className="leading-normal">{isEn ? 'Sign up' : 'Зареєструватися'}</span>
+                                <span className="leading-normal">{t('header.signUp')}</span>
                             </Link>
 
                             <Link to="/login" className="flex flex-col font-semibold justify-center shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity">
-                                <span className="leading-normal">{isEn ? 'Log in' : 'Увійти'}</span>
+                                <span className="leading-normal">{t('header.logIn')}</span>
                             </Link>
                         </>
                     )}
@@ -166,7 +166,7 @@ export const Header: React.FC = () => {
                         onClick={() => dispatch(toggleLanguage())}
                         className="flex flex-col font-normal justify-center shrink-0 text-sm text-right cursor-pointer hover:opacity-80 transition-opacity"
                     >
-                        <span className="leading-5">{isEn ? 'Eng' : 'Укр'}</span>
+                        <span className="leading-5">{t('header.langShort')}</span>
                     </button>
                 </nav>
 
@@ -174,7 +174,7 @@ export const Header: React.FC = () => {
                     type="button"
                     onClick={() => setMobileMenuOpen((v) => !v)}
                     className="lg:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-                    aria-label={isEn ? 'Menu' : 'Меню'}
+                    aria-label={t('header.menu')}
                 >
                     {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
@@ -190,7 +190,7 @@ export const Header: React.FC = () => {
                         onClick={() => setOpenPremium((v) => !v)}
                         className="flex items-center justify-between font-semibold text-base text-left py-1 cursor-pointer"
                     >
-                        <span>{isEn ? 'Premium Plans' : 'Підписки Premium'}</span>
+                        <span>{t('header.premiumPlans')}</span>
                         <span className="text-xs opacity-70">{openPremium ? '▲' : '▼'}</span>
                     </button>
                     {openPremium && (
@@ -216,14 +216,14 @@ export const Header: React.FC = () => {
                         onClick={() => setMobileMenuOpen(false)}
                         className="font-semibold text-base py-1 cursor-pointer"
                     >
-                        {isEn ? 'Support' : 'Підтримка'}
+                        {t('header.support')}
                     </Link>
                     <Link
                         to="/download"
                         onClick={() => setMobileMenuOpen(false)}
                         className="font-semibold text-base py-1 cursor-pointer"
                     >
-                        {isEn ? 'Download' : 'Завантажити'}
+                        {t('header.download')}
                     </Link>
                     {isAuthenticated ? (
                         <>
@@ -248,7 +248,7 @@ export const Header: React.FC = () => {
                                 }}
                                 className="font-semibold text-base py-1 text-left cursor-pointer"
                             >
-                                {isEn ? 'Log out' : 'Вийти'}
+                                {t('header.logOut')}
                             </button>
                         </>
                     ) : (
@@ -258,14 +258,14 @@ export const Header: React.FC = () => {
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="font-semibold text-base py-1 cursor-pointer"
                             >
-                                {isEn ? 'Sign up' : 'Зареєструватися'}
+                                {t('header.signUp')}
                             </Link>
                             <Link
                                 to="/login"
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="font-semibold text-base py-1 cursor-pointer"
                             >
-                                {isEn ? 'Log in' : 'Увійти'}
+                                {t('header.logIn')}
                             </Link>
                         </>
                     )}
@@ -274,7 +274,7 @@ export const Header: React.FC = () => {
                         onClick={() => dispatch(toggleLanguage())}
                         className="text-sm opacity-80 pt-1 border-t border-white/10 text-left cursor-pointer hover:opacity-100"
                     >
-                        {isEn ? 'Language: Eng' : 'Мова: Укр'}
+                        {t('header.langMenu')}
                     </button>
                 </div>
             )}

@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Provider } from 'react-redux'
-import { store } from './store'
 import MainLayout from './layouts/MainLayout'
 import HomePage from './pages/HomePage'
 import SongsPage from './pages/SongsPage'
@@ -30,7 +28,7 @@ import CommunityPage from "./pages/CommunityPage.tsx";
 
 export default function App() {
     return (
-        <Provider store={store}>
+
             <BrowserRouter>
                 <ScrollToTop/>
                 <LanguageTranslator/>
@@ -63,6 +61,5 @@ export default function App() {
 
                 </Routes>
             </BrowserRouter>
-        </Provider>
     )
 }
