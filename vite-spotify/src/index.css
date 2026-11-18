@@ -36,23 +36,56 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+  progress.player-progress,
+  progress.player-progress-hover {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  progress.player-progress-hover::-webkit-progress-bar {
+    background-color: #6b309b;
+    border-radius: 9999px;
+  }
+  progress.player-progress-hover::-webkit-progress-value {
+    background-color: rgba(255, 255, 255, 0.38);
+    border-radius: 9999px;
+  }
+  progress.player-progress-hover::-moz-progress-bar {
+    background-color: rgba(255, 255, 255, 0.38);
+    border-radius: 9999px;
+  }
+  progress.player-progress::-webkit-progress-bar {
+    background-color: transparent;
+    border-radius: 9999px;
+  }
+  progress.player-progress::-webkit-progress-value {
+    background-color: #ffffff;
+    border-radius: 9999px;
+  }
+  progress.player-progress::-moz-progress-bar {
+    background-color: #ffffff;
+    border-radius: 9999px;
+  }
+
   input[type=range] {
     -webkit-appearance: none;
+    appearance: none;
     height: 4px;
     border-radius: 2px;
-    background: var(--border);
+    background: transparent;
     cursor: pointer;
     outline: none;
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
+    appearance: none;
     width: 12px; height: 12px;
     border-radius: 50%;
     background: var(--text);
     opacity: 0;
     transition: opacity 0.15s;
   }
-  input[type=range]:hover::-webkit-slider-thumb { opacity: 1; }
+  input[type=range]:hover::-webkit-slider-thumb,
+  input[type=range]:active::-webkit-slider-thumb { opacity: 1; }
   body.cursor-grabbing-active,
   body.cursor-grabbing-active * {
     cursor: grabbing !important;

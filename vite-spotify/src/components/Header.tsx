@@ -41,10 +41,10 @@ export const Header: React.FC = () => {
     return (
         <header className="w-full relative z-40 bg-sonora-dark">
             <div className="max-w-7xl mx-auto h-20 flex items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-40 py-2.5">
-                <Link to="/player" className="relative shrink-0 w-29 h-6.5 overflow-hidden">
+                <Link to="/player" className="relative shrink-0 w-31 h-5.5 overflow-hidden">
                     <img
                         alt="Sonora"
-                        className="absolute max-w-none w-30 h-30 -top-10 -left-0.5"
+                        className="absolute max-w-none w-36 h-36 -top-13.5 -left-2.5"
                         src={imgLogoSonora042}
                     />
                 </Link>

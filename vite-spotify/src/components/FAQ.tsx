@@ -31,7 +31,7 @@ export const FAQ: React.FC<FAQProps> = ({ items }) => {
                                 <img
                                     src={arrow}
                                     alt={t('faq.arrowAlt')}
-                                    className={`w-25px h-10px transition-transform duration-300 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
+                                    className={`w-6 h-2.5 shrink-0 ml-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
                                 />
                             </button>
                             {isOpen && (

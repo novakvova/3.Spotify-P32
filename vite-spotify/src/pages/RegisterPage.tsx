@@ -400,9 +400,7 @@ export default function RegisterPage() {
                                 <img src={googleIcon} alt={t('register.google')} className="block" />
                             </span>
                             <span className="flex-1 text-center">
-                                {t('register.signUpWithGoogle1')}
-                                <br />
-                                {t('register.google')}
+                                {t('register.signUpWithGoogle1')} {t('register.google')}
                             </span>
                         </button>
 

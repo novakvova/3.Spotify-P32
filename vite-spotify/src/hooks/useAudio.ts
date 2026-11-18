@@ -4,16 +4,19 @@ import {
     setProgress,
     setDuration,
     setPlaying,
+    setShowAuthModal,
     nextSong,
     selectCurrentSong,
     selectIsPlaying,
     selectPlayerState,
 } from '../store/slices/playerSlice'
+import { logout, isJwtTokenValid } from '../store/slices/authSlice'
 import { getSongUrl } from '../utils/format'
 
 export function useAudio() {
     const audioRef = useRef<HTMLAudioElement | null>(null)
     const isPlayingRef = useRef<boolean>(false)
+    const loadedSongIdRef = useRef<number | null>(null)
     const dispatch = useAppDispatch()
     const currentSong = useAppSelector(selectCurrentSong)
     const isPlaying = useAppSelector(selectIsPlaying)
@@ -33,7 +36,11 @@ export function useAudio() {
             repeat === 'one'
                 ? ((audio.currentTime = 0), void audio.play())
                 : dispatch(nextSong())
-        const onError = () => dispatch(setPlaying(false))
+        const onError = () => {
+            if (loadedSongIdRef.current !== null) {
+                dispatch(setPlaying(false))
+            }
+        }
 
         audio.addEventListener('timeupdate', onTimeUpdate)
         audio.addEventListener('loadedmetadata', onLoadedMetadata)
@@ -54,13 +61,32 @@ export function useAudio() {
 
         let cancelled = false
         let objectUrl: string | null = null
+        loadedSongIdRef.current = null
+        dispatch(setDuration(0))
+        dispatch(setProgress(0))
 
         const loadAndPlay = async () => {
             try {
                 const token = localStorage.getItem('token')
+                if (!isJwtTokenValid(token)) {
+                    if (!cancelled) {
+                        dispatch(setPlaying(false))
+                        dispatch(logout())
+                        dispatch(setShowAuthModal(true))
+                    }
+                    return
+                }
                 const response = await fetch(getSongUrl(currentSong.fileName), {
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
                 })
+                if (response.status === 401 || response.status === 403) {
+                    if (!cancelled) {
+                        dispatch(setPlaying(false))
+                        dispatch(logout())
+                        dispatch(setShowAuthModal(true))
+                    }
+                    return
+                }
                 if (!response.ok || cancelled) {
                     if (!cancelled) dispatch(setPlaying(false))
                     return
@@ -68,6 +94,7 @@ export function useAudio() {
                 const blob = await response.blob()
                 if (cancelled) return
                 objectUrl = URL.createObjectURL(blob)
+                loadedSongIdRef.current = currentSong.id
                 audio.src = objectUrl
                 audio.load()
                 if (isPlayingRef.current) {
@@ -82,7 +109,9 @@ export function useAudio() {
 
         return () => {
             cancelled = true
+            loadedSongIdRef.current = null
             audio.pause()
+            audio.removeAttribute('src')
             if (objectUrl) {
                 URL.revokeObjectURL(objectUrl)
             }
@@ -91,7 +120,8 @@ export function useAudio() {
 
     useEffect(() => {
         const audio = audioRef.current
-        if (!audio || !currentSong || !audio.src) return
+        if (!audio || !currentSong) return
+        if (loadedSongIdRef.current !== currentSong.id) return
         if (isPlaying) {
             audio.play().catch(() => dispatch(setPlaying(false)))
         } else {
@@ -104,7 +134,7 @@ export function useAudio() {
     }, [volume])
 
     const seek = (time: number) => {
-        if (audioRef.current) {
+        if (audioRef.current && loadedSongIdRef.current !== null) {
             audioRef.current.currentTime = time
             dispatch(setProgress(time))
         }

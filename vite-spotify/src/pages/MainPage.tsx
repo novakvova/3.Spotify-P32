@@ -192,7 +192,7 @@ export const MainPage: React.FC = () => {
                 </div>
 
                 {/* Hero Section */}
-                <section className="relative pt-12 pb-32 px-8 sm:px-12 lg:px-28 xl:px-40 overflow-hidden">
+                <section className="relative pt-12 pb-20 sm:pb-32 px-5 sm:px-12 lg:px-28 xl:px-40 overflow-hidden">
                     <div className="hidden lg:block absolute -top-28 -right-5 w-1/2 h-auto pointer-events-none z-0">
                         <img
                             src={heroCollages}
@@ -202,19 +202,19 @@ export const MainPage: React.FC = () => {
                     </div>
 
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start justify-between relative z-20">
-                        <div className="max-w-xl space-y-6">
-                            <h1 className="font-inter font-extrabold text-sonora-deep tracking-tight text-4xl leading-snug">
+                        <div className="max-w-xl w-full space-y-6">
+                            <h1 className="font-inter font-extrabold text-sonora-deep tracking-tight text-2xl sm:text-4xl leading-snug">
                                 {t('main.heroTitle')}
                             </h1>
                             <p className="text-sonora-deep text-base font-medium">
                                 {t('main.heroSub')}
                             </p>
 
-                            <div className="flex flex-row items-center gap-4 pt-2">
-                                <button className="bg-sonora-deep text-white font-bold py-3.5 px-7 rounded-full hover:opacity-90 transition whitespace-nowrap cursor-pointer">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
+                                <button className="bg-sonora-deep text-white font-bold py-3.5 px-7 rounded-full hover:opacity-90 transition text-center cursor-pointer">
                                     {t('main.tryFree')}
                                 </button>
-                                <button className="border border-sonora-deep text-sonora-deep font-bold py-3.5 px-7 rounded-full hover:bg-black/5 transition whitespace-nowrap cursor-pointer">
+                                <button className="border border-sonora-deep text-sonora-deep font-bold py-3.5 px-7 rounded-full hover:bg-black/5 transition text-center cursor-pointer">
                                     {t('main.allPlans')}
                                 </button>
                             </div>

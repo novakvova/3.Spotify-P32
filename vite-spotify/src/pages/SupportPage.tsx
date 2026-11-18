@@ -107,22 +107,22 @@ export const SupportHeader: React.FC = () => {
 
     return (
         <header className="w-full bg-sonora-dark">
-            <div className="max-w-7xl mx-auto h-20 flex items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-40">
-                <div className="flex items-center gap-8">
-                    <Link to="/player" className="relative shrink-0 w-28 h-6 overflow-hidden flex items-center">
+            <div className="max-w-7xl mx-auto h-20 flex items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-40 gap-3">
+                <div className="flex items-center gap-6 sm:gap-8 shrink-0">
+                    <Link to="/player" className="relative shrink-0 w-31 h-5.5 overflow-hidden">
                         <img
                             alt="Sonora"
-                            className="w-full h-auto object-contain"
+                            className="absolute max-w-none w-36 h-36 -top-13.5 -left-2.5"
                             src={imgLogoSonora}
                         />
                     </Link>
 
-                    <span className="hidden sm:inline-block font-semibold text-base text-white cursor-default">
+                    <span className="hidden md:inline-block font-semibold text-base text-white cursor-default">
                         {t('support.installApp')}
                     </span>
                 </div>
 
-                <div className="flex items-center gap-6 sm:gap-12">
+                <div className="flex items-center gap-3 sm:gap-8 md:gap-12 shrink-0">
                     {isAuthenticated ? (
                         <>
                             <Link
@@ -132,12 +132,12 @@ export const SupportHeader: React.FC = () => {
                                 <span className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-black bg-white shrink-0">
                                     {userInitial}
                                 </span>
-                                <span>{displayName}</span>
+                                <span className="hidden sm:inline">{displayName}</span>
                             </Link>
                             <button
                                 type="button"
                                 onClick={() => dispatch(logout())}
-                                className="w-28 h-11 rounded-full bg-sonora-purple flex items-center justify-center font-semibold text-sm text-white cursor-pointer hover:opacity-90 transition-opacity"
+                                className="px-4 sm:w-28 h-9 sm:h-11 rounded-full bg-sonora-purple flex items-center justify-center font-semibold text-xs sm:text-sm text-white cursor-pointer hover:opacity-90 transition-opacity whitespace-nowrap"
                             >
                                 {t('support.logOut')}
                             </button>
@@ -146,13 +146,13 @@ export const SupportHeader: React.FC = () => {
                         <>
                             <Link
                                 to="/register"
-                                className="font-semibold text-base text-white hover:opacity-80 transition-opacity"
+                                className="font-semibold text-sm sm:text-base text-white hover:opacity-80 transition-opacity whitespace-nowrap"
                             >
                                 {t('support.signUp')}
                             </Link>
                             <Link
                                 to="/login"
-                                className="w-28 h-11 rounded-full bg-sonora-purple flex items-center justify-center font-semibold text-sm text-white hover:opacity-90 transition-opacity"
+                                className="px-4 sm:w-28 h-9 sm:h-11 rounded-full bg-sonora-purple flex items-center justify-center font-semibold text-xs sm:text-sm text-white hover:opacity-90 transition-opacity whitespace-nowrap"
                             >
                                 {t('support.logIn')}
                             </Link>
@@ -162,7 +162,7 @@ export const SupportHeader: React.FC = () => {
                     <button
                         type="button"
                         onClick={() => dispatch(toggleLanguage())}
-                        className="font-normal text-sm text-white cursor-pointer hover:opacity-80 transition-opacity"
+                        className="font-normal text-sm text-white cursor-pointer hover:opacity-80 transition-opacity shrink-0"
                     >
                         {t('support.langShort')}
                     </button>

@@ -44,7 +44,7 @@ export const FamilyPage: React.FC = () => {
             </section>
 
             {/* Second Section: збільшено відстань між текстом та фото (gap-16) */}
-            <section className="sm:px-12 max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-16">
+            <section className="py-12 px-6 sm:px-12 max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-16">
                 <div className="max-w-lg space-y-5 text-left">
                     <h2 className="font-inter text-3xl sm:text-4xl font-extrabold text-sonora-deep tracking-tight leading-tight">
                         {t('family.togetherTitle1')}<br />{t('family.togetherTitle2')}
