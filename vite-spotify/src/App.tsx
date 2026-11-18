@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Provider } from 'react-redux'
-import { store } from './store'
 import MainLayout from './layouts/MainLayout'
 import HomePage from './pages/HomePage'
 import SongsPage from './pages/SongsPage'
@@ -26,11 +24,12 @@ import AboutPage from "./pages/AboutPage.tsx";
 import {ScrollToTop} from "./components/ScrollToTop.tsx";
 import {LanguageTranslator} from "./components/LanguageTranslator.tsx";
 import CommunityPage from "./pages/CommunityPage.tsx";
+import WebPlayerPage from "./pages/WebPlayerPage.tsx";
 
 
 export default function App() {
     return (
-        <Provider store={store}>
+
             <BrowserRouter>
                 <ScrollToTop/>
                 <LanguageTranslator/>
@@ -46,6 +45,7 @@ export default function App() {
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/community" element={<CommunityPage/>}/>
                     <Route element={<MainLayout />}>
+                        <Route path="/player"  element={<WebPlayerPage />} />
                         <Route path="/songs"   element={<SongsPage />} />
                         <Route path="/genres"  element={<GenresPage />} />
                         <Route path="/artists" element={<ArtistsPage />} />
@@ -63,6 +63,5 @@ export default function App() {
 
                 </Routes>
             </BrowserRouter>
-        </Provider>
     )
 }

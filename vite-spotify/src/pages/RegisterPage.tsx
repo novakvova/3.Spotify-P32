@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useCheckEmailMutation, useRegisterMutation } from '../services/auth/authApi'
 import { setCredentials } from '../store/slices/authSlice'
 import { useAppDispatch } from '../store/hooks'
@@ -19,20 +21,8 @@ import checkboxCheckedIcon from '../assets/auth/checkbox-checked.svg'
 import monthArrowIcon from '../assets/auth/month-arrow.svg'
 import errorIcon from '../assets/auth/error-icon.svg'
 
-const MONTHS = [
-    { value: '01', label: 'Січень' },
-    { value: '02', label: 'Лютий' },
-    { value: '03', label: 'Березень' },
-    { value: '04', label: 'Квітень' },
-    { value: '05', label: 'Травень' },
-    { value: '06', label: 'Червень' },
-    { value: '07', label: 'Липень' },
-    { value: '08', label: 'Серпень' },
-    { value: '09', label: 'Вересень' },
-    { value: '10', label: 'Жовтень' },
-    { value: '11', label: 'Листопад' },
-    { value: '12', label: 'Грудень' },
-]
+const MONTH_VALUES = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as const
+const GENDER_KEYS: Gender[] = ['MALE', 'FEMALE', 'NONEBINARY', 'OTHER', 'UNDISCLOSED']
 
 function formatValidBirthDate(dayStr: string, monthStr: string, yearStr: string): string | null {
     const days = parseInt(dayStr, 10)
@@ -67,58 +57,64 @@ function formatValidBirthDate(dayStr: string, monthStr: string, yearStr: string)
     return `${years}-${paddedMonth}-${paddedDay}`
 }
 
-const registerSchema = z
-    .object({
-        email: z
-            .string()
-            .trim()
-            .min(1, 'Введіть коректну адресу електронної пошти')
-            .email('Введіть коректну адресу електронної пошти')
-            .max(100, 'Введіть коректну адресу електронної пошти'),
-        password: z
-            .string()
-            .min(10, 'Пароль має містити щонайменше 10 символів')
-            .max(72, 'Пароль занадто довгий')
-            .refine((val) => /\p{L}/u.test(val), 'Пароль має містити принаймні 1 літеру')
-            .refine(
-                (val) => /[\d\p{P}\p{S}]/u.test(val),
-                'Пароль має містити принаймні 1 число або 1 спеціальний символ'
-            ),
-        fullName: z
-            .string()
-            .trim()
-            .min(1, "Введіть своє ім'я")
-            .max(120, "Ім'я: до 120 символів"),
-        birthDay: z.string().min(1, 'Виберіть дату народження'),
-        birthMonth: z.string().min(1, 'Виберіть дату народження'),
-        birthYear: z.string().min(1, 'Виберіть дату народження'),
-        gender: z
-            .enum(['MALE', 'FEMALE', 'OTHER', 'NONEBINARY', 'UNDISCLOSED'])
-            .nullable()
-            .refine((val): val is Gender => val !== null, 'Оберіть стать'),
-        acceptTerms: z.boolean().refine((val) => val === true, {
-            message: 'Щоб продовжити, необхідно прийняти Умови використання',
-        }),
-        acceptNews: z.boolean(),
-        acceptData: z.boolean(),
-    })
-    .superRefine((data, ctx) => {
-        if (!formatValidBirthDate(data.birthDay, data.birthMonth, data.birthYear)) {
-            ctx.addIssue({
-                code: 'custom',
-                path: ['birthDay'],
-                message: 'Виберіть дату народження',
-            })
-        }
-    })
+function buildRegisterSchema(t: TFunction) {
+    const birthRequired = t('register.errors.birthRequired')
+    return z
+        .object({
+            email: z
+                .string()
+                .trim()
+                .min(1, t('register.errors.emailInvalid'))
+                .email(t('register.errors.emailInvalid'))
+                .max(100, t('register.errors.emailInvalid')),
+            password: z
+                .string()
+                .min(10, t('register.errors.passwordMin'))
+                .max(72, t('register.errors.passwordMax'))
+                .refine((val) => /\p{L}/u.test(val), t('register.errors.passwordLetter'))
+                .refine(
+                    (val) => /[\d\p{P}\p{S}]/u.test(val),
+                    t('register.errors.passwordDigitOrSpecial')
+                ),
+            fullName: z
+                .string()
+                .trim()
+                .min(1, t('register.errors.nameRequired'))
+                .max(120, t('register.errors.nameMax')),
+            birthDay: z.string().min(1, birthRequired),
+            birthMonth: z.string().min(1, birthRequired),
+            birthYear: z.string().min(1, birthRequired),
+            gender: z
+                .enum(['MALE', 'FEMALE', 'OTHER', 'NONEBINARY', 'UNDISCLOSED'])
+                .nullable()
+                .refine((val): val is Gender => val !== null, t('register.errors.genderRequired')),
+            acceptTerms: z.boolean().refine((val) => val === true, {
+                message: t('register.errors.termsRequired'),
+            }),
+            acceptNews: z.boolean(),
+            acceptData: z.boolean(),
+        })
+        .superRefine((data, ctx) => {
+            if (!formatValidBirthDate(data.birthDay, data.birthMonth, data.birthYear)) {
+                ctx.addIssue({
+                    code: 'custom',
+                    path: ['birthDay'],
+                    message: birthRequired,
+                })
+            }
+        })
+}
 
-type RegisterFormValues = z.input<typeof registerSchema>
+type RegisterFormValues = z.input<ReturnType<typeof buildRegisterSchema>>
 
 export default function RegisterPage() {
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
+    const { t } = useTranslation()
     const [checkEmail, { isLoading: isCheckingEmail }] = useCheckEmailMutation()
     const [registerUser, { isLoading: isRegistering }] = useRegisterMutation()
+
+    const registerSchema = useMemo(() => buildRegisterSchema(t), [t])
 
     const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
     const [showPassword, setShowPassword] = useState(false)
@@ -181,8 +177,7 @@ export default function RegisterPage() {
             } else {
                 setError('email', {
                     type: 'taken',
-                    message:
-                        'Такий користувач уже зареєстрований. Увійдіть або використайте іншу адресу',
+                    message: t('register.errors.emailTaken'),
                 })
             }
         } catch (err: unknown) {
@@ -193,14 +188,12 @@ export default function RegisterPage() {
             if (errorObj?.status === 409 || errorObj?.data?.code === 'EMAIL_TAKEN') {
                 setError('email', {
                     type: 'taken',
-                    message:
-                        'Такий користувач уже зареєстрований. Увійдіть або використайте іншу адресу',
+                    message: t('register.errors.emailTaken'),
                 })
             } else if (errorObj?.status === 400) {
                 setError('email', {
                     type: 'invalid',
-                    message:
-                        errorObj?.data?.message || 'Введіть коректну адресу електронної пошти',
+                    message: errorObj?.data?.message || t('register.errors.emailInvalid'),
                 })
             } else {
                 setStep(1)
@@ -234,7 +227,7 @@ export default function RegisterPage() {
         if (!birthDateFormatted) {
             setError('birthDay', {
                 type: 'manual',
-                message: 'Виберіть дату народження',
+                message: t('register.errors.birthRequired'),
             })
             return
         }
@@ -297,8 +290,7 @@ export default function RegisterPage() {
             if (errorObj?.status === 409 || errorObj?.data?.code === 'EMAIL_TAKEN') {
                 setError('email', {
                     type: 'taken',
-                    message:
-                        'Такий користувач уже зареєстрований. Увійдіть або використайте іншу адресу',
+                    message: t('register.errors.emailTaken'),
                 })
                 setStep(0)
                 return
@@ -307,7 +299,7 @@ export default function RegisterPage() {
                 message:
                     errorObj?.data?.message ||
                     errorObj?.data?.error ||
-                    'Помилка реєстрації. Спробуйте ще раз',
+                    t('register.errors.generic'),
             })
         }
     }
@@ -317,12 +309,9 @@ export default function RegisterPage() {
         const hasError = Boolean(errors.email)
 
         return (
-            <div
-                className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-                style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-            >
-                <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '70px' }}>
-                    <Link to="/" className="shrink-0" style={{ width: '60px', height: '60px' }}>
+            <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+                <div className="w-full flex flex-col items-center max-w-sm mt-18">
+                    <Link to="/player" className="shrink-0 w-15 h-15">
                         <img
                             src={logoSonoraIcon}
                             alt="Sonora"
@@ -330,45 +319,31 @@ export default function RegisterPage() {
                         />
                     </Link>
 
-                    <h1
-                        className="font-semibold text-center text-white w-full"
-                        style={{
-                            fontSize: '30px',
-                            lineHeight: '50px',
-                            marginTop: '25px',
-                        }}
-                    >
-                        Зареєструйтеся, щоб почати слухати
+                    <h1 className="font-semibold text-center text-white w-full text-3xl leading-12 mt-6">
+                        {t('register.emailTitle')}
                     </h1>
 
                     <form
                         onSubmit={handleEmailSubmit}
                         noValidate
-                        className="w-full flex flex-col items-center"
-                        style={{ marginTop: '54px' }}
+                        className="w-full flex flex-col items-center mt-14"
                     >
-                        <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                        <div className="w-full flex flex-col items-start gap-3">
                             <label
                                 htmlFor="register-email"
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="font-bold text-white text-base leading-6"
                             >
-                                Адреса електронної пошти
+                                {t('register.emailLabel')}
                             </label>
 
                             <div
-                                className="w-full flex items-center justify-between"
-                                style={{
-                                    height: '50px',
-                                    borderRadius: '5px',
-                                    paddingLeft: '20px',
-                                    paddingRight: '16px',
-                                    border: isTaken
-                                        ? '2px solid #dc2626'
+                                className={`w-full flex items-center justify-between h-12.5 rounded pl-5 pr-4 ${
+                                    isTaken
+                                        ? 'border-2 border-red-600'
                                         : hasError
-                                          ? '2px solid #ffffff'
-                                          : '1px solid #ffffff',
-                                }}
+                                          ? 'border-2 border-white'
+                                          : 'border border-white'
+                                }`}
                             >
                                 <input
                                     id="register-email"
@@ -379,116 +354,78 @@ export default function RegisterPage() {
                                             if (errors.email) clearErrors('email')
                                         },
                                     })}
-                                    className="w-full bg-transparent outline-none font-bold"
-                                    style={{
-                                        fontSize: '16px',
-                                        lineHeight: '25px',
-                                        color: isTaken ? '#dc2626' : '#ffffff',
-                                    }}
+                                    className={`w-full bg-transparent outline-none font-bold text-base leading-6 ${
+                                        isTaken ? 'text-red-600' : 'text-white'
+                                    }`}
                                 />
                                 {hasError && (
-                                    <div className="shrink-0 ml-2" style={{ width: '25px', height: '25px' }}>
+                                    <div className="shrink-0 ml-2 w-6 h-6">
                                         <img src={errorIcon} alt="" className="block" />
                                     </div>
                                 )}
                             </div>
 
                             {errors.email?.message && (
-                                <p
-                                    className="font-semibold w-full"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                    }}
-                                >
+                                <p className="font-semibold w-full text-sm leading-snug text-red-600">
                                     {errors.email.message}
                                 </p>
                             )}
                         </div>
 
                         <div
-                            className="w-full flex flex-col items-center"
-                            style={{ marginTop: hasError ? '28px' : '40px', gap: '40px' }}
+                            className={`w-full flex flex-col items-center gap-10 ${
+                                hasError ? 'mt-7' : 'mt-10'
+                            }`}
                         >
                             <button
                                 type="submit"
                                 disabled={isCheckingEmail}
-                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                                style={{
-                                    width: '300px',
-                                    height: '50px',
-                                    borderRadius: '35px',
-                                    fontSize: '16px',
-                                }}
+                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60 w-75 h-12.5 rounded-full text-base"
                             >
-                                {isCheckingEmail ? 'Перевірка...' : 'Далі'}
+                                {isCheckingEmail ? t('register.checking') : t('register.next')}
                             </button>
 
-                            <p
-                                className="font-bold text-center text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
-                            >
-                                або
+                            <p className="font-bold text-center text-white text-base leading-6">
+                                {t('register.or')}
                             </p>
                         </div>
                     </form>
 
-                    <div className="w-full flex flex-col" style={{ marginTop: '40px', gap: '15px' }}>
+                    <div className="w-full flex flex-col mt-10 gap-3.5">
                         <button
                             type="button"
-                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
-                            style={{
-                                height: '55px',
-                                borderRadius: '35px',
-                                paddingLeft: '20px',
-                                paddingRight: '20px',
-                                fontSize: '16px',
-                                lineHeight: '23px',
-                            }}
+                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85 h-14 rounded-full px-5 text-base leading-6"
                         >
-                            <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
-                                <img src={googleIcon} alt="Google" className="block" />
+                            <span className="shrink-0 w-5 h-5">
+                                <img src={googleIcon} alt={t('register.google')} className="block" />
                             </span>
                             <span className="flex-1 text-center">
-                                Зареєструватися через
+                                {t('register.signUpWithGoogle1')}
                                 <br />
-                                Google
+                                {t('register.google')}
                             </span>
                         </button>
 
                         <button
                             type="button"
-                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
-                            style={{
-                                height: '55px',
-                                borderRadius: '35px',
-                                paddingLeft: '20px',
-                                paddingRight: '20px',
-                                fontSize: '16px',
-                                lineHeight: '23px',
-                            }}
+                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85 h-14 rounded-full px-5 text-base leading-6"
                         >
-                            <span className="shrink-0" style={{ width: '20px', height: '22px' }}>
+                            <span className="shrink-0 w-5 h-5.5">
                                 <img src={appleIcon} alt="Apple" className="block" />
                             </span>
-                            <span className="flex-1 text-center">Вхід через Apple</span>
+                            <span className="flex-1 text-center">{t('register.loginWithApple')}</span>
                         </button>
                     </div>
 
-                    <div
-                        className="w-full flex flex-col items-center text-center"
-                        style={{ marginTop: '70px', gap: '16px' }}
-                    >
-                        <p className="font-normal text-white" style={{ fontSize: '16px', lineHeight: '30px' }}>
-                            Уже маєте акаунт?
+                    <div className="w-full flex flex-col items-center text-center mt-18 gap-4">
+                        <p className="font-normal text-white text-base leading-7">
+                            {t('register.haveAccount')}
                         </p>
                         <Link
                             to="/login"
-                            className="font-bold text-white hover:underline"
-                            style={{ fontSize: '16px', lineHeight: '25px' }}
+                            className="font-bold text-white hover:underline text-base leading-6"
                         >
-                            Увійти
+                            {t('register.logIn')}
                         </Link>
                     </div>
                 </div>
@@ -500,12 +437,9 @@ export default function RegisterPage() {
         const showPasswordError = passwordSubmitted && !isPasswordValid
 
         return (
-            <div
-                className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-                style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-            >
-                <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '45px' }}>
-                    <Link to="/" className="shrink-0" style={{ width: '55px', height: '55px' }}>
+            <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+                <div className="w-full flex flex-col items-center max-w-sm mt-11">
+                    <Link to="/player" className="shrink-0 w-14 h-14">
                         <img
                             src={logoSonoraIcon}
                             alt="Sonora"
@@ -513,93 +447,57 @@ export default function RegisterPage() {
                         />
                     </Link>
 
-                    <div
-                        className="w-full relative border border-white"
-                        style={{
-                            height: '10px',
-                            borderRadius: '5px',
-                            marginTop: '30px',
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: '120px',
-                                height: '100%',
-                                borderRadius: '5px',
-                                backgroundColor: '#10b981',
-                            }}
-                        />
+                    <div className="w-full relative border border-white h-2.5 rounded mt-7.5">
+                        <div className="w-1/3 h-full rounded bg-emerald-500" />
                     </div>
 
-                    <div className="w-full relative flex flex-col items-start" style={{ marginTop: '24px' }}>
+                    <div className="w-full relative flex flex-col items-start mt-6">
                         <button
                             type="button"
                             onClick={() => setStep(0)}
-                            aria-label="Назад"
-                            className="cursor-pointer flex items-center justify-center mb-3 sm:mb-0"
-                            style={{
-                                position: 'absolute',
-                                left: '-42px',
-                                top: '6px',
-                                width: '24px',
-                                height: '24px',
-                            }}
+                            aria-label={t('register.back')}
+                            className="cursor-pointer flex items-center justify-center mb-3 sm:mb-0 absolute -left-10.5 top-1.5 w-6 h-6"
                         >
                             <img src={backArrowIcon} alt="" className="block" />
                         </button>
 
-                        <p className="font-normal text-white" style={{ fontSize: '14px', lineHeight: '20px' }}>
-                            Крок 1 з 3
+                        <p className="font-normal text-white text-sm leading-5">
+                            {t('register.stepOf1')}
                         </p>
-                        <h1
-                            className="font-bold text-white"
-                            style={{ fontSize: '16px', lineHeight: '25px', marginTop: '4px' }}
-                        >
-                            Створіть пароль
+                        <h1 className="font-bold text-white text-base leading-6 mt-1">
+                            {t('register.passwordTitle')}
                         </h1>
                     </div>
 
                     <form
                         onSubmit={handlePasswordSubmit}
                         noValidate
-                        className="w-full flex flex-col items-start"
-                        style={{ marginTop: '22px' }}
+                        className="w-full flex flex-col items-start mt-5.5"
                     >
                         <label
                             htmlFor="register-password"
-                            className="font-bold text-white"
-                            style={{ fontSize: '16px', lineHeight: '25px' }}
+                            className="font-bold text-white text-base leading-6"
                         >
-                            Пароль
+                            {t('register.passwordLabel')}
                         </label>
 
                         <div
-                            className="w-full flex items-center justify-between"
-                            style={{
-                                height: '50px',
-                                borderRadius: '5px',
-                                marginTop: '12px',
-                                paddingLeft: '20px',
-                                paddingRight: '15px',
-                                border: showPasswordError ? '2px solid #dc2626' : '1px solid #ffffff',
-                            }}
+                            className={`w-full flex items-center justify-between h-12.5 rounded mt-3 pl-5 pr-4 ${
+                                showPasswordError ? 'border-2 border-red-600' : 'border border-white'
+                            }`}
                         >
                             <input
                                 id="register-password"
                                 type={showPassword ? 'text' : 'password'}
                                 {...register('password')}
-                                className="w-full bg-transparent outline-none font-bold"
-                                style={{
-                                    fontSize: '16px',
-                                    lineHeight: '25px',
-                                    color: showPasswordError ? '#dc2626' : '#ffffff',
-                                }}
+                                className={`w-full bg-transparent outline-none font-bold text-base leading-6 ${
+                                    showPasswordError ? 'text-red-600' : 'text-white'
+                                }`}
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword((prev) => !prev)}
-                                className="cursor-pointer shrink-0 ml-2 flex items-center justify-center"
-                                style={{ width: '25px', height: '25px' }}
+                                className="cursor-pointer shrink-0 ml-2 flex items-center justify-center w-6 h-6"
                             >
                                 <img
                                     src={showPassword ? eyeOpenIcon : eyeClosedIcon}
@@ -609,101 +507,71 @@ export default function RegisterPage() {
                             </button>
                         </div>
 
-                        <div className="w-full flex flex-col items-start" style={{ marginTop: '28px' }}>
-                            <p className="font-bold text-white" style={{ fontSize: '16px', lineHeight: '25px' }}>
-                                Пароль має містити принаймні:
+                        <div className="w-full flex flex-col items-start mt-7">
+                            <p className="font-bold text-white text-base leading-6">
+                                {t('register.passwordRequirements')}
                             </p>
 
-                            <div className="w-full flex flex-col" style={{ marginTop: '16px', gap: '16px' }}>
-                                <div className="flex items-center" style={{ gap: '10px' }}>
+                            <div className="w-full flex flex-col mt-4 gap-4">
+                                <div className="flex items-center gap-2.5">
                                     {hasLetter ? (
-                                        <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
+                                        <span className="shrink-0 w-5 h-5">
                                             <img src={checkCircleIcon} alt="" className="block" />
                                         </span>
                                     ) : (
-                                        <span
-                                            className="shrink-0 rounded-full border-2 border-white"
-                                            style={{ width: '20px', height: '20px' }}
-                                        />
+                                        <span className="shrink-0 rounded-full border-2 border-white w-5 h-5" />
                                     )}
                                     <span
-                                        className="font-normal"
-                                        style={{
-                                            fontSize: '14px',
-                                            lineHeight: '20px',
-                                            color: passwordSubmitted && !hasLetter ? '#dc2626' : '#ffffff',
-                                        }}
+                                        className={`font-normal text-sm leading-5 ${
+                                            passwordSubmitted && !hasLetter ? 'text-red-600' : 'text-white'
+                                        }`}
                                     >
-                                        1 літеру
+                                        {t('register.reqLetter')}
                                     </span>
                                 </div>
 
-                                <div className="flex items-start" style={{ gap: '10px' }}>
+                                <div className="flex items-start gap-2.5">
                                     {hasDigitOrSpecial ? (
-                                        <span
-                                            className="shrink-0"
-                                            style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                        >
+                                        <span className="shrink-0 w-5 h-5 mt-0.5">
                                             <img src={checkCircleIcon} alt="" className="block" />
                                         </span>
                                     ) : (
-                                        <span
-                                            className="shrink-0 rounded-full border-2 border-white"
-                                            style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                        />
+                                        <span className="shrink-0 rounded-full border-2 border-white w-5 h-5 mt-0.5" />
                                     )}
                                     <span
-                                        className="font-normal"
-                                        style={{
-                                            fontSize: '14px',
-                                            lineHeight: '20px',
-                                            color:
-                                                passwordSubmitted && !hasDigitOrSpecial
-                                                    ? '#dc2626'
-                                                    : '#ffffff',
-                                        }}
+                                        className={`font-normal text-sm leading-5 ${
+                                            passwordSubmitted && !hasDigitOrSpecial ? 'text-red-600' : 'text-white'
+                                        }`}
                                     >
-                                        1 число або 1 спеціальний символ (наприклад: #?!&)
+                                        {t('register.reqDigitOrSpecial')}
                                     </span>
                                 </div>
 
-                                <div className="flex items-center" style={{ gap: '10px' }}>
+                                <div className="flex items-center gap-2.5">
                                     {hasMinLength ? (
-                                        <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
+                                        <span className="shrink-0 w-5 h-5">
                                             <img src={checkCircleIcon} alt="" className="block" />
                                         </span>
                                     ) : (
-                                        <span
-                                            className="shrink-0 rounded-full border-2 border-white"
-                                            style={{ width: '20px', height: '20px' }}
-                                        />
+                                        <span className="shrink-0 rounded-full border-2 border-white w-5 h-5" />
                                     )}
                                     <span
-                                        className="font-normal"
-                                        style={{
-                                            fontSize: '14px',
-                                            lineHeight: '20px',
-                                            color: passwordSubmitted && !hasMinLength ? '#dc2626' : '#ffffff',
-                                        }}
+                                        className={`font-normal text-sm leading-5 ${
+                                            passwordSubmitted && !hasMinLength ? 'text-red-600' : 'text-white'
+                                        }`}
                                     >
-                                        10 символів
+                                        {t('register.reqLength')}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="w-full flex justify-center" style={{ marginTop: '48px' }}>
+                        <div className="w-full flex justify-center mt-12">
                             <button
                                 type="submit"
-                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
-                                style={{
-                                    width: '300px',
-                                    height: '50px',
-                                    borderRadius: '35px',
-                                    fontSize: '16px',
-                                }}
+                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 w-75 h-12.5 rounded-full text-base"
                             >
-                                Далі
+                                {t('register.next')}
                             </button>
                         </div>
                     </form>
@@ -720,12 +588,9 @@ export default function RegisterPage() {
         const showGenderError = Boolean(errors.gender)
 
         return (
-            <div
-                className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-                style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-            >
-                <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '45px' }}>
-                    <Link to="/" className="shrink-0" style={{ width: '55px', height: '55px' }}>
+            <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+                <div className="w-full flex flex-col items-center max-w-sm mt-11">
+                    <Link to="/player" className="shrink-0 w-14 h-14">
                         <img
                             src={logoSonoraIcon}
                             alt="Sonora"
@@ -733,71 +598,42 @@ export default function RegisterPage() {
                         />
                     </Link>
 
-                    <div
-                        className="w-full relative border border-white"
-                        style={{
-                            height: '10px',
-                            borderRadius: '5px',
-                            marginTop: '30px',
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: '240px',
-                                height: '100%',
-                                borderRadius: '5px',
-                                backgroundColor: '#10b981',
-                            }}
-                        />
+                    <div className="w-full relative border border-white h-2.5 rounded mt-7.5">
+                        <div className="w-2/3 h-full rounded bg-emerald-500" />
                     </div>
 
-                    <div className="w-full relative flex flex-col items-start" style={{ marginTop: '24px' }}>
+                    <div className="w-full relative flex flex-col items-start mt-6">
                         <button
                             type="button"
                             onClick={() => setStep(1)}
-                            aria-label="Назад"
-                            className="cursor-pointer flex items-center justify-center"
-                            style={{
-                                position: 'absolute',
-                                left: '-42px',
-                                top: '6px',
-                                width: '24px',
-                                height: '24px',
-                            }}
+                            aria-label={t('register.back')}
+                            className="cursor-pointer flex items-center justify-center absolute -left-10.5 top-1.5 w-6 h-6"
                         >
                             <img src={backArrowIcon} alt="" className="block" />
                         </button>
 
-                        <p className="font-normal text-white" style={{ fontSize: '14px', lineHeight: '20px' }}>
-                            Крок 2 з 3
+                        <p className="font-normal text-white text-sm leading-5">
+                            {t('register.stepOf2')}
                         </p>
-                        <h1
-                            className="font-bold text-white"
-                            style={{ fontSize: '16px', lineHeight: '25px', marginTop: '4px' }}
-                        >
-                            Розкажіть про себе
+                        <h1 className="font-bold text-white text-base leading-6 mt-1">
+                            {t('register.personalTitle')}
                         </h1>
                     </div>
 
                     <form
                         onSubmit={handlePersonalDataSubmit}
                         noValidate
-                        className="w-full flex flex-col items-start"
-                        style={{ marginTop: '20px' }}
+                        className="w-full flex flex-col items-start mt-5"
                     >
                         <div className="w-full flex flex-col items-start">
                             <label
                                 htmlFor="register-fullname"
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="font-bold text-white text-base leading-6"
                             >
-                                Ім&apos;я
+                                {t('register.nameLabel')}
                             </label>
-                            <p
-                                className="font-normal text-white"
-                                style={{ fontSize: '14px', lineHeight: '20px', marginTop: '2px' }}
-                            >
-                                Це ім&apos;я відображатиметься в профілі
+                            <p className="font-normal text-white text-sm leading-5 mt-0.5">
+                                {t('register.nameHint')}
                             </p>
 
                             <input
@@ -808,92 +644,50 @@ export default function RegisterPage() {
                                         if (errors.fullName) clearErrors('fullName')
                                     },
                                 })}
-                                className="w-full bg-transparent outline-none font-bold text-white"
-                                style={{
-                                    height: '50px',
-                                    borderRadius: '5px',
-                                    marginTop: '10px',
-                                    paddingLeft: '20px',
-                                    paddingRight: '20px',
-                                    fontSize: '16px',
-                                    lineHeight: '25px',
-                                    border: showNameError ? '1px solid #dc2626' : '1px solid #ffffff',
-                                }}
+                                className={`w-full bg-transparent outline-none font-bold text-white h-12.5 rounded mt-2.5 px-5 text-base leading-6 ${
+                                    showNameError ? 'border border-red-600' : 'border border-white'
+                                }`}
                             />
 
                             {showNameError && (
-                                <p
-                                    className="font-semibold"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                        marginTop: '10px',
-                                    }}
-                                >
-                                    {errors.fullName?.message || "Введіть своє ім'я"}
+                                <p className="font-semibold text-sm leading-snug text-red-600 mt-2.5">
+                                    {errors.fullName?.message || t('register.errors.nameRequired')}
                                 </p>
                             )}
                         </div>
 
-                        <div className="w-full flex flex-col items-start" style={{ marginTop: '28px' }}>
-                            <label
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
-                            >
-                                Дата народження
+                        <div className="w-full flex flex-col items-start mt-7">
+                            <label className="font-bold text-white text-base leading-6">
+                                {t('register.birthLabel')}
                             </label>
 
                             {showBirthDateError && (
-                                <p
-                                    className="font-semibold"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                        marginTop: '6px',
-                                    }}
-                                >
-                                    Виберіть дату народження
+                                <p className="font-semibold text-sm leading-snug text-red-600 mt-1.5">
+                                    {t('register.errors.birthRequired')}
                                 </p>
                             )}
 
-                            <div
-                                className="w-full flex items-center justify-between"
-                                style={{ marginTop: '12px', gap: '16px' }}
-                            >
+                            <div className="w-full flex items-center justify-between mt-3 gap-4">
                                 <input
                                     type="text"
                                     inputMode="numeric"
                                     maxLength={2}
-                                    placeholder="дд"
+                                    placeholder={t('register.dayPlaceholder')}
                                     {...register('birthDay', {
                                         onChange: (e) => {
                                             e.target.value = e.target.value.replace(/\D/g, '')
                                             clearErrors(['birthDay', 'birthMonth', 'birthYear'])
                                         },
                                     })}
-                                    className="bg-transparent outline-none font-normal text-white"
-                                    style={{
-                                        width: '74px',
-                                        height: '50px',
-                                        borderRadius: '5px',
-                                        paddingLeft: '20px',
-                                        paddingRight: '15px',
-                                        fontSize: '16px',
-                                        lineHeight: '30px',
-                                        border: showBirthDateError ? '1px solid #dc2626' : '1px solid #ffffff',
-                                    }}
+                                    className={`bg-transparent outline-none font-normal text-white w-18.5 h-12.5 rounded pl-5 pr-4 text-base leading-7.5 ${
+                                        showBirthDateError ? 'border border-red-600' : 'border border-white'
+                                    }`}
                                 />
 
                                 <div
-                                    className="relative flex items-center"
-                                    style={{
-                                        width: '140px',
-                                        height: '51px',
-                                        borderRadius: '5px',
-                                        border: showBirthDateError ? '1px solid #dc2626' : '1px solid #ffffff',
-                                    }}
+                                    className={`relative flex items-center w-35 h-12.5 rounded ${
+                                        showBirthDateError ? 'border border-red-600' : 'border border-white'
+                                    }`}
                                 >
                                     <select
                                         {...register('birthMonth', {
@@ -901,31 +695,22 @@ export default function RegisterPage() {
                                                 clearErrors(['birthDay', 'birthMonth', 'birthYear'])
                                             },
                                         })}
-                                        className="w-full h-full bg-transparent outline-none appearance-none font-normal text-white cursor-pointer"
-                                        style={{
-                                            paddingLeft: '14px',
-                                            paddingRight: '36px',
-                                            fontSize: '16px',
-                                            lineHeight: '30px',
-                                        }}
+                                        className="w-full h-full bg-transparent outline-none appearance-none font-normal text-white cursor-pointer pl-3.5 pr-9 text-base leading-7.5"
                                     >
-                                        <option value="" disabled style={{ backgroundColor: '#280a3a', color: '#ffffff' }}>
-                                            Місяць
+                                        <option value="" disabled className="bg-sonora-dark text-white">
+                                            {t('register.monthPlaceholder')}
                                         </option>
-                                        {MONTHS.map((month) => (
+                                        {MONTH_VALUES.map((value, index) => (
                                             <option
-                                                key={month.value}
-                                                value={month.value}
-                                                style={{ backgroundColor: '#280a3a', color: '#ffffff' }}
+                                                key={value}
+                                                value={value}
+                                                className="bg-sonora-dark text-white"
                                             >
-                                                {month.label}
+                                                {t(`register.months.${index}`)}
                                             </option>
                                         ))}
                                     </select>
-                                    <span
-                                        className="pointer-events-none absolute flex items-center justify-center"
-                                        style={{ right: '14px', width: '20px', height: '12px' }}
-                                    >
+                                    <span className="pointer-events-none absolute right-3.5 w-5 h-3 flex items-center justify-center">
                                         <img src={monthArrowIcon} alt="" className="block w-full h-auto" />
                                     </span>
                                 </div>
@@ -934,75 +719,49 @@ export default function RegisterPage() {
                                     type="text"
                                     inputMode="numeric"
                                     maxLength={4}
-                                    placeholder="рррр"
+                                    placeholder={t('register.yearPlaceholder')}
                                     {...register('birthYear', {
                                         onChange: (e) => {
                                             e.target.value = e.target.value.replace(/\D/g, '')
                                             clearErrors(['birthDay', 'birthMonth', 'birthYear'])
                                         },
                                     })}
-                                    className="bg-transparent outline-none font-normal text-white"
-                                    style={{
-                                        width: '100px',
-                                        height: '50px',
-                                        borderRadius: '5px',
-                                        paddingLeft: '20px',
-                                        paddingRight: '15px',
-                                        fontSize: '16px',
-                                        lineHeight: '30px',
-                                        border: showBirthDateError ? '1px solid #dc2626' : '1px solid #ffffff',
-                                    }}
+                                    className={`bg-transparent outline-none font-normal text-white w-25 h-12.5 rounded pl-5 pr-4 text-base leading-7.5 ${
+                                        showBirthDateError ? 'border border-red-600' : 'border border-white'
+                                    }`}
                                 />
                             </div>
                         </div>
 
-                        <div className="w-full flex flex-col items-start" style={{ marginTop: '28px' }}>
-                            <p className="font-bold text-white" style={{ fontSize: '16px', lineHeight: '25px' }}>
-                                Стать
+                        <div className="w-full flex flex-col items-start mt-7">
+                            <p className="font-bold text-white text-base leading-6">
+                                {t('register.genderLabel')}
                             </p>
 
-                            <div
-                                className="w-full flex flex-wrap items-center"
-                                style={{ marginTop: '14px', columnGap: '24px', rowGap: '18px' }}
-                            >
-                                {(
-                                    [
-                                        { value: 'MALE' as Gender, label: 'Чоловік' },
-                                        { value: 'FEMALE' as Gender, label: 'Жінка' },
-                                        { value: 'NONEBINARY' as Gender, label: 'Небінарна' },
-                                        { value: 'OTHER' as Gender, label: 'Інше' },
-                                        { value: 'UNDISCLOSED' as Gender, label: 'Не хочу вказувати' },
-                                    ]
-                                ).map((option) => {
-                                    const isSelected = genderValue === option.value
+                            <div className="w-full flex flex-wrap items-center mt-3.5 gap-x-6 gap-y-4.5">
+                                {GENDER_KEYS.map((genderKey) => {
+                                    const isSelected = genderValue === genderKey
                                     return (
                                         <button
-                                            key={option.value}
+                                            key={genderKey}
                                             type="button"
                                             onClick={() => {
-                                                setValue('gender', option.value)
+                                                setValue('gender', genderKey)
                                                 clearErrors('gender')
                                             }}
-                                            className="cursor-pointer flex items-center text-left"
-                                            style={{ gap: '10px' }}
+                                            className="cursor-pointer flex items-center text-left gap-2.5"
                                         >
                                             <span
-                                                className="shrink-0 rounded-full"
-                                                style={{
-                                                    width: '20px',
-                                                    height: '20px',
-                                                    border: isSelected
-                                                        ? '4px solid #10b981'
+                                                className={`shrink-0 rounded-full w-5 h-5 ${
+                                                    isSelected
+                                                        ? 'border-4 border-emerald-500'
                                                         : showGenderError
-                                                          ? '2px solid #dc2626'
-                                                          : '2px solid #ffffff',
-                                                }}
+                                                          ? 'border-2 border-red-600'
+                                                          : 'border-2 border-white'
+                                                }`}
                                             />
-                                            <span
-                                                className="font-normal text-white"
-                                                style={{ fontSize: '14px', lineHeight: '20px' }}
-                                            >
-                                                {option.label}
+                                            <span className="font-normal text-white text-sm leading-5">
+                                                {t(`register.genders.${genderKey}`)}
                                             </span>
                                         </button>
                                     )
@@ -1010,32 +769,18 @@ export default function RegisterPage() {
                             </div>
 
                             {showGenderError && (
-                                <p
-                                    className="font-semibold"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                        marginTop: '10px',
-                                    }}
-                                >
-                                    {errors.gender?.message || 'Оберіть стать'}
+                                <p className="font-semibold text-sm leading-snug text-red-600 mt-2.5">
+                                    {errors.gender?.message || t('register.errors.genderRequired')}
                                 </p>
                             )}
                         </div>
 
-                        <div className="w-full flex justify-center" style={{ marginTop: '45px' }}>
+                        <div className="w-full flex justify-center mt-11">
                             <button
                                 type="submit"
-                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
-                                style={{
-                                    width: '300px',
-                                    height: '50px',
-                                    borderRadius: '35px',
-                                    fontSize: '16px',
-                                }}
+                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 w-75 h-12.5 rounded-full text-base"
                             >
-                                Далі
+                                {t('register.next')}
                             </button>
                         </div>
                     </form>
@@ -1047,12 +792,9 @@ export default function RegisterPage() {
     const termsError = Boolean(errors.acceptTerms)
 
     return (
-        <div
-            className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-            style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-        >
-            <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '45px' }}>
-                <Link to="/" className="shrink-0" style={{ width: '55px', height: '55px' }}>
+        <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+            <div className="w-full flex flex-col items-center max-w-sm mt-11">
+                <Link to="/player" className="shrink-0 w-14 h-14">
                     <img
                         src={logoSonoraIcon}
                         alt="Sonora"
@@ -1060,59 +802,34 @@ export default function RegisterPage() {
                     />
                 </Link>
 
-                <div
-                    className="w-full relative border border-white"
-                    style={{
-                        height: '10px',
-                        borderRadius: '5px',
-                        marginTop: '30px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: '5px',
-                            backgroundColor: '#10b981',
-                        }}
-                    />
+                <div className="w-full relative border border-white h-2.5 rounded mt-7.5">
+                    <div className="w-full h-full rounded bg-emerald-500" />
                 </div>
 
-                <div className="w-full relative flex flex-col items-start" style={{ marginTop: '24px' }}>
+                <div className="w-full relative flex flex-col items-start mt-6">
                     <button
                         type="button"
                         onClick={() => setStep(2)}
-                        aria-label="Назад"
-                        className="cursor-pointer flex items-center justify-center"
-                        style={{
-                            position: 'absolute',
-                            left: '-42px',
-                            top: '6px',
-                            width: '24px',
-                            height: '24px',
-                        }}
+                        aria-label={t('register.back')}
+                        className="cursor-pointer flex items-center justify-center absolute -left-10.5 top-1.5 w-6 h-6"
                     >
                         <img src={backArrowIcon} alt="" className="block" />
                     </button>
 
-                    <p className="font-normal text-white" style={{ fontSize: '14px', lineHeight: '20px' }}>
-                        Крок 3 з 3
+                    <p className="font-normal text-white text-sm leading-5">
+                        {t('register.stepOf3')}
                     </p>
-                    <h1
-                        className="font-bold text-white"
-                        style={{ fontSize: '16px', lineHeight: '25px', marginTop: '4px' }}
-                    >
-                        Умови використання
+                    <h1 className="font-bold text-white text-base leading-6 mt-1">
+                        {t('register.termsTitle')}
                     </h1>
                 </div>
 
                 <form
                     onSubmit={handleSubmit(onSubmit)}
                     noValidate
-                    className="w-full flex flex-col items-start"
-                    style={{ marginTop: '28px' }}
+                    className="w-full flex flex-col items-start mt-7"
                 >
-                    <div className="w-full flex flex-col" style={{ gap: '20px' }}>
+                    <div className="w-full flex flex-col gap-5">
                         <div className="w-full flex flex-col">
                             <button
                                 type="button"
@@ -1120,48 +837,27 @@ export default function RegisterPage() {
                                     setValue('acceptTerms', !acceptTermsValue)
                                     if (errors.acceptTerms) clearErrors('acceptTerms')
                                 }}
-                                className="cursor-pointer flex items-start text-left w-full"
-                                style={{ gap: '10px' }}
+                                className="cursor-pointer flex items-start text-left w-full gap-2.5"
                             >
                                 {acceptTermsValue ? (
-                                    <span
-                                        className="shrink-0"
-                                        style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                    >
+                                    <span className="shrink-0 w-5 h-5 mt-0.5">
                                         <img src={checkboxCheckedIcon} alt="" className="block" />
                                     </span>
                                 ) : (
                                     <span
-                                        className="shrink-0"
-                                        style={{
-                                            width: '20px',
-                                            height: '20px',
-                                            marginTop: '2px',
-                                            borderRadius: '5px',
-                                            border: termsError ? '2px solid #dc2626' : '2px solid #ffffff',
-                                        }}
+                                        className={`shrink-0 w-5 h-5 mt-0.5 rounded ${
+                                            termsError ? 'border-2 border-red-600' : 'border-2 border-white'
+                                        }`}
                                     />
                                 )}
-                                <span
-                                    className="font-normal text-white"
-                                    style={{ fontSize: '14px', lineHeight: '20px' }}
-                                >
-                                    Я погоджуюся з Умовами використання та Політикою конфідеційності
+                                <span className="font-normal text-white text-sm leading-5">
+                                    {t('register.acceptTerms')}
                                 </span>
                             </button>
 
                             {termsError && (
-                                <p
-                                    className="font-semibold"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                        marginTop: '10px',
-                                    }}
-                                >
-                                    {errors.acceptTerms?.message ||
-                                        'Щоб продовжити, необхідно прийняти Умови використання'}
+                                <p className="font-semibold text-sm leading-snug text-red-600 mt-2.5">
+                                    {errors.acceptTerms?.message || t('register.errors.termsRequired')}
                                 </p>
                             )}
                         </div>
@@ -1169,95 +865,51 @@ export default function RegisterPage() {
                         <button
                             type="button"
                             onClick={() => setValue('acceptNews', !acceptNewsValue)}
-                            className="cursor-pointer flex items-start text-left w-full"
-                            style={{ gap: '10px' }}
+                            className="cursor-pointer flex items-start text-left w-full gap-2.5"
                         >
                             {acceptNewsValue ? (
-                                <span
-                                    className="shrink-0"
-                                    style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                >
+                                <span className="shrink-0 w-5 h-5 mt-0.5">
                                     <img src={checkboxCheckedIcon} alt="" className="block" />
                                 </span>
                             ) : (
-                                <span
-                                    className="shrink-0 border-2 border-white"
-                                    style={{
-                                        width: '20px',
-                                        height: '20px',
-                                        marginTop: '2px',
-                                        borderRadius: '5px',
-                                    }}
-                                />
+                                <span className="shrink-0 border-2 border-white w-5 h-5 mt-0.5 rounded" />
                             )}
-                            <span
-                                className="font-normal text-white"
-                                style={{ fontSize: '14px', lineHeight: '20px' }}
-                            >
-                                Я погоджуюся отримувати новини та персональні пропозиції
+                            <span className="font-normal text-white text-sm leading-5">
+                                {t('register.acceptNews')}
                             </span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setValue('acceptData', !acceptDataValue)}
-                            className="cursor-pointer flex items-start text-left w-full"
-                            style={{ gap: '10px' }}
+                            className="cursor-pointer flex items-start text-left w-full gap-2.5"
                         >
                             {acceptDataValue ? (
-                                <span
-                                    className="shrink-0"
-                                    style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                >
+                                <span className="shrink-0 w-5 h-5 mt-0.5">
                                     <img src={checkboxCheckedIcon} alt="" className="block" />
                                 </span>
                             ) : (
-                                <span
-                                    className="shrink-0 border-2 border-white"
-                                    style={{
-                                        width: '20px',
-                                        height: '20px',
-                                        marginTop: '2px',
-                                        borderRadius: '5px',
-                                    }}
-                                />
+                                <span className="shrink-0 border-2 border-white w-5 h-5 mt-0.5 rounded" />
                             )}
-                            <span
-                                className="font-normal text-white"
-                                style={{ fontSize: '14px', lineHeight: '20px' }}
-                            >
-                                Я погоджуюся на обробку моїх даних для покращення сервісу (необов&apos;язково)
+                            <span className="font-normal text-white text-sm leading-5">
+                                {t('register.acceptData')}
                             </span>
                         </button>
                     </div>
 
                     {errors.root?.message && (
-                        <p
-                            className="font-semibold w-full"
-                            style={{
-                                fontSize: '14px',
-                                lineHeight: '18px',
-                                color: '#dc2626',
-                                marginTop: '16px',
-                            }}
-                        >
+                        <p className="font-semibold w-full text-sm leading-snug text-red-600 mt-4">
                             {errors.root.message}
                         </p>
                     )}
 
-                    <div className="w-full flex justify-center" style={{ marginTop: '48px' }}>
+                    <div className="w-full flex justify-center mt-12">
                         <button
                             type="submit"
                             disabled={isRegistering}
-                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                            style={{
-                                width: '300px',
-                                height: '50px',
-                                borderRadius: '35px',
-                                fontSize: '16px',
-                            }}
+                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60 w-75 h-12.5 rounded-full text-base"
                         >
-                            {isRegistering ? 'Зачекайте...' : 'Зареєструватися'}
+                            {isRegistering ? t('register.submitting') : t('register.signUp')}
                         </button>
                     </div>
                 </form>
