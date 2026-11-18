@@ -279,12 +279,9 @@ export default function LoginPage() {
         const hasEmailError = Boolean(errors.email)
 
         return (
-            <div
-                className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-                style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-            >
-                <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '70px' }}>
-                    <Link to="/" className="shrink-0" style={{ width: '60px', height: '60px' }}>
+            <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+                <div className="w-full flex flex-col items-center max-w-sm mt-18">
+                    <Link to="/player" className="shrink-0 w-15 h-15">
                         <img
                             src={logoSonoraIcon}
                             alt="Sonora"
@@ -292,41 +289,27 @@ export default function LoginPage() {
                         />
                     </Link>
 
-                    <h1
-                        className="font-semibold text-center text-white w-full"
-                        style={{
-                            fontSize: '30px',
-                            lineHeight: '50px',
-                            marginTop: '20px',
-                        }}
-                    >
+                    <h1 className="font-semibold text-center text-white w-full text-3xl leading-12 mt-5">
                         {t('login.emailTitle')}
                     </h1>
 
                     <form
                         onSubmit={handleEmailContinue}
                         noValidate
-                        className="w-full flex flex-col items-center"
-                        style={{ marginTop: '48px' }}
+                        className="w-full flex flex-col items-center mt-12"
                     >
-                        <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                        <div className="w-full flex flex-col items-start gap-3">
                             <label
                                 htmlFor="login-email-step"
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="font-bold text-white text-base leading-6"
                             >
                                 {t('login.emailLabel')}
                             </label>
 
                             <div
-                                className="w-full flex items-center justify-between"
-                                style={{
-                                    height: '50px',
-                                    borderRadius: '5px',
-                                    paddingLeft: '20px',
-                                    paddingRight: '16px',
-                                    border: hasEmailError ? '2px solid #dc2626' : '1px solid #ffffff',
-                                }}
+                                className={`w-full flex items-center justify-between h-12.5 rounded pl-5 pr-4 ${
+                                    hasEmailError ? 'border-2 border-red-600' : 'border border-white'
+                                }`}
                             >
                                 <input
                                     id="login-email-step"
@@ -337,71 +320,43 @@ export default function LoginPage() {
                                             if (errors.email) clearErrors('email')
                                         },
                                     })}
-                                    className="w-full bg-transparent outline-none font-bold text-white"
-                                    style={{ fontSize: '16px', lineHeight: '25px' }}
+                                    className="w-full bg-transparent outline-none font-bold text-white text-base leading-6"
                                 />
                                 {hasEmailError && (
-                                    <div className="shrink-0 ml-2" style={{ width: '25px', height: '25px' }}>
+                                    <div className="shrink-0 ml-2 w-6 h-6">
                                         <img src={errorIcon} alt="" className="block" />
                                     </div>
                                 )}
                             </div>
 
                             {errors.email?.message && (
-                                <p
-                                    className="font-semibold w-full"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                    }}
-                                >
+                                <p className="font-semibold w-full text-sm leading-snug text-red-600">
                                     {errors.email.message}
                                 </p>
                             )}
                         </div>
 
-                        <div
-                            className="w-full flex flex-col items-center"
-                            style={{ marginTop: '36px', gap: '40px' }}
-                        >
+                        <div className="w-full flex flex-col items-center mt-9 gap-10">
                             <button
                                 type="submit"
                                 disabled={isSendingCode}
-                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                                style={{
-                                    width: '300px',
-                                    height: '50px',
-                                    borderRadius: '35px',
-                                    fontSize: '16px',
-                                }}
+                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60 w-75 h-12.5 rounded-full text-base"
                             >
                                 {isSendingCode ? t('login.waiting') : t('login.next')}
                             </button>
 
-                            <p
-                                className="font-bold text-center text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
-                            >
+                            <p className="font-bold text-center text-white text-base leading-6">
                                 {t('login.or')}
                             </p>
                         </div>
                     </form>
 
-                    <div className="w-full flex flex-col" style={{ marginTop: '40px', gap: '15px' }}>
+                    <div className="w-full flex flex-col mt-10 gap-3.5">
                         <button
                             type="button"
-                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
-                            style={{
-                                height: '55px',
-                                borderRadius: '35px',
-                                paddingLeft: '20px',
-                                paddingRight: '20px',
-                                fontSize: '16px',
-                                lineHeight: '23px',
-                            }}
+                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85 h-14 rounded-full px-5 text-base leading-6"
                         >
-                            <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
+                            <span className="shrink-0 w-5 h-5">
                                 <img src={googleIcon} alt={t('login.google')} className="block" />
                             </span>
                             <span className="flex-1 text-center">
@@ -413,34 +368,22 @@ export default function LoginPage() {
 
                         <button
                             type="button"
-                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
-                            style={{
-                                height: '55px',
-                                borderRadius: '35px',
-                                paddingLeft: '20px',
-                                paddingRight: '20px',
-                                fontSize: '16px',
-                                lineHeight: '23px',
-                            }}
+                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85 h-14 rounded-full px-5 text-base leading-6"
                         >
-                            <span className="shrink-0" style={{ width: '20px', height: '22px' }}>
+                            <span className="shrink-0 w-5 h-5.5">
                                 <img src={appleIcon} alt="Apple" className="block" />
                             </span>
                             <span className="flex-1 text-center">{t('login.loginWithApple')}</span>
                         </button>
                     </div>
 
-                    <div
-                        className="w-full flex flex-col items-center text-center"
-                        style={{ marginTop: '70px', gap: '16px' }}
-                    >
-                        <p className="font-normal text-white" style={{ fontSize: '16px', lineHeight: '30px' }}>
+                    <div className="w-full flex flex-col items-center text-center mt-18 gap-4">
+                        <p className="font-normal text-white text-base leading-7">
                             {t('login.noAccount')}
                         </p>
                         <Link
                             to="/register"
-                            className="font-bold text-white hover:underline"
-                            style={{ fontSize: '16px', lineHeight: '25px' }}
+                            className="font-bold text-white hover:underline text-base leading-6"
                         >
                             {t('login.signUp')}
                         </Link>
@@ -463,10 +406,9 @@ export default function LoginPage() {
         return (
             <div
                 key="password-view"
-                className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-                style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
+                className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter"
             >
-                <div className="w-full flex flex-col items-start" style={{ maxWidth: '355px', marginTop: '110px' }}>
+                <div className="w-full flex flex-col items-start max-w-sm mt-28">
                     <div className="w-full relative flex items-start">
                         <button
                             type="button"
@@ -475,14 +417,7 @@ export default function LoginPage() {
                                 setView('code')
                             }}
                             aria-label={t('login.back')}
-                            className="cursor-pointer flex items-center justify-center"
-                            style={{
-                                position: 'absolute',
-                                left: '-42px',
-                                top: '4px',
-                                width: '24px',
-                                height: '24px',
-                            }}
+                            className="cursor-pointer flex items-center justify-center absolute -left-10.5 top-1 w-6 h-6"
                         >
                             <img src={backArrowIcon} alt="" className="block" />
                         </button>
@@ -490,8 +425,7 @@ export default function LoginPage() {
                         <h1
                             key="password-heading"
                             data-login-heading="password"
-                            className="font-bold text-white"
-                            style={{ fontSize: '20px', lineHeight: '30px' }}
+                            className="font-bold text-white text-xl leading-7.5"
                         >
                             {t('login.passwordTitle')}
                         </h1>
@@ -500,14 +434,12 @@ export default function LoginPage() {
                     <form
                         onSubmit={handleSubmit(onPasswordSubmit)}
                         noValidate
-                        className="w-full flex flex-col items-start"
-                        style={{ marginTop: '28px' }}
+                        className="w-full flex flex-col items-start mt-7"
                     >
-                        <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                        <div className="w-full flex flex-col items-start gap-3">
                             <label
                                 htmlFor="login-email-password"
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="font-bold text-white text-base leading-6"
                             >
                                 {t('login.emailLabel')}
                             </label>
@@ -521,45 +453,28 @@ export default function LoginPage() {
                                         if (hasPasswordLoginError) clearErrors()
                                     },
                                 })}
-                                className="w-full bg-transparent outline-none font-bold"
-                                style={{
-                                    height: '50px',
-                                    borderRadius: '5px',
-                                    paddingLeft: '20px',
-                                    paddingRight: '20px',
-                                    fontSize: '16px',
-                                    lineHeight: '25px',
-                                    color: hasPasswordLoginError ? '#dc2626' : '#ffffff',
-                                    border: hasPasswordLoginError
-                                        ? '2px solid #dc2626'
-                                        : '1px solid #ffffff',
-                                }}
+                                className={`w-full bg-transparent outline-none font-bold h-12.5 rounded px-5 text-base leading-6 ${
+                                    hasPasswordLoginError
+                                        ? 'text-red-600 border-2 border-red-600'
+                                        : 'text-white border border-white'
+                                }`}
                             />
                         </div>
 
-                        <div
-                            className="w-full flex flex-col items-start"
-                            style={{ marginTop: '24px', gap: '12px' }}
-                        >
+                        <div className="w-full flex flex-col items-start mt-6 gap-3">
                             <label
                                 htmlFor="login-password-input"
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="font-bold text-white text-base leading-6"
                             >
                                 {t('login.passwordLabel')}
                             </label>
 
                             <div
-                                className="w-full flex items-center justify-between"
-                                style={{
-                                    height: '50px',
-                                    borderRadius: '5px',
-                                    paddingLeft: '20px',
-                                    paddingRight: '15px',
-                                    border: hasPasswordLoginError
-                                        ? '2px solid #dc2626'
-                                        : '1px solid #ffffff',
-                                }}
+                                className={`w-full flex items-center justify-between h-12.5 rounded pl-5 pr-4 ${
+                                    hasPasswordLoginError
+                                        ? 'border-2 border-red-600'
+                                        : 'border border-white'
+                                }`}
                             >
                                 <input
                                     id="login-password-input"
@@ -569,18 +484,14 @@ export default function LoginPage() {
                                             if (hasPasswordLoginError) clearErrors()
                                         },
                                     })}
-                                    className="w-full bg-transparent outline-none font-bold"
-                                    style={{
-                                        fontSize: '16px',
-                                        lineHeight: '25px',
-                                        color: hasPasswordLoginError ? '#dc2626' : '#ffffff',
-                                    }}
+                                    className={`w-full bg-transparent outline-none font-bold text-base leading-6 ${
+                                        hasPasswordLoginError ? 'text-red-600' : 'text-white'
+                                    }`}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword((prev) => !prev)}
-                                    className="cursor-pointer shrink-0 ml-2 flex items-center justify-center"
-                                    style={{ width: '25px', height: '25px' }}
+                                    className="cursor-pointer shrink-0 ml-2 flex items-center justify-center w-6 h-6"
                                 >
                                     <img
                                         src={showPassword ? eyeOpenIcon : eyeClosedIcon}
@@ -591,38 +502,23 @@ export default function LoginPage() {
                             </div>
 
                             {hasPasswordLoginError && (
-                                <p
-                                    className="font-semibold w-full"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                        marginTop: '4px',
-                                    }}
-                                >
+                                <p className="font-semibold w-full text-sm leading-snug text-red-600 mt-1">
                                     {passwordErrorMessage}
                                 </p>
                             )}
                         </div>
 
-                        <div className="w-full flex justify-center" style={{ marginTop: '36px' }}>
+                        <div className="w-full flex justify-center mt-9">
                             <button
                                 type="submit"
                                 disabled={isLoggingInPassword}
-                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                                style={{
-                                    width: '300px',
-                                    height: '50px',
-                                    borderRadius: '35px',
-                                    fontSize: '16px',
-                                }}
+                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60 w-75 h-12.5 rounded-full text-base"
                             >
                                 {isLoggingInPassword ? t('login.loggingIn') : t('login.logIn')}
                             </button>
                         </div>
 
-                        {/* Блок посилань знизу: спочатку "Увійти без пароля", а під ним "Забули пароль?" */}
-                        <div className="w-full flex flex-col items-center" style={{ marginTop: '40px', gap: '16px' }}>
+                        <div className="w-full flex flex-col items-center mt-10 gap-4">
                             <button
                                 type="button"
                                 onClick={async () => {
@@ -638,16 +534,14 @@ export default function LoginPage() {
                                     }
                                     setView('code')
                                 }}
-                                className="cursor-pointer font-bold text-white text-center hover:underline"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="cursor-pointer font-bold text-white text-center hover:underline text-base leading-6"
                             >
                                 {t('login.loginWithoutPassword')}
                             </button>
 
                             <Link
                                 to="/forgot-password"
-                                className="font-bold text-white text-center hover:underline"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="font-bold text-white text-center hover:underline text-base leading-6"
                             >
                                 {t('login.forgotPassword')}
                             </Link>
@@ -664,11 +558,8 @@ export default function LoginPage() {
     const codeErrorMessage = codeErrors.root?.message || t('login.errors.invalidCode')
 
     return (
-        <div
-            className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-            style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-        >
-            <div className="w-full flex flex-col items-start" style={{ maxWidth: '355px', marginTop: '110px' }}>
+        <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+            <div className="w-full flex flex-col items-start max-w-sm mt-28">
                 <div className="w-full relative flex items-start">
                     <button
                         type="button"
@@ -678,22 +569,12 @@ export default function LoginPage() {
                             setView('email')
                         }}
                         aria-label={t('login.back')}
-                        className="cursor-pointer flex items-center justify-center"
-                        style={{
-                            position: 'absolute',
-                            left: '-42px',
-                            top: '4px',
-                            width: '24px',
-                            height: '24px',
-                        }}
+                        className="cursor-pointer flex items-center justify-center absolute -left-10.5 top-1 w-6 h-6"
                     >
                         <img src={backArrowIcon} alt="" className="block" />
                     </button>
 
-                    <h1
-                        className="font-bold text-white"
-                        style={{ fontSize: '20px', lineHeight: '30px' }}
-                    >
+                    <h1 className="font-bold text-white text-xl leading-7.5">
                         {t('login.codeTitle')}
                     </h1>
                 </div>
@@ -701,8 +582,7 @@ export default function LoginPage() {
                 <form
                     onSubmit={handleCodeFormSubmit(onCodeSubmit)}
                     noValidate
-                    className="w-full flex flex-col items-center"
-                    style={{ marginTop: '32px' }}
+                    className="w-full flex flex-col items-center mt-8"
                 >
                     <div className="w-full flex items-center justify-between">
                         {CODE_KEYS.map((key, index) => (
@@ -716,44 +596,23 @@ export default function LoginPage() {
                                 onChange={(e) => handleCodeDigitChange(index, e.target.value)}
                                 onKeyDown={(e) => handleCodeKeyDown(index, e)}
                                 onPaste={handleCodePaste}
-                                className="bg-transparent outline-none font-bold text-center"
-                                style={{
-                                    width: '73px',
-                                    height: '65px',
-                                    borderRadius: '5px',
-                                    fontSize: '20px',
-                                    lineHeight: '24px',
-                                    color: hasCodeError ? '#dc2626' : '#ffffff',
-                                    border: hasCodeError ? '2px solid #dc2626' : '1px solid #ffffff',
-                                }}
+                                className={`bg-transparent outline-none font-bold text-center w-18 h-16 rounded text-xl leading-6 ${
+                                    hasCodeError
+                                        ? 'text-red-600 border-2 border-red-600'
+                                        : 'text-white border border-white'
+                                }`}
                             />
                         ))}
                     </div>
 
                     {hasCodeError && (
-                        <p
-                            className="font-semibold w-full"
-                            style={{
-                                fontSize: '14px',
-                                lineHeight: '18px',
-                                color: '#dc2626',
-                                marginTop: '14px',
-                            }}
-                        >
+                        <p className="font-semibold w-full text-sm leading-snug text-red-600 mt-3.5">
                             {codeErrorMessage}
                         </p>
                     )}
 
                     {codeResentMessage && !hasCodeError && (
-                        <p
-                            className="font-semibold w-full text-center"
-                            style={{
-                                fontSize: '14px',
-                                lineHeight: '18px',
-                                color: '#10b981',
-                                marginTop: '14px',
-                            }}
-                        >
+                        <p className="font-semibold w-full text-center text-sm leading-snug text-emerald-500 mt-3.5">
                             {codeResentMessage}
                         </p>
                     )}
@@ -762,14 +621,9 @@ export default function LoginPage() {
                         type="button"
                         disabled={isSendingCode}
                         onClick={handleResendCode}
-                        className="cursor-pointer flex items-center justify-center font-bold text-white border border-white transition-opacity hover:opacity-85 disabled:opacity-60"
-                        style={{
-                            width: '230px',
-                            height: '50px',
-                            borderRadius: '35px',
-                            fontSize: '16px',
-                            marginTop: hasCodeError ? '40px' : '56px',
-                        }}
+                        className={`cursor-pointer flex items-center justify-center font-bold text-white border border-white transition-opacity hover:opacity-85 disabled:opacity-60 w-58 h-12.5 rounded-full text-base ${
+                            hasCodeError ? 'mt-10' : 'mt-14'
+                        }`}
                     >
                         {isSendingCode ? t('login.sendingCode') : t('login.resendCode')}
                     </button>
@@ -777,14 +631,7 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={isVerifyingCode}
-                        className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                        style={{
-                            width: '300px',
-                            height: '50px',
-                            borderRadius: '35px',
-                            fontSize: '16px',
-                            marginTop: '40px',
-                        }}
+                        className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60 w-75 h-12.5 rounded-full text-base mt-10"
                     >
                         {isVerifyingCode ? t('login.verifying') : t('login.next')}
                     </button>
@@ -795,8 +642,7 @@ export default function LoginPage() {
                             clearErrors()
                             setView('password')
                         }}
-                        className="cursor-pointer font-bold text-white text-center hover:underline"
-                        style={{ fontSize: '16px', lineHeight: '25px', marginTop: '70px' }}
+                        className="cursor-pointer font-bold text-white text-center hover:underline text-base leading-6 mt-18"
                     >
                         {t('login.usePassword')}
                     </button>

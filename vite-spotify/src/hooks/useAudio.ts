@@ -1,17 +1,27 @@
 import { useEffect, useRef } from 'react'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import {
-    setProgress, setDuration, setPlaying, nextSong,
-    selectCurrentSong, selectIsPlaying, selectPlayerState,
+    setProgress,
+    setDuration,
+    setPlaying,
+    nextSong,
+    selectCurrentSong,
+    selectIsPlaying,
+    selectPlayerState,
 } from '../store/slices/playerSlice'
 import { getSongUrl } from '../utils/format'
 
 export function useAudio() {
     const audioRef = useRef<HTMLAudioElement | null>(null)
+    const isPlayingRef = useRef<boolean>(false)
     const dispatch = useAppDispatch()
     const currentSong = useAppSelector(selectCurrentSong)
     const isPlaying = useAppSelector(selectIsPlaying)
     const { volume, repeat } = useAppSelector(selectPlayerState)
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying
+    }, [isPlaying])
 
     useEffect(() => {
         if (!audioRef.current) audioRef.current = new Audio()
@@ -21,7 +31,7 @@ export function useAudio() {
         const onLoadedMetadata = () => dispatch(setDuration(audio.duration))
         const onEnded = () =>
             repeat === 'one'
-                ? (audio.currentTime = 0, void audio.play())
+                ? ((audio.currentTime = 0), void audio.play())
                 : dispatch(nextSong())
         const onError = () => dispatch(setPlaying(false))
 
@@ -41,20 +51,53 @@ export function useAudio() {
     useEffect(() => {
         const audio = audioRef.current
         if (!audio || !currentSong) return
-        audio.src = getSongUrl(currentSong.fileName)
-        audio.load()
-        audio.play().catch(() => dispatch(setPlaying(false)))
-    }, [currentSong?.id])
+
+        let cancelled = false
+        let objectUrl: string | null = null
+
+        const loadAndPlay = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const response = await fetch(getSongUrl(currentSong.fileName), {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                })
+                if (!response.ok || cancelled) {
+                    if (!cancelled) dispatch(setPlaying(false))
+                    return
+                }
+                const blob = await response.blob()
+                if (cancelled) return
+                objectUrl = URL.createObjectURL(blob)
+                audio.src = objectUrl
+                audio.load()
+                if (isPlayingRef.current) {
+                    await audio.play()
+                }
+            } catch {
+                if (!cancelled) dispatch(setPlaying(false))
+            }
+        }
+
+        void loadAndPlay()
+
+        return () => {
+            cancelled = true
+            audio.pause()
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl)
+            }
+        }
+    }, [currentSong, dispatch])
 
     useEffect(() => {
         const audio = audioRef.current
-        if (!audio) return
+        if (!audio || !currentSong || !audio.src) return
         if (isPlaying) {
             audio.play().catch(() => dispatch(setPlaying(false)))
         } else {
             audio.pause()
         }
-    }, [isPlaying])
+    }, [isPlaying, currentSong, dispatch])
 
     useEffect(() => {
         if (audioRef.current) audioRef.current.volume = volume

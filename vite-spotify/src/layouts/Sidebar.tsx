@@ -1,184 +1,108 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link, NavLink } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
-import { toggleTheme, selectTheme } from '../store/slices/themeSlice'
-import { toggleLanguage, selectLanguage } from '../store/slices/languageSlice'
-import {
-    Home, Music, Layers, Mic2, Disc,
-    Sun, Moon, LogOut,
-} from 'lucide-react'
-import imgSonoraCircle from '../assets/home/sonoraCircleLogo.png'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { Home, Music, Layers, Mic2, Disc } from 'lucide-react'
+import { useGetAlbumsQuery } from '../services/albums/albumsApi'
+import { useGetArtistsQuery } from '../services/artists/artistsApi'
 
-const NAV = [
-    { to: '/',        label: 'Головна',   icon: Home },
-    { to: '/songs',   label: 'Пісні',     icon: Music },
-    { to: '/genres',  label: 'Жанри',     icon: Layers },
-    { to: '/artists', label: 'Виконавці', icon: Mic2 },
-    { to: '/albums',  label: 'Альбоми',   icon: Disc },
+import imgLibrary from '../assets/player/library.svg'
+
+const NAV_ITEMS = [
+    { to: '/player', labelKey: 'webPlayer.home', icon: Home },
+    { to: '/songs', labelKey: 'catalog.songsTitle', icon: Music },
+    { to: '/genres', labelKey: 'catalog.genresTitle', icon: Layers },
+    { to: '/artists', labelKey: 'catalog.artistsTitle', icon: Mic2 },
+    { to: '/albums', labelKey: 'catalog.albumsTitle', icon: Disc },
 ]
 
-function hasCustomAvatar(image: string | null | undefined): boolean {
-    return !!image && !image.includes('default.jpg')
-}
-
 export default function Sidebar() {
-    const dispatch = useAppDispatch()
-    const isAuth = useAppSelector(selectIsAuthenticated)
-    const user = useAppSelector(selectCurrentUser)
-    const theme = useAppSelector(selectTheme)
-    const lang = useAppSelector(selectLanguage)
-
-    const [width, setWidth] = useState(220)
-    const [isResizing, setIsResizing] = useState(false)
-    const sidebarRef = useRef<HTMLDivElement>(null)
-
-    const startResizing = (e: React.MouseEvent) => {
-        e.preventDefault()
-        setIsResizing(true)
-    }
-
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!isResizing) return
-            let newWidth = e.clientX
-            if (newWidth < 180) newWidth = 180
-            if (newWidth > 400) newWidth = 400
-            setWidth(newWidth)
-        }
-        const handleMouseUp = () => setIsResizing(false)
-
-        if (isResizing) {
-            window.addEventListener('mousemove', handleMouseMove)
-            window.addEventListener('mouseup', handleMouseUp)
-            document.body.classList.add('cursor-grabbing-active')
-        } else {
-            document.body.classList.remove('cursor-grabbing-active')
-        }
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove)
-            window.removeEventListener('mouseup', handleMouseUp)
-            document.body.classList.remove('cursor-grabbing-active')
-        }
-    }, [isResizing])
+    const { t } = useTranslation()
+    const location = useLocation()
+    const { data: albums } = useGetAlbumsQuery()
+    const { data: artists } = useGetArtistsQuery()
 
     return (
-        <aside
-            ref={sidebarRef}
-            className="hidden md:flex flex-col h-full px-3 py-5 border-r select-none relative group"
-            style={{ background: 'var(--sidebar-bg)', borderColor: 'var(--border)', width }}
-        >
-            <Link to="/" className="flex items-center gap-2.5 px-3 mb-8">
-                <img
-                    src={imgSonoraCircle}
-                    alt="Sonora"
-                    className="w-8 h-8 object-contain shrink-0"
-                />
-                <span className="font-bold text-base tracking-wider" style={{ fontFamily: 'Syne', color: 'var(--text)' }}>
-                    Sonora
-                </span>
-            </Link>
+        <aside className="hidden md:flex flex-col items-center shrink-0 select-none overflow-y-auto w-20 bg-sonora-panel rounded-xl pt-5 pb-6 px-3">
+            <div className="flex flex-col items-center w-full gap-4">
+                <div
+                    className="relative shrink-0 w-6 h-6"
+                    title={t('webPlayer.yourLibrary')}
+                >
+                    <img alt="" className="block w-full h-full" src={imgLibrary} />
+                </div>
 
-            <nav className="flex flex-col gap-1 flex-1">
-                {NAV.map(({ to, label, icon: Icon }) => (
+                <Link
+                    to="/songs"
+                    className="w-8 h-8 rounded-full bg-sonora-warm flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                    title={t('catalog.songsTitle')}
+                >
+                    <div className="relative w-3.5 h-3.5">
+                        <div className="absolute inset-x-0 top-1.5 h-0.5 bg-white rounded-xs" />
+                        <div className="absolute inset-y-0 left-1.5 w-0.5 bg-white rounded-xs" />
+                    </div>
+                </Link>
+
+                <div className="w-full border-t border-white/15 my-1" />
+
+                {NAV_ITEMS.map(({ to, labelKey, icon: Icon }) => (
                     <NavLink
                         key={to}
                         to={to}
-                        end={to === '/'}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
-                        style={({ isActive }) => ({
-                            background: isActive ? 'var(--accent)' : 'transparent',
-                            color: isActive ? '#000' : 'var(--text-2)',
-                        })}
+                        title={t(labelKey)}
+                        className={({ isActive }) =>
+                            `w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-white transition-all hover:scale-105 ${
+                                isActive ? 'bg-sonora-light' : 'bg-sonora-warm'
+                            }`
+                        }
                     >
-                        <Icon size={18} strokeWidth={2.2} />
-                        {width > 200 && <span className="truncate">{label}</span>}
+                        <Icon size={22} strokeWidth={2.2} />
                     </NavLink>
                 ))}
-            </nav>
 
-            <div className="flex items-center justify-center gap-2 mb-4">
-                <button
-                    onClick={() => dispatch(toggleTheme())}
-                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                    style={{ background: 'var(--bg-hover)', color: 'var(--text)', border: '1px solid var(--border)' }}
-                    title={theme === 'dark' ? 'Світла тема' : 'Темна тема'}
-                >
-                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
-                <button
-                    onClick={() => dispatch(toggleLanguage())}
-                    className="h-10 px-3 rounded-full flex items-center justify-center text-xs font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                    style={{ background: 'var(--bg-hover)', color: 'var(--text)', border: '1px solid var(--border)' }}
-                >
-                    {lang === 'uk' ? 'Укр' : 'Eng'}
-                </button>
-            </div>
+                {artists && artists.length > 0 && (
+                    <>
+                        <div className="w-full border-t border-white/15 my-1" />
+                        {artists.slice(0, 4).map((artist) => {
+                            const isActive = location.pathname === `/artists/${artist.id}`
+                            return (
+                                <Link
+                                    key={`artist-${artist.id}`}
+                                    to={`/artists/${artist.id}`}
+                                    title={artist.name}
+                                    className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 font-bold text-lg text-white transition-transform hover:scale-105 ${
+                                        isActive
+                                            ? 'bg-sonora-light ring-2 ring-white'
+                                            : 'bg-gradient-to-br from-sonora-purple to-sonora-pink'
+                                    }`}
+                                >
+                                    {artist.name[0]?.toUpperCase() ?? '?'}
+                                </Link>
+                            )
+                        })}
+                    </>
+                )}
 
-            <div className="border-t pt-4" style={{ borderColor: 'var(--border)' }}>
-                {isAuth && user ? (
-                    <Link
-                        to="/me"
-                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all"
-                        style={{ color: 'var(--text)' }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {hasCustomAvatar(user.image) ? (
-                            <img
-                                src={user.image!}
-                                alt="avatar"
-                                className="w-8 h-8 rounded-full object-cover flex-shrink-0 border"
-                                style={{ borderColor: 'var(--border)' }}
-                            />
-                        ) : (
-                            <div
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                                style={{ background: 'var(--accent)', color: '#000' }}
-                            >
-                                {user.username?.[0]?.toUpperCase() ?? '?'}
-                            </div>
-                        )}
-                        {width > 200 && (
-                            <span className="text-sm font-medium truncate flex-1">{user.username}</span>
-                        )}
-                        <button
-                            onClick={e => { e.preventDefault(); dispatch(logout()) }}
-                            className="p-1 rounded-md text-red-500 opacity-60 hover:opacity-100 hover:bg-red-500/10 transition-all"
-                            title="Вийти"
-                        >
-                            <LogOut size={16} />
-                        </button>
-                    </Link>
-                ) : (
-                    <div className="flex flex-col gap-2 px-1">
-                        <NavLink
-                            to="/login"
-                            className="text-center py-2 rounded-lg text-sm font-medium border transition-all hover:bg-white/5"
-                            style={{ borderColor: 'var(--border)', color: 'var(--text-2)' }}
-                        >
-                            {width > 200 ? 'Увійти' : '→'}
-                        </NavLink>
-                        {width > 200 && (
-                            <NavLink
-                                to="/register"
-                                className="text-center py-2 rounded-lg text-sm font-bold transition-all text-black"
-                                style={{ background: 'var(--accent)' }}
-                            >
-                                Реєстрація
-                            </NavLink>
-                        )}
-                    </div>
+                {albums && albums.length > 0 && (
+                    <>
+                        {albums.slice(0, 4).map((album) => {
+                            const isActive = location.pathname === `/albums/${album.id}`
+                            return (
+                                <Link
+                                    key={`album-${album.id}`}
+                                    to={`/albums/${album.id}`}
+                                    title={album.title}
+                                    className={`w-12 h-12 rounded-md flex items-center justify-center shrink-0 font-bold text-base text-white transition-transform hover:scale-105 ${
+                                        isActive
+                                            ? 'bg-sonora-light ring-2 ring-white'
+                                            : 'bg-gradient-to-br from-sonora-warm to-sonora-light'
+                                    }`}
+                                >
+                                    <Disc size={22} />
+                                </Link>
+                            )
+                        })}
+                    </>
                 )}
             </div>
-
-            <div
-                onMouseDown={startResizing}
-                className={`absolute top-0 right-0 w-1.5 h-full transition-colors duration-200 z-50 ${
-                    isResizing ? 'cursor-grabbing' : 'bg-transparent cursor-grab'
-                }`}
-                style={{ backgroundColor: isResizing ? 'var(--accent)' : undefined }}
-            />
         </aside>
     )
 }

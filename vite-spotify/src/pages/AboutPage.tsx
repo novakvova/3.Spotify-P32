@@ -15,56 +15,42 @@ export default function AboutPage() {
     const { t } = useTranslation()
 
     return (
-        <div className="min-h-screen w-full bg-white flex flex-col justify-between" style={{ color: '#280a3a' }}>
+        <div className="min-h-screen w-full bg-white flex flex-col justify-between text-sonora-dark">
             <Header />
 
             <main className="flex-1 w-full">
-                <div
-                    className="mx-auto px-6 sm:px-12 lg:px-16 xl:px-40 pt-14 sm:pt-16 pb-12"
-                    style={{ maxWidth: 1440 }}
-                >
+                <div className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 xl:px-40 pt-14 sm:pt-16 pb-12">
                     <div className="flex flex-col lg:flex-row items-start justify-between gap-12 xl:gap-24">
-                        <div className="w-full flex flex-col" style={{ maxWidth: 633 }}>
-                            <h1
-                                className="font-extrabold mb-10"
-                                style={{ fontSize: 40, lineHeight: '55px', color: '#e869ca' }}
-                            >
+                        <div className="w-full max-w-2xl flex flex-col">
+                            <h1 className="font-extrabold text-4xl leading-tight text-sonora-pink mb-10">
                                 {t('about.title')}
                             </h1>
 
-                            <div
-                                className="flex flex-col gap-6 font-normal text-lg mb-20"
-                                style={{ lineHeight: '30px', color: '#280a3a' }}
-                            >
+                            <div className="flex flex-col gap-6 font-normal text-lg leading-8 text-sonora-dark mb-20">
                                 {(t('about.intro', { returnObjects: true }) as string[]).map((paragraph) => (
                                     <p key={paragraph}>{paragraph}</p>
                                 ))}
                             </div>
 
-                            <h2
-                                className="font-extrabold mb-10"
-                                style={{ fontSize: 40, lineHeight: '55px', color: '#e869ca' }}
-                            >
+                            <h2 className="font-extrabold text-4xl leading-tight text-sonora-pink mb-10">
                                 {t('about.supportTitle')}
                             </h2>
 
-                            <div className="flex flex-col gap-8" style={{ maxWidth: 609 }}>
+                            <div className="flex flex-col gap-8 max-w-xl">
                                 {SUPPORT_ITEMS.map((item) => (
                                     <div
                                         key={item.key}
-                                        className="flex flex-col gap-1 text-lg"
-                                        style={{ lineHeight: '28px', color: '#280a3a' }}
+                                        className="flex flex-col gap-1 text-lg leading-7 text-sonora-dark"
                                     >
                                         {item.to ? (
                                             <Link
                                                 to={item.to}
-                                                className="font-bold hover:underline"
-                                                style={{ color: '#280a3a' }}
+                                                className="font-bold text-sonora-dark hover:underline"
                                             >
                                                 {t(`about.support.${item.key}.title`)}
                                             </Link>
                                         ) : (
-                                            <span className="font-bold" style={{ color: '#280a3a' }}>
+                                            <span className="font-bold text-sonora-dark">
                                                 {t(`about.support.${item.key}.title`)}
                                             </span>
                                         )}
@@ -76,18 +62,12 @@ export default function AboutPage() {
                             </div>
                         </div>
 
-                        <aside className="w-full lg:shrink-0 flex flex-col" style={{ maxWidth: 353 }}>
-                            <h2
-                                className="font-extrabold mb-8"
-                                style={{ fontSize: 30, lineHeight: '35px', color: '#e869ca' }}
-                            >
+                        <aside className="w-full max-w-sm lg:shrink-0 flex flex-col">
+                            <h2 className="font-extrabold text-3xl leading-9 text-sonora-pink mb-8">
                                 {t('about.hqTitle')}
                             </h2>
 
-                            <div
-                                className="flex flex-col text-lg mb-16"
-                                style={{ lineHeight: '30px', color: '#280a3a' }}
-                            >
+                            <div className="flex flex-col text-lg leading-8 text-sonora-dark mb-16">
                                 <p className="font-bold">Sonora</p>
                                 <p>{t('about.country')}</p>
                                 <p>
@@ -101,41 +81,22 @@ export default function AboutPage() {
                                 </p>
                             </div>
 
-                            <div
-                                className="p-10 flex flex-col"
-                                style={{
-                                    minHeight: 645,
-                                    border: '2px solid #e869ca',
-                                    borderRadius: 30,
-                                }}
-                            >
-                                <p
-                                    className="font-semibold text-sm uppercase tracking-wider mb-4"
-                                    style={{ color: '#280a3a' }}
-                                >
+                            <div className="p-10 flex flex-col border-2 border-sonora-pink rounded-3xl">
+                                <p className="font-semibold text-sm uppercase tracking-wider text-sonora-dark mb-4">
                                     {t('about.featuresLabel')}
                                 </p>
 
-                                <h3
-                                    className="font-extrabold text-xl mb-10"
-                                    style={{ lineHeight: '26px', color: '#280a3a' }}
-                                >
+                                <h3 className="font-extrabold text-xl leading-7 text-sonora-dark mb-10">
                                     {t('about.featuresTitle')}
                                 </h3>
 
                                 <div className="flex flex-col gap-10">
                                     {FEATURE_KEYS.map((key) => (
                                         <div key={key} className="flex flex-col gap-3">
-                                            <h4
-                                                className="font-bold text-xl"
-                                                style={{ lineHeight: '24px', color: '#e869ca' }}
-                                            >
+                                            <h4 className="font-bold text-xl leading-6 text-sonora-pink">
                                                 {t(`about.features.${key}.title`)}
                                             </h4>
-                                            <p
-                                                className="font-normal text-base"
-                                                style={{ lineHeight: '24px', color: '#280a3a' }}
-                                            >
+                                            <p className="font-normal text-base leading-6 text-sonora-dark">
                                                 {t(`about.features.${key}.description`)}
                                             </p>
                                         </div>

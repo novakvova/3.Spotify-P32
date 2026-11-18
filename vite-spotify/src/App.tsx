@@ -24,6 +24,7 @@ import AboutPage from "./pages/AboutPage.tsx";
 import {ScrollToTop} from "./components/ScrollToTop.tsx";
 import {LanguageTranslator} from "./components/LanguageTranslator.tsx";
 import CommunityPage from "./pages/CommunityPage.tsx";
+import WebPlayerPage from "./pages/WebPlayerPage.tsx";
 
 
 export default function App() {
@@ -44,6 +45,7 @@ export default function App() {
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/community" element={<CommunityPage/>}/>
                     <Route element={<MainLayout />}>
+                        <Route path="/player"  element={<WebPlayerPage />} />
                         <Route path="/songs"   element={<SongsPage />} />
                         <Route path="/genres"  element={<GenresPage />} />
                         <Route path="/artists" element={<ArtistsPage />} />

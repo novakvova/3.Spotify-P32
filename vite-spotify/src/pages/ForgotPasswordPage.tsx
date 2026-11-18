@@ -66,10 +66,7 @@ function apiMessage(err: unknown, fallback: string): string {
 
 function ResetShell({ children }: { children: ReactNode }) {
     return (
-        <div
-            className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-            style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-        >
+        <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
             <div className="my-auto w-full flex flex-col items-center">{children}</div>
         </div>
     )
@@ -78,10 +75,7 @@ function ResetShell({ children }: { children: ReactNode }) {
 function ErrorText({ message }: { message?: string }) {
     if (!message) return null
     return (
-        <p
-            className="font-semibold w-full"
-            style={{ fontSize: '14px', lineHeight: '18px', color: '#dc2626' }}
-        >
+        <p className="font-semibold w-full text-sm leading-snug text-red-600">
             {message}
         </p>
     )
@@ -89,7 +83,7 @@ function ErrorText({ message }: { message?: string }) {
 
 function ResetLogo() {
     return (
-        <Link to="/" className="shrink-0" style={{ width: '60px', height: '60px' }}>
+        <Link to="/player" className="shrink-0 w-15 h-15">
             <img
                 src={logoSonoraIcon}
                 alt="Sonora"
@@ -106,21 +100,19 @@ function BackButton({ onClick }: { onClick: () => void }) {
             type="button"
             onClick={onClick}
             aria-label={t('forgotPassword.back')}
-            className="cursor-pointer flex items-center justify-center"
-            style={{ width: '24px', height: '24px' }}
+            className="cursor-pointer flex items-center justify-center w-6 h-6"
         >
             <img src={backArrowIcon} alt="" className="block" />
         </button>
     )
 }
 
-function LoginLink({ marginTop }: { marginTop: string }) {
+function LoginLink({ className = 'mt-10' }: { className?: string }) {
     const { t } = useTranslation()
     return (
         <Link
             to="/login"
-            className="font-bold text-white text-center hover:underline"
-            style={{ fontSize: '16px', lineHeight: '25px', marginTop }}
+            className={`font-bold text-white text-center hover:underline text-base leading-6 ${className}`}
         >
             {t('forgotPassword.forgotLogin')}
         </Link>
@@ -221,48 +213,29 @@ export default function ForgotPasswordPage() {
     if (done) {
         return (
             <ResetShell>
-                <div
-                    className="w-full relative flex flex-col items-start sm:block"
-                    style={{ maxWidth: '500px' }}
-                >
+                <div className="w-full relative flex flex-col items-start sm:block max-w-lg">
                     <div className="mb-4 sm:mb-0 sm:absolute sm:left-0 sm:top-0">
                         <BackButton onClick={() => navigate('/login')} />
                     </div>
 
-                    <div
-                        className="w-full mx-auto flex flex-col items-center text-center"
-                        style={{ maxWidth: '355px' }}
-                    >
+                    <div className="w-full mx-auto flex flex-col items-center text-center max-w-sm">
                         <CircleCheck
                             strokeWidth={1.5}
-                            style={{ width: '80px', height: '80px', color: '#8b5cf6' }}
+                            className="w-20 h-20 text-violet-500"
                         />
 
-                        <h1
-                            className="font-semibold text-white"
-                            style={{ fontSize: '30px', lineHeight: '42px', marginTop: '24px' }}
-                        >
+                        <h1 className="font-semibold text-white text-3xl leading-10 mt-6">
                             {t('forgotPassword.doneTitle')}
                         </h1>
 
-                        <p
-                            className="text-white"
-                            style={{ fontSize: '16px', lineHeight: '24px', marginTop: '16px' }}
-                        >
+                        <p className="text-white text-base leading-6 mt-4">
                             {t('forgotPassword.doneText')}
                         </p>
 
                         <button
                             type="button"
                             onClick={() => navigate('/login')}
-                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
-                            style={{
-                                width: '300px',
-                                height: '50px',
-                                borderRadius: '35px',
-                                fontSize: '16px',
-                                marginTop: '36px',
-                            }}
+                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 w-75 h-12.5 rounded-full text-base mt-9"
                         >
                             {t('forgotPassword.backToLogin')}
                         </button>
@@ -282,36 +255,20 @@ export default function ForgotPasswordPage() {
 
         return (
             <ResetShell>
-                <div
-                    className="w-full flex flex-col items-center"
-                    style={{ maxWidth: '355px', marginTop: '70px' }}
-                >
+                <div className="w-full flex flex-col items-center max-w-sm mt-18">
                     <ResetLogo />
 
-                    <h1
-                        className="font-semibold text-center text-white w-full"
-                        style={{ fontSize: '30px', lineHeight: '50px', marginTop: '20px' }}
-                    >
+                    <h1 className="font-semibold text-center text-white w-full text-3xl leading-12 mt-5">
                         {t('forgotPassword.newPasswordTitle')}
                     </h1>
 
                     {tokenExpired ? (
-                        <div
-                            className="w-full flex flex-col items-center"
-                            style={{ marginTop: '32px' }}
-                        >
+                        <div className="w-full flex flex-col items-center mt-8">
                             <ErrorText message={passwordForm.formState.errors.root?.message} />
                             <button
                                 type="button"
                                 onClick={() => navigate('/forgot-password')}
-                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
-                                style={{
-                                    width: '300px',
-                                    height: '50px',
-                                    borderRadius: '35px',
-                                    fontSize: '16px',
-                                    marginTop: '24px',
-                                }}
+                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 w-75 h-12.5 rounded-full text-base mt-6"
                             >
                                 {t('forgotPassword.requestNewLink')}
                             </button>
@@ -320,32 +277,22 @@ export default function ForgotPasswordPage() {
                         <form
                             onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
                             noValidate
-                            className="w-full flex flex-col items-start"
-                            style={{ marginTop: '28px' }}
+                            className="w-full flex flex-col items-start mt-7"
                         >
-                            <div
-                                className="w-full flex flex-col items-start"
-                                style={{ gap: '12px' }}
-                            >
+                            <div className="w-full flex flex-col items-start gap-3">
                                 <label
                                     htmlFor="reset-password"
-                                    className="font-bold text-white"
-                                    style={{ fontSize: '16px', lineHeight: '25px' }}
+                                    className="font-bold text-white text-base leading-6"
                                 >
                                     {t('forgotPassword.passwordLabel')}
                                 </label>
 
                                 <div
-                                    className="w-full flex items-center justify-between"
-                                    style={{
-                                        height: '50px',
-                                        borderRadius: '5px',
-                                        paddingLeft: '20px',
-                                        paddingRight: '15px',
-                                        border: hasError
-                                            ? '2px solid #dc2626'
-                                            : '1px solid #ffffff',
-                                    }}
+                                    className={`w-full flex items-center justify-between h-12.5 rounded px-5 pr-4 ${
+                                        hasError
+                                            ? 'border-2 border-red-600'
+                                            : 'border border-white'
+                                    }`}
                                 >
                                     <input
                                         id="reset-password"
@@ -357,14 +304,12 @@ export default function ForgotPasswordPage() {
                                                 }
                                             },
                                         })}
-                                        className="w-full bg-transparent outline-none font-bold text-white"
-                                        style={{ fontSize: '16px', lineHeight: '25px' }}
+                                        className="w-full bg-transparent outline-none font-bold text-white text-base leading-6"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword((prev) => !prev)}
-                                        className="cursor-pointer shrink-0 ml-2 flex items-center justify-center"
-                                        style={{ width: '25px', height: '25px' }}
+                                        className="cursor-pointer shrink-0 ml-2 flex items-center justify-center w-6 h-6"
                                         aria-label={
                                             showPassword
                                                 ? t('forgotPassword.hidePassword')
@@ -383,10 +328,7 @@ export default function ForgotPasswordPage() {
                                     message={passwordForm.formState.errors.password?.message}
                                 />
 
-                                <div
-                                    className="w-full flex flex-col items-start"
-                                    style={{ gap: '6px', marginTop: '2px' }}
-                                >
+                                <div className="w-full flex flex-col items-start gap-1.5 mt-0.5">
                                     <Requirement fulfilled={hasValidLength}>
                                         {t('forgotPassword.req.length')}
                                     </Requirement>
@@ -399,42 +341,31 @@ export default function ForgotPasswordPage() {
                                 </div>
                             </div>
 
-                            <div
-                                className="w-full flex flex-col items-start"
-                                style={{ marginTop: '24px', gap: '12px' }}
-                            >
+                            <div className="w-full flex flex-col items-start mt-6 gap-3">
                                 <label
                                     htmlFor="reset-password-confirm"
-                                    className="font-bold text-white"
-                                    style={{ fontSize: '16px', lineHeight: '25px' }}
+                                    className="font-bold text-white text-base leading-6"
                                 >
                                     {t('forgotPassword.confirmLabel')}
                                 </label>
 
                                 <div
-                                    className="w-full flex items-center justify-between"
-                                    style={{
-                                        height: '50px',
-                                        borderRadius: '5px',
-                                        paddingLeft: '20px',
-                                        paddingRight: '15px',
-                                        border: hasError
-                                            ? '2px solid #dc2626'
-                                            : '1px solid #ffffff',
-                                    }}
+                                    className={`w-full flex items-center justify-between h-12.5 rounded px-5 pr-4 ${
+                                        hasError
+                                            ? 'border-2 border-red-600'
+                                            : 'border border-white'
+                                    }`}
                                 >
                                     <input
                                         id="reset-password-confirm"
                                         type={showConfirmPassword ? 'text' : 'password'}
                                         {...passwordForm.register('confirmPassword')}
-                                        className="w-full bg-transparent outline-none font-bold text-white"
-                                        style={{ fontSize: '16px', lineHeight: '25px' }}
+                                        className="w-full bg-transparent outline-none font-bold text-white text-base leading-6"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword((prev) => !prev)}
-                                        className="cursor-pointer shrink-0 ml-2 flex items-center justify-center"
-                                        style={{ width: '25px', height: '25px' }}
+                                        className="cursor-pointer shrink-0 ml-2 flex items-center justify-center w-6 h-6"
                                         aria-label={
                                             showConfirmPassword
                                                 ? t('forgotPassword.hidePassword')
@@ -458,20 +389,11 @@ export default function ForgotPasswordPage() {
 
                             <ErrorText message={passwordForm.formState.errors.root?.message} />
 
-                            <div
-                                className="w-full flex justify-center"
-                                style={{ marginTop: '36px' }}
-                            >
+                            <div className="w-full flex justify-center mt-9">
                                 <button
                                     type="submit"
                                     disabled={isResettingPassword}
-                                    className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                                    style={{
-                                        width: '300px',
-                                        height: '50px',
-                                        borderRadius: '35px',
-                                        fontSize: '16px',
-                                    }}
+                                    className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60 w-75 h-12.5 rounded-full text-base"
                                 >
                                     {isResettingPassword
                                         ? t('forgotPassword.saving')
@@ -481,7 +403,7 @@ export default function ForgotPasswordPage() {
                         </form>
                     )}
 
-                    <LoginLink marginTop="56px" />
+                    <LoginLink className="mt-14" />
                 </div>
             </ResetShell>
         )
@@ -490,10 +412,7 @@ export default function ForgotPasswordPage() {
     if (linkSent) {
         return (
             <ResetShell>
-                <div
-                    className="w-full relative flex flex-col items-start sm:block"
-                    style={{ maxWidth: '500px' }}
-                >
+                <div className="w-full relative flex flex-col items-start sm:block max-w-lg">
                     <div className="mb-4 sm:mb-0 sm:absolute sm:left-0 sm:top-0">
                         <BackButton
                             onClick={() => {
@@ -505,39 +424,22 @@ export default function ForgotPasswordPage() {
                         />
                     </div>
 
-                    <div
-                        className="w-full mx-auto flex flex-col items-center text-center"
-                        style={{ maxWidth: '355px' }}
-                    >
+                    <div className="w-full mx-auto flex flex-col items-center text-center max-w-sm">
                         <Mail
                             strokeWidth={1.5}
-                            style={{ width: '80px', height: '80px', color: '#8b5cf6' }}
+                            className="w-20 h-20 text-violet-500"
                         />
 
-                        <h1
-                            className="font-semibold text-white"
-                            style={{ fontSize: '30px', lineHeight: '42px', marginTop: '24px' }}
-                        >
+                        <h1 className="font-semibold text-white text-3xl leading-10 mt-6">
                             {t('forgotPassword.checkEmailTitle')}
                         </h1>
 
-                        <p
-                            className="text-white"
-                            style={{ fontSize: '16px', lineHeight: '24px', marginTop: '16px' }}
-                        >
+                        <p className="text-white text-base leading-6 mt-4">
                             {t('forgotPassword.checkEmailText')}
                         </p>
 
                         {sentNotice && (
-                            <p
-                                className="font-semibold w-full text-center"
-                                style={{
-                                    fontSize: '14px',
-                                    lineHeight: '18px',
-                                    color: '#10b981',
-                                    marginTop: '14px',
-                                }}
-                            >
+                            <p className="font-semibold w-full text-center text-sm leading-snug text-emerald-500 mt-3.5">
                                 {sentNotice}
                             </p>
                         )}
@@ -547,14 +449,7 @@ export default function ForgotPasswordPage() {
                         <button
                             type="button"
                             onClick={() => navigate('/login')}
-                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
-                            style={{
-                                width: '300px',
-                                height: '50px',
-                                borderRadius: '35px',
-                                fontSize: '16px',
-                                marginTop: '36px',
-                            }}
+                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 w-75 h-12.5 rounded-full text-base mt-9"
                         >
                             {t('forgotPassword.backToLogin')}
                         </button>
@@ -563,13 +458,7 @@ export default function ForgotPasswordPage() {
                             type="button"
                             disabled={isRequestingLink}
                             onClick={handleResend}
-                            className="cursor-pointer inline-flex items-center justify-center gap-1 font-bold transition-opacity hover:opacity-80 disabled:opacity-60"
-                            style={{
-                                fontSize: '16px',
-                                lineHeight: '25px',
-                                color: '#8b5cf6',
-                                marginTop: '28px',
-                            }}
+                            className="cursor-pointer inline-flex items-center justify-center gap-1 font-bold transition-opacity hover:opacity-80 disabled:opacity-60 text-base leading-6 text-violet-500 mt-7"
                         >
                             {isRequestingLink ? t('forgotPassword.sending') : t('forgotPassword.resendLink')}
                             {!isRequestingLink && <ChevronRight size={18} />}
@@ -578,13 +467,7 @@ export default function ForgotPasswordPage() {
                         {devLink && (
                             <a
                                 href={devLink}
-                                className="font-semibold text-center break-all hover:underline"
-                                style={{
-                                    fontSize: '13px',
-                                    lineHeight: '18px',
-                                    color: '#c4a7d8',
-                                    marginTop: '14px',
-                                }}
+                                className="font-semibold text-center break-all hover:underline text-xs leading-snug text-sonora-lavender mt-3.5"
                             >
                                 {t('forgotPassword.devLink')}
                             </a>
@@ -599,53 +482,37 @@ export default function ForgotPasswordPage() {
 
     return (
         <ResetShell>
-            <div
-                className="w-full relative flex flex-col items-start sm:block"
-                style={{ maxWidth: '500px' }}
-            >
+            <div className="w-full relative flex flex-col items-start sm:block max-w-lg">
                 <div className="mb-4 sm:mb-0 sm:absolute sm:left-0 sm:top-0">
                     <BackButton onClick={() => navigate('/login')} />
                 </div>
 
-                <div
-                    className="w-full mx-auto flex flex-col items-center"
-                    style={{ maxWidth: '355px' }}
-                >
+                <div className="w-full mx-auto flex flex-col items-center max-w-sm">
                     <ResetLogo />
 
-                    <h1
-                        className="font-semibold text-center text-white w-full"
-                        style={{ fontSize: '30px', lineHeight: '50px', marginTop: '20px' }}
-                    >
+                    <h1 className="font-semibold text-center text-white w-full text-3xl leading-12 mt-5">
                         {t('forgotPassword.title')}
                     </h1>
 
                     <form
                         onSubmit={emailForm.handleSubmit(onEmailSubmit)}
                         noValidate
-                        className="w-full flex flex-col items-center"
-                        style={{ marginTop: '40px' }}
+                        className="w-full flex flex-col items-center mt-10"
                     >
-                        <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                        <div className="w-full flex flex-col items-start gap-3">
                             <label
                                 htmlFor="reset-email"
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="font-bold text-white text-base leading-6"
                             >
                                 {t('forgotPassword.emailLabel')}
                             </label>
 
                             <div
-                                className="w-full flex items-center justify-between"
-                                style={{
-                                    height: '50px',
-                                    borderRadius: '5px',
-                                    paddingLeft: '20px',
-                                    paddingRight: '16px',
-                                    border: hasEmailError
-                                        ? '2px solid #dc2626'
-                                        : '1px solid #ffffff',
-                                }}
+                                className={`w-full flex items-center justify-between h-12.5 rounded px-5 pr-4 ${
+                                    hasEmailError
+                                        ? 'border-2 border-red-600'
+                                        : 'border border-white'
+                                }`}
                             >
                                 <input
                                     id="reset-email"
@@ -656,27 +523,16 @@ export default function ForgotPasswordPage() {
                                             if (hasEmailError) emailForm.clearErrors('email')
                                         },
                                     })}
-                                    className="w-full bg-transparent outline-none font-bold text-white"
-                                    style={{ fontSize: '16px', lineHeight: '25px' }}
+                                    className="w-full bg-transparent outline-none font-bold text-white text-base leading-6"
                                 />
                                 {hasEmailError && (
-                                    <div
-                                        className="shrink-0 ml-2"
-                                        style={{ width: '25px', height: '25px' }}
-                                    >
+                                    <div className="shrink-0 ml-2 w-6 h-6">
                                         <img src={errorIcon} alt="" className="block" />
                                     </div>
                                 )}
                             </div>
 
-                            <p
-                                className="text-left"
-                                style={{
-                                    fontSize: '12px',
-                                    lineHeight: '17px',
-                                    color: '#b3a1c3',
-                                }}
-                            >
+                            <p className="text-left text-xs leading-4 text-sonora-muted">
                                 {t('forgotPassword.emailHint')}
                             </p>
 
@@ -686,27 +542,17 @@ export default function ForgotPasswordPage() {
                         <button
                             type="submit"
                             disabled={isRequestingLink}
-                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                            style={{
-                                width: '300px',
-                                height: '50px',
-                                borderRadius: '35px',
-                                fontSize: '16px',
-                                marginTop: '36px',
-                            }}
+                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60 w-75 h-12.5 rounded-full text-base mt-9"
                         >
                             {isRequestingLink ? t('forgotPassword.sending') : t('forgotPassword.send')}
                         </button>
                     </form>
 
-                    <p
-                        className="font-bold text-center text-white w-full"
-                        style={{ fontSize: '16px', lineHeight: '25px', marginTop: '28px' }}
-                    >
+                    <p className="font-bold text-center text-white w-full text-base leading-6 mt-7">
                         {t('forgotPassword.or')}
                     </p>
 
-                    <LoginLink marginTop="40px" />
+                    <LoginLink className="mt-10" />
                 </div>
             </div>
         </ResetShell>
@@ -715,13 +561,7 @@ export default function ForgotPasswordPage() {
 
 function Requirement({ fulfilled, children }: { fulfilled: boolean; children: ReactNode }) {
     return (
-        <p
-            style={{
-                fontSize: '14px',
-                lineHeight: '18px',
-                color: fulfilled ? '#10b981' : '#c4a7d8',
-            }}
-        >
+        <p className={`text-sm leading-snug ${fulfilled ? 'text-emerald-500' : 'text-sonora-lavender'}`}>
             {fulfilled ? '✓' : '•'} {children}
         </p>
     )

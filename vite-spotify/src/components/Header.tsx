@@ -1,53 +1,32 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import imgLogoSonora042 from '../assets/home/logo-sonora.png'
 import { Menu, X } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
 import { toggleLanguage } from '../store/slices/languageSlice'
 
+const PLAN_ITEMS = [
+    { title: 'Individual', descKey: 'individual', redirectlink: '/premium' },
+    { title: 'Duo', descKey: 'duo', redirectlink: '/premium/duo' },
+    { title: 'Family', descKey: 'family', redirectlink: '/premium/family' },
+    { title: 'Student', descKey: 'student', redirectlink: '/premium/student' },
+    { title: 'Kids+', descKey: 'kids', redirectlink: '/premium/kids' },
+] as const
+
 export const Header: React.FC = () => {
-    const dispatch = useAppDispatch()
     const { t } = useTranslation()
+    const dispatch = useAppDispatch()
     const isAuthenticated = useAppSelector(selectIsAuthenticated)
     const user = useAppSelector(selectCurrentUser)
     const [openPremium, setOpenPremium] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-    const PURPLE_BG = '#280a3a'
     const premiumRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
 
     const displayName = user?.fullName || user?.username || user?.email || t('header.profile')
     const userInitial = displayName.charAt(0).toUpperCase()
-
-    const PREMIUM_PLANS = [
-        {
-            title: 'Individual',
-            desc: t('header.planDesc.individual'),
-            redirectlink: '/premium',
-        },
-        {
-            title: 'Duo',
-            desc: t('header.planDesc.duo'),
-            redirectlink: '/premium/duo',
-        },
-        {
-            title: 'Family',
-            desc: t('header.planDesc.family'),
-            redirectlink: '/premium/family',
-        },
-        {
-            title: 'Student',
-            desc: t('header.planDesc.student'),
-            redirectlink: '/premium/student',
-        },
-        {
-            title: 'Kids+',
-            desc: t('header.planDesc.kids'),
-            redirectlink: '/premium/kids',
-        },
-    ]
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -60,25 +39,14 @@ export const Header: React.FC = () => {
     }, [])
 
     return (
-        <header className="w-full relative z-40" style={{ backgroundColor: PURPLE_BG }}>
-            <div
-                className="mx-auto flex items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-40 py-2.5"
-                style={{ maxWidth: 1440, height: 75 }}
-            >
-                <Link to="/" className="relative shrink-0" style={{ width: 115, height: 25 }}>
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <img
-                            alt="Sonora"
-                            className="absolute max-w-none"
-                            style={{
-                                height: '480%',
-                                left: '-2.4%',
-                                top: '-164.21%',
-                                width: '104.35%',
-                            }}
-                            src={imgLogoSonora042}
-                        />
-                    </div>
+        <header className="w-full relative z-40 bg-sonora-dark">
+            <div className="max-w-7xl mx-auto h-20 flex items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-40 py-2.5">
+                <Link to="/player" className="relative shrink-0 w-29 h-6.5 overflow-hidden">
+                    <img
+                        alt="Sonora"
+                        className="absolute max-w-none w-30 h-30 -top-10 -left-0.5"
+                        src={imgLogoSonora042}
+                    />
                 </Link>
 
                 <nav className="hidden lg:flex gap-6 xl:gap-12 items-center justify-end xl:justify-center text-white shrink-0">
@@ -95,7 +63,7 @@ export const Header: React.FC = () => {
 
                         {openPremium && (
                             <div className="absolute left-0 top-10 w-80 sm:w-96 shadow-xl z-50">
-                                {PREMIUM_PLANS.map((plan) => (
+                                {PLAN_ITEMS.map((plan) => (
                                     <button
                                         key={plan.title}
                                         type="button"
@@ -103,14 +71,13 @@ export const Header: React.FC = () => {
                                             navigate(plan.redirectlink)
                                             setOpenPremium(false)
                                         }}
-                                        className="h-24 w-full transition-colors flex flex-col gap-3.5 items-start justify-center px-3.5 text-left text-white cursor-pointer hover:brightness-125"
-                                        style={{ backgroundColor: PURPLE_BG }}
+                                        className="h-24 w-full bg-sonora-dark transition-colors flex flex-col gap-3.5 items-start justify-center px-3.5 text-left text-white cursor-pointer hover:brightness-125"
                                     >
                                         <span className="font-bold text-base leading-6">
                                             {plan.title}
                                         </span>
                                         <span className="font-normal text-sm leading-5">
-                                            {plan.desc}
+                                            {t(`header.planDesc.${plan.descKey}`)}
                                         </span>
                                     </button>
                                 ))}
@@ -132,10 +99,7 @@ export const Header: React.FC = () => {
                                 to="/me"
                                 className="flex items-center gap-2.5 font-semibold shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity"
                             >
-                                <span
-                                    className="rounded-full flex items-center justify-center font-bold text-sm text-black bg-white shrink-0"
-                                    style={{ width: 32, height: 32 }}
-                                >
+                                <span className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-black bg-white shrink-0">
                                     {userInitial}
                                 </span>
                                 <span className="leading-normal">{displayName}</span>
@@ -181,10 +145,7 @@ export const Header: React.FC = () => {
             </div>
 
             {mobileMenuOpen && (
-                <div
-                    className="lg:hidden border-t border-white/10 px-6 py-5 flex flex-col gap-4 text-white"
-                    style={{ backgroundColor: PURPLE_BG }}
-                >
+                <div className="lg:hidden bg-sonora-dark border-t border-white/10 px-6 py-5 flex flex-col gap-4 text-white">
                     <button
                         type="button"
                         onClick={() => setOpenPremium((v) => !v)}
@@ -195,7 +156,7 @@ export const Header: React.FC = () => {
                     </button>
                     {openPremium && (
                         <div className="flex flex-col gap-2 pl-3 border-l border-white/20">
-                            {PREMIUM_PLANS.map((plan) => (
+                            {PLAN_ITEMS.map((plan) => (
                                 <Link
                                     key={plan.title}
                                     to={plan.redirectlink}
@@ -206,7 +167,7 @@ export const Header: React.FC = () => {
                                     className="text-left py-1.5"
                                 >
                                     <p className="font-bold text-sm">{plan.title}</p>
-                                    <p className="text-xs opacity-80">{plan.desc}</p>
+                                    <p className="text-xs opacity-80">{t(`header.planDesc.${plan.descKey}`)}</p>
                                 </Link>
                             ))}
                         </div>
@@ -232,10 +193,7 @@ export const Header: React.FC = () => {
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="flex items-center gap-2.5 font-semibold text-base py-1 cursor-pointer"
                             >
-                                <span
-                                    className="rounded-full flex items-center justify-center font-bold text-sm text-black bg-white shrink-0"
-                                    style={{ width: 28, height: 28 }}
-                                >
+                                <span className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm text-black bg-white shrink-0">
                                     {userInitial}
                                 </span>
                                 <span>{displayName}</span>

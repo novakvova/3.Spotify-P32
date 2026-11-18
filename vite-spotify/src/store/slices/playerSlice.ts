@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
-import type {ISong} from "../../types/ISong.ts";
+import type { ISong } from '../../types/ISong.ts'
 
 type RepeatMode = 'off' | 'one' | 'all'
 
@@ -14,6 +14,7 @@ interface PlayerState {
     duration: number
     shuffle: boolean
     repeat: RepeatMode
+    showAuthModal: boolean
 }
 
 const initialState: PlayerState = {
@@ -26,6 +27,7 @@ const initialState: PlayerState = {
     duration: 0,
     shuffle: false,
     repeat: 'off',
+    showAuthModal: false,
 }
 
 const playerSlice = createSlice({
@@ -33,17 +35,42 @@ const playerSlice = createSlice({
     initialState,
     reducers: {
         playSong: (state, action: PayloadAction<{ song: ISong; queue?: ISong[] }>) => {
+            if (!localStorage.getItem('token')) {
+                state.showAuthModal = true
+                state.isPlaying = false
+                return
+            }
             const { song, queue } = action.payload
-            const q = queue ?? [song]
+            const q = queue && queue.length > 0 ? queue : [song]
             state.currentSong = song
             state.queue = q
             state.currentIndex = q.findIndex((s) => s.id === song.id)
             state.isPlaying = true
             state.progress = 0
         },
-        togglePlay: (state) => { state.isPlaying = !state.isPlaying },
-        setPlaying: (state, action: PayloadAction<boolean>) => { state.isPlaying = action.payload },
+        togglePlay: (state) => {
+            if (!localStorage.getItem('token')) {
+                state.showAuthModal = true
+                state.isPlaying = false
+                return
+            }
+            if (!state.currentSong) {
+                state.isPlaying = false
+                return
+            }
+            state.isPlaying = !state.isPlaying
+        },
+        setPlaying: (state, action: PayloadAction<boolean>) => {
+            state.isPlaying = state.currentSong ? action.payload : false
+        },
+        setShowAuthModal: (state, action: PayloadAction<boolean>) => {
+            state.showAuthModal = action.payload
+        },
         nextSong: (state) => {
+            if (!localStorage.getItem('token')) {
+                state.showAuthModal = true
+                return
+            }
             if (!state.queue.length) return
             let next: number
             if (state.shuffle) {
@@ -52,7 +79,10 @@ const playerSlice = createSlice({
                 next = (state.currentIndex + 1) % state.queue.length
             } else {
                 next = state.currentIndex + 1
-                if (next >= state.queue.length) { state.isPlaying = false; return }
+                if (next >= state.queue.length) {
+                    state.isPlaying = false
+                    return
+                }
             }
             state.currentSong = state.queue[next]
             state.currentIndex = next
@@ -60,18 +90,33 @@ const playerSlice = createSlice({
             state.progress = 0
         },
         prevSong: (state) => {
+            if (!localStorage.getItem('token')) {
+                state.showAuthModal = true
+                return
+            }
             if (!state.queue.length) return
-            if (state.progress > 3) { state.progress = 0; return }
+            if (state.progress > 3) {
+                state.progress = 0
+                return
+            }
             const prev = Math.max(state.currentIndex - 1, 0)
             state.currentSong = state.queue[prev]
             state.currentIndex = prev
             state.isPlaying = true
             state.progress = 0
         },
-        setVolume: (state, action: PayloadAction<number>) => { state.volume = action.payload },
-        setProgress: (state, action: PayloadAction<number>) => { state.progress = action.payload },
-        setDuration: (state, action: PayloadAction<number>) => { state.duration = action.payload },
-        toggleShuffle: (state) => { state.shuffle = !state.shuffle },
+        setVolume: (state, action: PayloadAction<number>) => {
+            state.volume = action.payload
+        },
+        setProgress: (state, action: PayloadAction<number>) => {
+            state.progress = action.payload
+        },
+        setDuration: (state, action: PayloadAction<number>) => {
+            state.duration = action.payload
+        },
+        toggleShuffle: (state) => {
+            state.shuffle = !state.shuffle
+        },
         toggleRepeat: (state) => {
             const cycle: RepeatMode[] = ['off', 'all', 'one']
             state.repeat = cycle[(cycle.indexOf(state.repeat) + 1) % cycle.length]
@@ -80,13 +125,21 @@ const playerSlice = createSlice({
 })
 
 export const {
-    playSong, togglePlay, setPlaying,
-    nextSong, prevSong,
-    setVolume, setProgress, setDuration,
-    toggleShuffle, toggleRepeat,
+    playSong,
+    togglePlay,
+    setPlaying,
+    setShowAuthModal,
+    nextSong,
+    prevSong,
+    setVolume,
+    setProgress,
+    setDuration,
+    toggleShuffle,
+    toggleRepeat,
 } = playerSlice.actions
 export default playerSlice.reducer
 
 export const selectPlayerState = (state: RootState) => state.player
 export const selectCurrentSong = (state: RootState) => state.player.currentSong
 export const selectIsPlaying = (state: RootState) => state.player.isPlaying
+export const selectShowAuthModal = (state: RootState) => state.player.showAuthModal

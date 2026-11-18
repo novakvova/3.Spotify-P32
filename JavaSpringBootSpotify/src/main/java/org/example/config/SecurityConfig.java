@@ -39,6 +39,12 @@ public class SecurityConfig {
                                 "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/songs/**",
+                                "/api/albums/**",
+                                "/api/artists/**",
+                                "/api/genres/**",
+                                "/api/search/**").permitAll()
                         .requestMatchers("/images/**", "/uploads/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())

@@ -21,46 +21,33 @@ export default function SupportPaymentMethodsPage() {
     }
 
     return (
-        <div className="min-h-screen w-full bg-white flex flex-col justify-between" style={{ color: '#280a3a' }}>
+        <div className="min-h-screen w-full bg-white flex flex-col justify-between text-sonora-dark">
             <SupportHeader />
 
             <main className="flex-1 w-full">
-                <div className="mx-auto px-4 sm:px-8 pt-7 pb-12" style={{ maxWidth: 727 }}>
+                <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-7 pb-12">
                     <div className="flex items-center gap-2 mb-8">
                         <Link
                             to="/support"
-                            className="font-semibold text-base hover:underline"
-                            style={{ color: '#280a3a' }}
+                            className="font-semibold text-base text-sonora-dark hover:underline"
                         >
                             {t('supportPayment.home')}
                         </Link>
                         <img
                             src={imgArrowDown}
                             alt=""
-                            style={{
-                                width: 15,
-                                height: 8,
-                                transform: 'rotate(-90deg)',
-                            }}
+                            className="w-3.5 h-2 -rotate-90"
                         />
                     </div>
 
                     <div className="mb-12">
                         <form
                             onSubmit={handleSendQuery}
-                            className="relative flex flex-col justify-between p-6"
-                            style={{
-                                minHeight: 180,
-                                border: '2px solid #280a3a',
-                                borderRadius: 30,
-                            }}
+                            className="relative flex flex-col justify-between p-6 min-h-44 border-2 border-sonora-dark rounded-3xl"
                         >
                             <div className="relative w-full">
                                 {!aiQuery && (
-                                    <span
-                                        className="absolute left-0 top-0 pointer-events-none select-none font-bold text-base"
-                                        style={{ color: '#280a3a', lineHeight: '25px' }}
-                                    >
+                                    <span className="absolute left-0 top-0 pointer-events-none select-none font-bold text-base leading-6 text-sonora-dark">
                                         {t('support.aiPlaceholder')}
                                     </span>
                                 )}
@@ -71,11 +58,7 @@ export default function SupportPaymentMethodsPage() {
                                         if (aiSubmitted) setAiSubmitted(false)
                                     }}
                                     rows={3}
-                                    className="relative w-full resize-none bg-transparent font-bold text-base outline-none"
-                                    style={{
-                                        color: '#280a3a',
-                                        lineHeight: '25px',
-                                    }}
+                                    className="relative w-full resize-none bg-transparent font-bold text-base leading-6 text-sonora-dark outline-none"
                                 />
                             </div>
 
@@ -83,33 +66,21 @@ export default function SupportPaymentMethodsPage() {
                                 <button
                                     type="submit"
                                     disabled={!hasQuery}
-                                    className="font-semibold text-sm text-white transition-opacity"
-                                    style={{
-                                        backgroundColor: '#6829c6',
-                                        width: 150,
-                                        height: 40,
-                                        borderRadius: 35,
-                                        opacity: hasQuery ? 1 : 0.5,
-                                        cursor: hasQuery ? 'pointer' : 'default',
-                                    }}
+                                    className={`w-36 h-10 rounded-full bg-sonora-purple font-semibold text-sm text-white transition-opacity ${
+                                        hasQuery ? 'opacity-100 cursor-pointer' : 'opacity-50 cursor-default'
+                                    }`}
                                 >
                                     {t('support.send')}
                                 </button>
                             </div>
                         </form>
 
-                        <p className="mt-3 text-base font-normal" style={{ lineHeight: '30px' }}>
+                        <p className="mt-3 text-base font-normal leading-8">
                             {t('support.aiNote')}
                         </p>
 
                         {aiSubmitted && (
-                            <div
-                                className="mt-4 p-4 text-base text-white"
-                                style={{
-                                    borderRadius: 20,
-                                    backgroundColor: '#aa71ff',
-                                }}
-                            >
+                            <div className="mt-4 p-4 text-base text-white rounded-2xl bg-sonora-light">
                                 <p className="font-bold">
                                     {t('supportPayment.sent')}
                                 </p>
@@ -117,39 +88,11 @@ export default function SupportPaymentMethodsPage() {
                         )}
                     </div>
 
-                    <div
-                        className="w-full flex items-center justify-between px-7 py-4 mb-8 cursor-default text-white"
-                        style={{
-                            minHeight: 84,
-                            backgroundColor: '#aa71ff',
-                            borderRadius: 30,
-                        }}
-                    >
+                    <div className="w-full min-h-20 bg-sonora-light rounded-3xl flex items-center justify-between px-7 py-4 mb-8 cursor-default text-white">
                         <div className="flex items-center gap-5">
-                            <div className="relative shrink-0" style={{ width: 50, height: 50 }}>
-                                <div
-                                    className="absolute"
-                                    style={{
-                                        left: 10,
-                                        top: 0,
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: 12,
-                                        backgroundColor: '#6829c6',
-                                        transform: 'rotate(12deg)',
-                                    }}
-                                />
-                                <div
-                                    className="absolute flex items-center justify-center"
-                                    style={{
-                                        left: 0,
-                                        top: 8,
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: 12,
-                                        backgroundColor: '#280a3a',
-                                    }}
-                                >
+                            <div className="relative shrink-0 w-12 h-12">
+                                <div className="absolute left-2.5 top-0 w-10 h-10 rounded-xl bg-sonora-purple rotate-12" />
+                                <div className="absolute left-0 top-2 w-10 h-10 rounded-xl bg-sonora-dark flex items-center justify-center">
                                     <svg
                                         width="20"
                                         height="20"
@@ -166,10 +109,10 @@ export default function SupportPaymentMethodsPage() {
                             </div>
 
                             <div className="flex flex-col text-white">
-                                <span className="font-bold text-base" style={{ lineHeight: '24px' }}>
+                                <span className="font-bold text-base leading-6">
                                     {t('supportPayment.manageTitle')}
                                 </span>
-                                <span className="font-normal text-base" style={{ lineHeight: '24px' }}>
+                                <span className="font-normal text-base leading-6">
                                     {t('supportPayment.manageText')}
                                 </span>
                             </div>
@@ -178,40 +121,26 @@ export default function SupportPaymentMethodsPage() {
                         <img
                             src={imgArrowWhite}
                             alt=""
-                            style={{
-                                width: 22,
-                                height: 10,
-                                transform: 'rotate(-90deg)',
-                            }}
+                            className="w-5 h-2.5 -rotate-90"
                         />
                     </div>
 
-                    <article
-                        className="p-7 sm:p-10 mb-12 flex flex-col justify-between text-white"
-                        style={{
-                            minHeight: 600,
-                            backgroundColor: '#aa71ff',
-                            borderRadius: 30,
-                        }}
-                    >
+                    <article className="p-7 sm:p-10 mb-12 flex flex-col justify-between text-white bg-sonora-light rounded-3xl">
                         <div className="flex flex-col gap-8">
-                            <h1
-                                className="font-extrabold text-white"
-                                style={{ fontSize: 36, lineHeight: '45px' }}
-                            >
+                            <h1 className="font-extrabold text-4xl leading-tight text-white">
                                 {t('supportPayment.title')}
                             </h1>
 
-                            <p className="font-bold text-xl text-white" style={{ lineHeight: '28px' }}>
+                            <p className="font-bold text-xl leading-7 text-white">
                                 {t('supportPayment.intro')}
                             </p>
 
-                            <p className="text-base text-white" style={{ lineHeight: '25px' }}>
+                            <p className="text-base leading-6 text-white">
                                 <span className="font-bold">{t('supportPayment.note')}</span>{' '}
                                 {t('supportPayment.noteRegion')}
                             </p>
 
-                            <div className="flex flex-col gap-3 text-base text-white" style={{ lineHeight: '25px' }}>
+                            <div className="flex flex-col gap-3 text-base leading-6 text-white">
                                 <p className="font-semibold">
                                     {t('supportPayment.howTo')}
                                 </p>
@@ -230,26 +159,19 @@ export default function SupportPaymentMethodsPage() {
                                 </ol>
                             </div>
 
-                            <p className="text-base font-normal text-white" style={{ lineHeight: '25px' }}>
+                            <p className="text-base font-normal leading-6 text-white">
                                 {t('supportPayment.listed')}
                             </p>
 
-                            <p className="text-base text-white" style={{ lineHeight: '25px' }}>
+                            <p className="text-base leading-6 text-white">
                                 <span className="font-bold">{t('supportPayment.note')}</span>{' '}
                                 {t('supportPayment.noteCharge')}
                             </p>
                         </div>
                     </article>
 
-                    <section
-                        className="p-7 sm:p-8 flex flex-col justify-between text-white"
-                        style={{
-                            minHeight: 310,
-                            backgroundColor: '#aa71ff',
-                            borderRadius: 30,
-                        }}
-                    >
-                        <h2 className="font-bold text-xl mb-6 text-white" style={{ lineHeight: '28px' }}>
+                    <section className="p-7 sm:p-8 flex flex-col justify-between text-white bg-sonora-light rounded-3xl">
+                        <h2 className="font-bold text-xl leading-7 mb-6 text-white">
                             {t('supportPayment.related')}
                         </h2>
 
@@ -257,8 +179,7 @@ export default function SupportPaymentMethodsPage() {
                             {ARTICLE_INDEXES.map((index) => (
                                 <span
                                     key={index}
-                                    className="font-medium text-base text-white cursor-default"
-                                    style={{ lineHeight: '22px' }}
+                                    className="font-medium text-base leading-6 text-white cursor-default"
                                 >
                                     {t(`supportPayment.articles.${index}`)}
                                 </span>

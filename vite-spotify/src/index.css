@@ -4,40 +4,24 @@
 @layer base {
   :root {
     --purple_bl: #280a3a;
-    --bg:        #ffffff;
-    --bg-card:   #ffffff;
-    --bg-hover:  #ede9e3;
-    --bg-input:  #eae6e0;
-    --border:    #ddd9d2;
-    --text:      #1a1814;
-    --text-2:    #6b6560;
-    --text-3:    #9c9690;
-    --accent:    #1db954;
-    --accent-2:  #169040;
-    --player-bg: #ffffff;
-    --sidebar-bg:#f0ede8;
-    --shadow:    0 2px 16px rgba(0,0,0,0.08);
-  }
-
-  .dark {
-    --bg:        #0e0e0e;
-    --bg-card:   #181818;
-    --bg-hover:  #242424;
-    --bg-input:  #2a2a2a;
-    --border:    #2a2a2a;
-    --text:      #f1ede8;
-    --text-2:    #a09b95;
-    --text-3:    #6b6560;
-    --accent:    #1db954;
-    --accent-2:  #1ed760;
-    --player-bg: #121212;
-    --sidebar-bg:#080808;
+    --bg:        #3c0f57;
+    --bg-card:   rgba(255, 255, 255, 0.07);
+    --bg-hover:  rgba(170, 113, 255, 0.2);
+    --bg-input:  #6b309b;
+    --border:    rgba(255, 255, 255, 0.15);
+    --text:      #ffffff;
+    --text-2:    rgba(255, 255, 255, 0.85);
+    --text-3:    rgba(255, 255, 255, 0.65);
+    --accent:    #aa71ff;
+    --accent-2:  #6829c6;
+    --player-bg: #280a3a;
+    --sidebar-bg:#280a3a;
     --shadow:    0 2px 16px rgba(0,0,0,0.4);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html { font-family: 'DM Sans', sans-serif; }
+  html { font-family: 'Inter', sans-serif; }
 
   body {
     background: var(--bg);
@@ -46,7 +30,7 @@
     transition: background 0.3s, color 0.3s;
   }
 
-  h1, h2, h3 { font-family: 'Syne', sans-serif; }
+  h1, h2, h3 { font-family: 'Inter', sans-serif; }
 
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -74,6 +58,19 @@
     cursor: grabbing !important;
   }
 }
-@theme{
+
+@theme {
     --color-purple: var(--purple_bl) !important;
+    --color-sonora-dark: #280a3a;
+    --color-sonora-panel: #3c0f57;
+    --color-sonora-warm: #6b309b;
+    --color-sonora-purple: #6829c6;
+    --color-sonora-light: #aa71ff;
+    --color-sonora-pink: #e869ca;
+    --color-sonora-magenta: #cd51ca;
+    --color-sonora-deep: #120826;
+    --color-sonora-gray: #f9f9fb;
+    --color-sonora-muted: #b3a1c3;
+    --color-sonora-lavender: #c4a7d8;
+    --font-inter: 'Inter', sans-serif;
 }

@@ -309,12 +309,9 @@ export default function RegisterPage() {
         const hasError = Boolean(errors.email)
 
         return (
-            <div
-                className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-                style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-            >
-                <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '70px' }}>
-                    <Link to="/" className="shrink-0" style={{ width: '60px', height: '60px' }}>
+            <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+                <div className="w-full flex flex-col items-center max-w-sm mt-18">
+                    <Link to="/player" className="shrink-0 w-15 h-15">
                         <img
                             src={logoSonoraIcon}
                             alt="Sonora"
@@ -322,45 +319,31 @@ export default function RegisterPage() {
                         />
                     </Link>
 
-                    <h1
-                        className="font-semibold text-center text-white w-full"
-                        style={{
-                            fontSize: '30px',
-                            lineHeight: '50px',
-                            marginTop: '25px',
-                        }}
-                    >
+                    <h1 className="font-semibold text-center text-white w-full text-3xl leading-12 mt-6">
                         {t('register.emailTitle')}
                     </h1>
 
                     <form
                         onSubmit={handleEmailSubmit}
                         noValidate
-                        className="w-full flex flex-col items-center"
-                        style={{ marginTop: '54px' }}
+                        className="w-full flex flex-col items-center mt-14"
                     >
-                        <div className="w-full flex flex-col items-start" style={{ gap: '12px' }}>
+                        <div className="w-full flex flex-col items-start gap-3">
                             <label
                                 htmlFor="register-email"
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="font-bold text-white text-base leading-6"
                             >
                                 {t('register.emailLabel')}
                             </label>
 
                             <div
-                                className="w-full flex items-center justify-between"
-                                style={{
-                                    height: '50px',
-                                    borderRadius: '5px',
-                                    paddingLeft: '20px',
-                                    paddingRight: '16px',
-                                    border: isTaken
-                                        ? '2px solid #dc2626'
+                                className={`w-full flex items-center justify-between h-12.5 rounded pl-5 pr-4 ${
+                                    isTaken
+                                        ? 'border-2 border-red-600'
                                         : hasError
-                                          ? '2px solid #ffffff'
-                                          : '1px solid #ffffff',
-                                }}
+                                          ? 'border-2 border-white'
+                                          : 'border border-white'
+                                }`}
                             >
                                 <input
                                     id="register-email"
@@ -371,75 +354,49 @@ export default function RegisterPage() {
                                             if (errors.email) clearErrors('email')
                                         },
                                     })}
-                                    className="w-full bg-transparent outline-none font-bold"
-                                    style={{
-                                        fontSize: '16px',
-                                        lineHeight: '25px',
-                                        color: isTaken ? '#dc2626' : '#ffffff',
-                                    }}
+                                    className={`w-full bg-transparent outline-none font-bold text-base leading-6 ${
+                                        isTaken ? 'text-red-600' : 'text-white'
+                                    }`}
                                 />
                                 {hasError && (
-                                    <div className="shrink-0 ml-2" style={{ width: '25px', height: '25px' }}>
+                                    <div className="shrink-0 ml-2 w-6 h-6">
                                         <img src={errorIcon} alt="" className="block" />
                                     </div>
                                 )}
                             </div>
 
                             {errors.email?.message && (
-                                <p
-                                    className="font-semibold w-full"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                    }}
-                                >
+                                <p className="font-semibold w-full text-sm leading-snug text-red-600">
                                     {errors.email.message}
                                 </p>
                             )}
                         </div>
 
                         <div
-                            className="w-full flex flex-col items-center"
-                            style={{ marginTop: hasError ? '28px' : '40px', gap: '40px' }}
+                            className={`w-full flex flex-col items-center gap-10 ${
+                                hasError ? 'mt-7' : 'mt-10'
+                            }`}
                         >
                             <button
                                 type="submit"
                                 disabled={isCheckingEmail}
-                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                                style={{
-                                    width: '300px',
-                                    height: '50px',
-                                    borderRadius: '35px',
-                                    fontSize: '16px',
-                                }}
+                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60 w-75 h-12.5 rounded-full text-base"
                             >
                                 {isCheckingEmail ? t('register.checking') : t('register.next')}
                             </button>
 
-                            <p
-                                className="font-bold text-center text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
-                            >
+                            <p className="font-bold text-center text-white text-base leading-6">
                                 {t('register.or')}
                             </p>
                         </div>
                     </form>
 
-                    <div className="w-full flex flex-col" style={{ marginTop: '40px', gap: '15px' }}>
+                    <div className="w-full flex flex-col mt-10 gap-3.5">
                         <button
                             type="button"
-                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
-                            style={{
-                                height: '55px',
-                                borderRadius: '35px',
-                                paddingLeft: '20px',
-                                paddingRight: '20px',
-                                fontSize: '16px',
-                                lineHeight: '23px',
-                            }}
+                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85 h-14 rounded-full px-5 text-base leading-6"
                         >
-                            <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
+                            <span className="shrink-0 w-5 h-5">
                                 <img src={googleIcon} alt={t('register.google')} className="block" />
                             </span>
                             <span className="flex-1 text-center">
@@ -451,34 +408,22 @@ export default function RegisterPage() {
 
                         <button
                             type="button"
-                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85"
-                            style={{
-                                height: '55px',
-                                borderRadius: '35px',
-                                paddingLeft: '20px',
-                                paddingRight: '20px',
-                                fontSize: '16px',
-                                lineHeight: '23px',
-                            }}
+                            className="cursor-pointer w-full flex items-center justify-between border border-white text-white font-semibold transition-opacity hover:opacity-85 h-14 rounded-full px-5 text-base leading-6"
                         >
-                            <span className="shrink-0" style={{ width: '20px', height: '22px' }}>
+                            <span className="shrink-0 w-5 h-5.5">
                                 <img src={appleIcon} alt="Apple" className="block" />
                             </span>
                             <span className="flex-1 text-center">{t('register.loginWithApple')}</span>
                         </button>
                     </div>
 
-                    <div
-                        className="w-full flex flex-col items-center text-center"
-                        style={{ marginTop: '70px', gap: '16px' }}
-                    >
-                        <p className="font-normal text-white" style={{ fontSize: '16px', lineHeight: '30px' }}>
+                    <div className="w-full flex flex-col items-center text-center mt-18 gap-4">
+                        <p className="font-normal text-white text-base leading-7">
                             {t('register.haveAccount')}
                         </p>
                         <Link
                             to="/login"
-                            className="font-bold text-white hover:underline"
-                            style={{ fontSize: '16px', lineHeight: '25px' }}
+                            className="font-bold text-white hover:underline text-base leading-6"
                         >
                             {t('register.logIn')}
                         </Link>
@@ -492,12 +437,9 @@ export default function RegisterPage() {
         const showPasswordError = passwordSubmitted && !isPasswordValid
 
         return (
-            <div
-                className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-                style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-            >
-                <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '45px' }}>
-                    <Link to="/" className="shrink-0" style={{ width: '55px', height: '55px' }}>
+            <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+                <div className="w-full flex flex-col items-center max-w-sm mt-11">
+                    <Link to="/player" className="shrink-0 w-14 h-14">
                         <img
                             src={logoSonoraIcon}
                             alt="Sonora"
@@ -505,48 +447,24 @@ export default function RegisterPage() {
                         />
                     </Link>
 
-                    <div
-                        className="w-full relative border border-white"
-                        style={{
-                            height: '10px',
-                            borderRadius: '5px',
-                            marginTop: '30px',
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: '120px',
-                                height: '100%',
-                                borderRadius: '5px',
-                                backgroundColor: '#10b981',
-                            }}
-                        />
+                    <div className="w-full relative border border-white h-2.5 rounded mt-7.5">
+                        <div className="w-1/3 h-full rounded bg-emerald-500" />
                     </div>
 
-                    <div className="w-full relative flex flex-col items-start" style={{ marginTop: '24px' }}>
+                    <div className="w-full relative flex flex-col items-start mt-6">
                         <button
                             type="button"
                             onClick={() => setStep(0)}
                             aria-label={t('register.back')}
-                            className="cursor-pointer flex items-center justify-center mb-3 sm:mb-0"
-                            style={{
-                                position: 'absolute',
-                                left: '-42px',
-                                top: '6px',
-                                width: '24px',
-                                height: '24px',
-                            }}
+                            className="cursor-pointer flex items-center justify-center mb-3 sm:mb-0 absolute -left-10.5 top-1.5 w-6 h-6"
                         >
                             <img src={backArrowIcon} alt="" className="block" />
                         </button>
 
-                        <p className="font-normal text-white" style={{ fontSize: '14px', lineHeight: '20px' }}>
+                        <p className="font-normal text-white text-sm leading-5">
                             {t('register.stepOf1')}
                         </p>
-                        <h1
-                            className="font-bold text-white"
-                            style={{ fontSize: '16px', lineHeight: '25px', marginTop: '4px' }}
-                        >
+                        <h1 className="font-bold text-white text-base leading-6 mt-1">
                             {t('register.passwordTitle')}
                         </h1>
                     </div>
@@ -554,44 +472,32 @@ export default function RegisterPage() {
                     <form
                         onSubmit={handlePasswordSubmit}
                         noValidate
-                        className="w-full flex flex-col items-start"
-                        style={{ marginTop: '22px' }}
+                        className="w-full flex flex-col items-start mt-5.5"
                     >
                         <label
                             htmlFor="register-password"
-                            className="font-bold text-white"
-                            style={{ fontSize: '16px', lineHeight: '25px' }}
+                            className="font-bold text-white text-base leading-6"
                         >
                             {t('register.passwordLabel')}
                         </label>
 
                         <div
-                            className="w-full flex items-center justify-between"
-                            style={{
-                                height: '50px',
-                                borderRadius: '5px',
-                                marginTop: '12px',
-                                paddingLeft: '20px',
-                                paddingRight: '15px',
-                                border: showPasswordError ? '2px solid #dc2626' : '1px solid #ffffff',
-                            }}
+                            className={`w-full flex items-center justify-between h-12.5 rounded mt-3 pl-5 pr-4 ${
+                                showPasswordError ? 'border-2 border-red-600' : 'border border-white'
+                            }`}
                         >
                             <input
                                 id="register-password"
                                 type={showPassword ? 'text' : 'password'}
                                 {...register('password')}
-                                className="w-full bg-transparent outline-none font-bold"
-                                style={{
-                                    fontSize: '16px',
-                                    lineHeight: '25px',
-                                    color: showPasswordError ? '#dc2626' : '#ffffff',
-                                }}
+                                className={`w-full bg-transparent outline-none font-bold text-base leading-6 ${
+                                    showPasswordError ? 'text-red-600' : 'text-white'
+                                }`}
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword((prev) => !prev)}
-                                className="cursor-pointer shrink-0 ml-2 flex items-center justify-center"
-                                style={{ width: '25px', height: '25px' }}
+                                className="cursor-pointer shrink-0 ml-2 flex items-center justify-center w-6 h-6"
                             >
                                 <img
                                     src={showPassword ? eyeOpenIcon : eyeClosedIcon}
@@ -601,82 +507,58 @@ export default function RegisterPage() {
                             </button>
                         </div>
 
-                        <div className="w-full flex flex-col items-start" style={{ marginTop: '28px' }}>
-                            <p className="font-bold text-white" style={{ fontSize: '16px', lineHeight: '25px' }}>
+                        <div className="w-full flex flex-col items-start mt-7">
+                            <p className="font-bold text-white text-base leading-6">
                                 {t('register.passwordRequirements')}
                             </p>
 
-                            <div className="w-full flex flex-col" style={{ marginTop: '16px', gap: '16px' }}>
-                                <div className="flex items-center" style={{ gap: '10px' }}>
+                            <div className="w-full flex flex-col mt-4 gap-4">
+                                <div className="flex items-center gap-2.5">
                                     {hasLetter ? (
-                                        <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
+                                        <span className="shrink-0 w-5 h-5">
                                             <img src={checkCircleIcon} alt="" className="block" />
                                         </span>
                                     ) : (
-                                        <span
-                                            className="shrink-0 rounded-full border-2 border-white"
-                                            style={{ width: '20px', height: '20px' }}
-                                        />
+                                        <span className="shrink-0 rounded-full border-2 border-white w-5 h-5" />
                                     )}
                                     <span
-                                        className="font-normal"
-                                        style={{
-                                            fontSize: '14px',
-                                            lineHeight: '20px',
-                                            color: passwordSubmitted && !hasLetter ? '#dc2626' : '#ffffff',
-                                        }}
+                                        className={`font-normal text-sm leading-5 ${
+                                            passwordSubmitted && !hasLetter ? 'text-red-600' : 'text-white'
+                                        }`}
                                     >
                                         {t('register.reqLetter')}
                                     </span>
                                 </div>
 
-                                <div className="flex items-start" style={{ gap: '10px' }}>
+                                <div className="flex items-start gap-2.5">
                                     {hasDigitOrSpecial ? (
-                                        <span
-                                            className="shrink-0"
-                                            style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                        >
+                                        <span className="shrink-0 w-5 h-5 mt-0.5">
                                             <img src={checkCircleIcon} alt="" className="block" />
                                         </span>
                                     ) : (
-                                        <span
-                                            className="shrink-0 rounded-full border-2 border-white"
-                                            style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                        />
+                                        <span className="shrink-0 rounded-full border-2 border-white w-5 h-5 mt-0.5" />
                                     )}
                                     <span
-                                        className="font-normal"
-                                        style={{
-                                            fontSize: '14px',
-                                            lineHeight: '20px',
-                                            color:
-                                                passwordSubmitted && !hasDigitOrSpecial
-                                                    ? '#dc2626'
-                                                    : '#ffffff',
-                                        }}
+                                        className={`font-normal text-sm leading-5 ${
+                                            passwordSubmitted && !hasDigitOrSpecial ? 'text-red-600' : 'text-white'
+                                        }`}
                                     >
                                         {t('register.reqDigitOrSpecial')}
                                     </span>
                                 </div>
 
-                                <div className="flex items-center" style={{ gap: '10px' }}>
+                                <div className="flex items-center gap-2.5">
                                     {hasMinLength ? (
-                                        <span className="shrink-0" style={{ width: '20px', height: '20px' }}>
+                                        <span className="shrink-0 w-5 h-5">
                                             <img src={checkCircleIcon} alt="" className="block" />
                                         </span>
                                     ) : (
-                                        <span
-                                            className="shrink-0 rounded-full border-2 border-white"
-                                            style={{ width: '20px', height: '20px' }}
-                                        />
+                                        <span className="shrink-0 rounded-full border-2 border-white w-5 h-5" />
                                     )}
                                     <span
-                                        className="font-normal"
-                                        style={{
-                                            fontSize: '14px',
-                                            lineHeight: '20px',
-                                            color: passwordSubmitted && !hasMinLength ? '#dc2626' : '#ffffff',
-                                        }}
+                                        className={`font-normal text-sm leading-5 ${
+                                            passwordSubmitted && !hasMinLength ? 'text-red-600' : 'text-white'
+                                        }`}
                                     >
                                         {t('register.reqLength')}
                                     </span>
@@ -684,16 +566,10 @@ export default function RegisterPage() {
                             </div>
                         </div>
 
-                        <div className="w-full flex justify-center" style={{ marginTop: '48px' }}>
+                        <div className="w-full flex justify-center mt-12">
                             <button
                                 type="submit"
-                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
-                                style={{
-                                    width: '300px',
-                                    height: '50px',
-                                    borderRadius: '35px',
-                                    fontSize: '16px',
-                                }}
+                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 w-75 h-12.5 rounded-full text-base"
                             >
                                 {t('register.next')}
                             </button>
@@ -712,12 +588,9 @@ export default function RegisterPage() {
         const showGenderError = Boolean(errors.gender)
 
         return (
-            <div
-                className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-                style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-            >
-                <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '45px' }}>
-                    <Link to="/" className="shrink-0" style={{ width: '55px', height: '55px' }}>
+            <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+                <div className="w-full flex flex-col items-center max-w-sm mt-11">
+                    <Link to="/player" className="shrink-0 w-14 h-14">
                         <img
                             src={logoSonoraIcon}
                             alt="Sonora"
@@ -725,48 +598,24 @@ export default function RegisterPage() {
                         />
                     </Link>
 
-                    <div
-                        className="w-full relative border border-white"
-                        style={{
-                            height: '10px',
-                            borderRadius: '5px',
-                            marginTop: '30px',
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: '240px',
-                                height: '100%',
-                                borderRadius: '5px',
-                                backgroundColor: '#10b981',
-                            }}
-                        />
+                    <div className="w-full relative border border-white h-2.5 rounded mt-7.5">
+                        <div className="w-2/3 h-full rounded bg-emerald-500" />
                     </div>
 
-                    <div className="w-full relative flex flex-col items-start" style={{ marginTop: '24px' }}>
+                    <div className="w-full relative flex flex-col items-start mt-6">
                         <button
                             type="button"
                             onClick={() => setStep(1)}
                             aria-label={t('register.back')}
-                            className="cursor-pointer flex items-center justify-center"
-                            style={{
-                                position: 'absolute',
-                                left: '-42px',
-                                top: '6px',
-                                width: '24px',
-                                height: '24px',
-                            }}
+                            className="cursor-pointer flex items-center justify-center absolute -left-10.5 top-1.5 w-6 h-6"
                         >
                             <img src={backArrowIcon} alt="" className="block" />
                         </button>
 
-                        <p className="font-normal text-white" style={{ fontSize: '14px', lineHeight: '20px' }}>
+                        <p className="font-normal text-white text-sm leading-5">
                             {t('register.stepOf2')}
                         </p>
-                        <h1
-                            className="font-bold text-white"
-                            style={{ fontSize: '16px', lineHeight: '25px', marginTop: '4px' }}
-                        >
+                        <h1 className="font-bold text-white text-base leading-6 mt-1">
                             {t('register.personalTitle')}
                         </h1>
                     </div>
@@ -774,21 +623,16 @@ export default function RegisterPage() {
                     <form
                         onSubmit={handlePersonalDataSubmit}
                         noValidate
-                        className="w-full flex flex-col items-start"
-                        style={{ marginTop: '20px' }}
+                        className="w-full flex flex-col items-start mt-5"
                     >
                         <div className="w-full flex flex-col items-start">
                             <label
                                 htmlFor="register-fullname"
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
+                                className="font-bold text-white text-base leading-6"
                             >
                                 {t('register.nameLabel')}
                             </label>
-                            <p
-                                className="font-normal text-white"
-                                style={{ fontSize: '14px', lineHeight: '20px', marginTop: '2px' }}
-                            >
+                            <p className="font-normal text-white text-sm leading-5 mt-0.5">
                                 {t('register.nameHint')}
                             </p>
 
@@ -800,60 +644,30 @@ export default function RegisterPage() {
                                         if (errors.fullName) clearErrors('fullName')
                                     },
                                 })}
-                                className="w-full bg-transparent outline-none font-bold text-white"
-                                style={{
-                                    height: '50px',
-                                    borderRadius: '5px',
-                                    marginTop: '10px',
-                                    paddingLeft: '20px',
-                                    paddingRight: '20px',
-                                    fontSize: '16px',
-                                    lineHeight: '25px',
-                                    border: showNameError ? '1px solid #dc2626' : '1px solid #ffffff',
-                                }}
+                                className={`w-full bg-transparent outline-none font-bold text-white h-12.5 rounded mt-2.5 px-5 text-base leading-6 ${
+                                    showNameError ? 'border border-red-600' : 'border border-white'
+                                }`}
                             />
 
                             {showNameError && (
-                                <p
-                                    className="font-semibold"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                        marginTop: '10px',
-                                    }}
-                                >
+                                <p className="font-semibold text-sm leading-snug text-red-600 mt-2.5">
                                     {errors.fullName?.message || t('register.errors.nameRequired')}
                                 </p>
                             )}
                         </div>
 
-                        <div className="w-full flex flex-col items-start" style={{ marginTop: '28px' }}>
-                            <label
-                                className="font-bold text-white"
-                                style={{ fontSize: '16px', lineHeight: '25px' }}
-                            >
+                        <div className="w-full flex flex-col items-start mt-7">
+                            <label className="font-bold text-white text-base leading-6">
                                 {t('register.birthLabel')}
                             </label>
 
                             {showBirthDateError && (
-                                <p
-                                    className="font-semibold"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                        marginTop: '6px',
-                                    }}
-                                >
+                                <p className="font-semibold text-sm leading-snug text-red-600 mt-1.5">
                                     {t('register.errors.birthRequired')}
                                 </p>
                             )}
 
-                            <div
-                                className="w-full flex items-center justify-between"
-                                style={{ marginTop: '12px', gap: '16px' }}
-                            >
+                            <div className="w-full flex items-center justify-between mt-3 gap-4">
                                 <input
                                     type="text"
                                     inputMode="numeric"
@@ -865,27 +679,15 @@ export default function RegisterPage() {
                                             clearErrors(['birthDay', 'birthMonth', 'birthYear'])
                                         },
                                     })}
-                                    className="bg-transparent outline-none font-normal text-white"
-                                    style={{
-                                        width: '74px',
-                                        height: '50px',
-                                        borderRadius: '5px',
-                                        paddingLeft: '20px',
-                                        paddingRight: '15px',
-                                        fontSize: '16px',
-                                        lineHeight: '30px',
-                                        border: showBirthDateError ? '1px solid #dc2626' : '1px solid #ffffff',
-                                    }}
+                                    className={`bg-transparent outline-none font-normal text-white w-18.5 h-12.5 rounded pl-5 pr-4 text-base leading-7.5 ${
+                                        showBirthDateError ? 'border border-red-600' : 'border border-white'
+                                    }`}
                                 />
 
                                 <div
-                                    className="relative flex items-center"
-                                    style={{
-                                        width: '140px',
-                                        height: '51px',
-                                        borderRadius: '5px',
-                                        border: showBirthDateError ? '1px solid #dc2626' : '1px solid #ffffff',
-                                    }}
+                                    className={`relative flex items-center w-35 h-12.5 rounded ${
+                                        showBirthDateError ? 'border border-red-600' : 'border border-white'
+                                    }`}
                                 >
                                     <select
                                         {...register('birthMonth', {
@@ -893,31 +695,22 @@ export default function RegisterPage() {
                                                 clearErrors(['birthDay', 'birthMonth', 'birthYear'])
                                             },
                                         })}
-                                        className="w-full h-full bg-transparent outline-none appearance-none font-normal text-white cursor-pointer"
-                                        style={{
-                                            paddingLeft: '14px',
-                                            paddingRight: '36px',
-                                            fontSize: '16px',
-                                            lineHeight: '30px',
-                                        }}
+                                        className="w-full h-full bg-transparent outline-none appearance-none font-normal text-white cursor-pointer pl-3.5 pr-9 text-base leading-7.5"
                                     >
-                                        <option value="" disabled style={{ backgroundColor: '#280a3a', color: '#ffffff' }}>
+                                        <option value="" disabled className="bg-sonora-dark text-white">
                                             {t('register.monthPlaceholder')}
                                         </option>
                                         {MONTH_VALUES.map((value, index) => (
                                             <option
                                                 key={value}
                                                 value={value}
-                                                style={{ backgroundColor: '#280a3a', color: '#ffffff' }}
+                                                className="bg-sonora-dark text-white"
                                             >
                                                 {t(`register.months.${index}`)}
                                             </option>
                                         ))}
                                     </select>
-                                    <span
-                                        className="pointer-events-none absolute flex items-center justify-center"
-                                        style={{ right: '14px', width: '20px', height: '12px' }}
-                                    >
+                                    <span className="pointer-events-none absolute right-3.5 w-5 h-3 flex items-center justify-center">
                                         <img src={monthArrowIcon} alt="" className="block w-full h-auto" />
                                     </span>
                                 </div>
@@ -933,30 +726,19 @@ export default function RegisterPage() {
                                             clearErrors(['birthDay', 'birthMonth', 'birthYear'])
                                         },
                                     })}
-                                    className="bg-transparent outline-none font-normal text-white"
-                                    style={{
-                                        width: '100px',
-                                        height: '50px',
-                                        borderRadius: '5px',
-                                        paddingLeft: '20px',
-                                        paddingRight: '15px',
-                                        fontSize: '16px',
-                                        lineHeight: '30px',
-                                        border: showBirthDateError ? '1px solid #dc2626' : '1px solid #ffffff',
-                                    }}
+                                    className={`bg-transparent outline-none font-normal text-white w-25 h-12.5 rounded pl-5 pr-4 text-base leading-7.5 ${
+                                        showBirthDateError ? 'border border-red-600' : 'border border-white'
+                                    }`}
                                 />
                             </div>
                         </div>
 
-                        <div className="w-full flex flex-col items-start" style={{ marginTop: '28px' }}>
-                            <p className="font-bold text-white" style={{ fontSize: '16px', lineHeight: '25px' }}>
+                        <div className="w-full flex flex-col items-start mt-7">
+                            <p className="font-bold text-white text-base leading-6">
                                 {t('register.genderLabel')}
                             </p>
 
-                            <div
-                                className="w-full flex flex-wrap items-center"
-                                style={{ marginTop: '14px', columnGap: '24px', rowGap: '18px' }}
-                            >
+                            <div className="w-full flex flex-wrap items-center mt-3.5 gap-x-6 gap-y-4.5">
                                 {GENDER_KEYS.map((genderKey) => {
                                     const isSelected = genderValue === genderKey
                                     return (
@@ -967,25 +749,18 @@ export default function RegisterPage() {
                                                 setValue('gender', genderKey)
                                                 clearErrors('gender')
                                             }}
-                                            className="cursor-pointer flex items-center text-left"
-                                            style={{ gap: '10px' }}
+                                            className="cursor-pointer flex items-center text-left gap-2.5"
                                         >
                                             <span
-                                                className="shrink-0 rounded-full"
-                                                style={{
-                                                    width: '20px',
-                                                    height: '20px',
-                                                    border: isSelected
-                                                        ? '4px solid #10b981'
+                                                className={`shrink-0 rounded-full w-5 h-5 ${
+                                                    isSelected
+                                                        ? 'border-4 border-emerald-500'
                                                         : showGenderError
-                                                          ? '2px solid #dc2626'
-                                                          : '2px solid #ffffff',
-                                                }}
+                                                          ? 'border-2 border-red-600'
+                                                          : 'border-2 border-white'
+                                                }`}
                                             />
-                                            <span
-                                                className="font-normal text-white"
-                                                style={{ fontSize: '14px', lineHeight: '20px' }}
-                                            >
+                                            <span className="font-normal text-white text-sm leading-5">
                                                 {t(`register.genders.${genderKey}`)}
                                             </span>
                                         </button>
@@ -994,30 +769,16 @@ export default function RegisterPage() {
                             </div>
 
                             {showGenderError && (
-                                <p
-                                    className="font-semibold"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                        marginTop: '10px',
-                                    }}
-                                >
+                                <p className="font-semibold text-sm leading-snug text-red-600 mt-2.5">
                                     {errors.gender?.message || t('register.errors.genderRequired')}
                                 </p>
                             )}
                         </div>
 
-                        <div className="w-full flex justify-center" style={{ marginTop: '45px' }}>
+                        <div className="w-full flex justify-center mt-11">
                             <button
                                 type="submit"
-                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90"
-                                style={{
-                                    width: '300px',
-                                    height: '50px',
-                                    borderRadius: '35px',
-                                    fontSize: '16px',
-                                }}
+                                className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 w-75 h-12.5 rounded-full text-base"
                             >
                                 {t('register.next')}
                             </button>
@@ -1031,12 +792,9 @@ export default function RegisterPage() {
     const termsError = Boolean(errors.acceptTerms)
 
     return (
-        <div
-            className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white"
-            style={{ backgroundColor: '#280a3a', fontFamily: "'Inter', sans-serif" }}
-        >
-            <div className="w-full flex flex-col items-center" style={{ maxWidth: '355px', marginTop: '45px' }}>
-                <Link to="/" className="shrink-0" style={{ width: '55px', height: '55px' }}>
+        <div className="min-h-screen w-full flex flex-col items-center px-4 py-12 text-white bg-sonora-dark font-inter">
+            <div className="w-full flex flex-col items-center max-w-sm mt-11">
+                <Link to="/player" className="shrink-0 w-14 h-14">
                     <img
                         src={logoSonoraIcon}
                         alt="Sonora"
@@ -1044,48 +802,24 @@ export default function RegisterPage() {
                     />
                 </Link>
 
-                <div
-                    className="w-full relative border border-white"
-                    style={{
-                        height: '10px',
-                        borderRadius: '5px',
-                        marginTop: '30px',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: '5px',
-                            backgroundColor: '#10b981',
-                        }}
-                    />
+                <div className="w-full relative border border-white h-2.5 rounded mt-7.5">
+                    <div className="w-full h-full rounded bg-emerald-500" />
                 </div>
 
-                <div className="w-full relative flex flex-col items-start" style={{ marginTop: '24px' }}>
+                <div className="w-full relative flex flex-col items-start mt-6">
                     <button
                         type="button"
                         onClick={() => setStep(2)}
                         aria-label={t('register.back')}
-                        className="cursor-pointer flex items-center justify-center"
-                        style={{
-                            position: 'absolute',
-                            left: '-42px',
-                            top: '6px',
-                            width: '24px',
-                            height: '24px',
-                        }}
+                        className="cursor-pointer flex items-center justify-center absolute -left-10.5 top-1.5 w-6 h-6"
                     >
                         <img src={backArrowIcon} alt="" className="block" />
                     </button>
 
-                    <p className="font-normal text-white" style={{ fontSize: '14px', lineHeight: '20px' }}>
+                    <p className="font-normal text-white text-sm leading-5">
                         {t('register.stepOf3')}
                     </p>
-                    <h1
-                        className="font-bold text-white"
-                        style={{ fontSize: '16px', lineHeight: '25px', marginTop: '4px' }}
-                    >
+                    <h1 className="font-bold text-white text-base leading-6 mt-1">
                         {t('register.termsTitle')}
                     </h1>
                 </div>
@@ -1093,10 +827,9 @@ export default function RegisterPage() {
                 <form
                     onSubmit={handleSubmit(onSubmit)}
                     noValidate
-                    className="w-full flex flex-col items-start"
-                    style={{ marginTop: '28px' }}
+                    className="w-full flex flex-col items-start mt-7"
                 >
-                    <div className="w-full flex flex-col" style={{ gap: '20px' }}>
+                    <div className="w-full flex flex-col gap-5">
                         <div className="w-full flex flex-col">
                             <button
                                 type="button"
@@ -1104,46 +837,26 @@ export default function RegisterPage() {
                                     setValue('acceptTerms', !acceptTermsValue)
                                     if (errors.acceptTerms) clearErrors('acceptTerms')
                                 }}
-                                className="cursor-pointer flex items-start text-left w-full"
-                                style={{ gap: '10px' }}
+                                className="cursor-pointer flex items-start text-left w-full gap-2.5"
                             >
                                 {acceptTermsValue ? (
-                                    <span
-                                        className="shrink-0"
-                                        style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                    >
+                                    <span className="shrink-0 w-5 h-5 mt-0.5">
                                         <img src={checkboxCheckedIcon} alt="" className="block" />
                                     </span>
                                 ) : (
                                     <span
-                                        className="shrink-0"
-                                        style={{
-                                            width: '20px',
-                                            height: '20px',
-                                            marginTop: '2px',
-                                            borderRadius: '5px',
-                                            border: termsError ? '2px solid #dc2626' : '2px solid #ffffff',
-                                        }}
+                                        className={`shrink-0 w-5 h-5 mt-0.5 rounded ${
+                                            termsError ? 'border-2 border-red-600' : 'border-2 border-white'
+                                        }`}
                                     />
                                 )}
-                                <span
-                                    className="font-normal text-white"
-                                    style={{ fontSize: '14px', lineHeight: '20px' }}
-                                >
+                                <span className="font-normal text-white text-sm leading-5">
                                     {t('register.acceptTerms')}
                                 </span>
                             </button>
 
                             {termsError && (
-                                <p
-                                    className="font-semibold"
-                                    style={{
-                                        fontSize: '14px',
-                                        lineHeight: '18px',
-                                        color: '#dc2626',
-                                        marginTop: '10px',
-                                    }}
-                                >
+                                <p className="font-semibold text-sm leading-snug text-red-600 mt-2.5">
                                     {errors.acceptTerms?.message || t('register.errors.termsRequired')}
                                 </p>
                             )}
@@ -1152,31 +865,16 @@ export default function RegisterPage() {
                         <button
                             type="button"
                             onClick={() => setValue('acceptNews', !acceptNewsValue)}
-                            className="cursor-pointer flex items-start text-left w-full"
-                            style={{ gap: '10px' }}
+                            className="cursor-pointer flex items-start text-left w-full gap-2.5"
                         >
                             {acceptNewsValue ? (
-                                <span
-                                    className="shrink-0"
-                                    style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                >
+                                <span className="shrink-0 w-5 h-5 mt-0.5">
                                     <img src={checkboxCheckedIcon} alt="" className="block" />
                                 </span>
                             ) : (
-                                <span
-                                    className="shrink-0 border-2 border-white"
-                                    style={{
-                                        width: '20px',
-                                        height: '20px',
-                                        marginTop: '2px',
-                                        borderRadius: '5px',
-                                    }}
-                                />
+                                <span className="shrink-0 border-2 border-white w-5 h-5 mt-0.5 rounded" />
                             )}
-                            <span
-                                className="font-normal text-white"
-                                style={{ fontSize: '14px', lineHeight: '20px' }}
-                            >
+                            <span className="font-normal text-white text-sm leading-5">
                                 {t('register.acceptNews')}
                             </span>
                         </button>
@@ -1184,61 +882,32 @@ export default function RegisterPage() {
                         <button
                             type="button"
                             onClick={() => setValue('acceptData', !acceptDataValue)}
-                            className="cursor-pointer flex items-start text-left w-full"
-                            style={{ gap: '10px' }}
+                            className="cursor-pointer flex items-start text-left w-full gap-2.5"
                         >
                             {acceptDataValue ? (
-                                <span
-                                    className="shrink-0"
-                                    style={{ width: '20px', height: '20px', marginTop: '2px' }}
-                                >
+                                <span className="shrink-0 w-5 h-5 mt-0.5">
                                     <img src={checkboxCheckedIcon} alt="" className="block" />
                                 </span>
                             ) : (
-                                <span
-                                    className="shrink-0 border-2 border-white"
-                                    style={{
-                                        width: '20px',
-                                        height: '20px',
-                                        marginTop: '2px',
-                                        borderRadius: '5px',
-                                    }}
-                                />
+                                <span className="shrink-0 border-2 border-white w-5 h-5 mt-0.5 rounded" />
                             )}
-                            <span
-                                className="font-normal text-white"
-                                style={{ fontSize: '14px', lineHeight: '20px' }}
-                            >
+                            <span className="font-normal text-white text-sm leading-5">
                                 {t('register.acceptData')}
                             </span>
                         </button>
                     </div>
 
                     {errors.root?.message && (
-                        <p
-                            className="font-semibold w-full"
-                            style={{
-                                fontSize: '14px',
-                                lineHeight: '18px',
-                                color: '#dc2626',
-                                marginTop: '16px',
-                            }}
-                        >
+                        <p className="font-semibold w-full text-sm leading-snug text-red-600 mt-4">
                             {errors.root.message}
                         </p>
                     )}
 
-                    <div className="w-full flex justify-center" style={{ marginTop: '48px' }}>
+                    <div className="w-full flex justify-center mt-12">
                         <button
                             type="submit"
                             disabled={isRegistering}
-                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                            style={{
-                                width: '300px',
-                                height: '50px',
-                                borderRadius: '35px',
-                                fontSize: '16px',
-                            }}
+                            className="cursor-pointer flex items-center justify-center font-bold text-black bg-white transition-opacity hover:opacity-90 disabled:opacity-60 w-75 h-12.5 rounded-full text-base"
                         >
                             {isRegistering ? t('register.submitting') : t('register.signUp')}
                         </button>

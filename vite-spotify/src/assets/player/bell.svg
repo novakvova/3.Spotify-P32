@@ -1,0 +1,16 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="21.5" height="21.5" viewBox="0 0 21.5 21.5" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="bell">
+<g id="Vector">
+<use xlink:href="#stroke0_0_235" stroke="white"/>
+<use xlink:href="#stroke0_0_235" stroke="white"/>
+</g>
+<g id="Vector_2">
+<use xlink:href="#stroke1_0_235" stroke="white"/>
+<use xlink:href="#stroke1_0_235" stroke="white"/>
+</g>
+</g>
+<defs>
+<path id="stroke0_0_235" d="M10.75 0.75C6.80115 0.75 3.95 3.10294 3.95 6.2402V10.9461L0.75 16.4363H20.75L17.55 10.9461V6.2402C17.55 3.10294 15.6843 0.75 10.75 0.75Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="stroke1_0_235" d="M7.15039 17.2206C7.15039 21.9265 14.3504 21.9265 14.3504 17.2206" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</defs>
+</svg>

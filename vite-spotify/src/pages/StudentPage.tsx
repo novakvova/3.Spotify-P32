@@ -1,9 +1,9 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { FAQ } from '../components/FAQ';
-import studenthero from '../assets/home/student-hero.png';
-import { Header } from "../components/Header.tsx";
-import {Footer} from "../components/Footer.tsx";
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { FAQ } from '../components/FAQ'
+import studenthero from '../assets/home/student-hero.png'
+import { Header } from '../components/Header.tsx'
+import { Footer } from '../components/Footer.tsx'
 
 // SVG 1: Музика без реклами (#6829C6)
 const IconNoAds: React.FC = () => (
@@ -26,7 +26,7 @@ const IconNoAds: React.FC = () => (
             <path id="stroke2_291_665" d="M93.347 47.4865C89.8436 48.2058 86.4103 46.5236 84.6144 43.4816C82.3759 39.6791 83.5412 34.7489 87.1294 32.2725C88.4902 31.3322 89.9727 30.8714 91.6359 30.8339C94.4718 30.774 97.0569 32.1414 98.6057 34.5541C100.416 37.3751 100.494 41.0502 98.6168 43.8712C97.4035 45.6957 95.5338 47.0331 93.3433 47.4827L93.347 47.4865ZM95.2831 42.8934C95.5449 42.7548 95.8141 42.2865 95.5892 42.0542L92.8602 39.2482L95.556 36.4797C95.803 36.2287 95.4933 35.7042 95.2462 35.588C95.095 35.3483 94.682 35.1535 94.4681 35.3708L91.7502 38.1093L89.0175 35.3408C88.811 35.131 88.3058 35.4457 88.1989 35.648C87.9702 35.7716 87.7121 36.2437 87.9223 36.4572L90.6586 39.2482L87.878 42.0692C87.7342 42.3165 88.0403 42.7398 88.2026 42.8897C88.3759 43.0545 88.5787 43.2119 88.7557 43.2306C88.8922 43.2456 89.1392 43.0658 89.2536 42.9534L91.7649 40.3834L94.5013 43.1669C94.7078 43.3767 95.1466 43.1482 95.2868 42.8934H95.2831Z"/>
         </defs>
     </svg>
-);
+)
 
 // SVG 2: Музика офлайн (#6B309B)
 const IconOffline: React.FC = () => (
@@ -46,7 +46,7 @@ const IconOffline: React.FC = () => (
             <path id="stroke1_291_664" d="M52.4349 57.0235C46.6193 60.4429 39.3171 59.5194 34.5086 54.9587C31.5064 52.1123 29.9278 48.3425 30.0004 44.2459C30.1457 36.2516 36.6635 30.0711 44.7792 30.0001C52.8949 29.9291 59.1657 35.7638 59.6742 43.5402C60.0325 49.0482 57.3692 54.1251 52.4398 57.0235H52.4349ZM45.7186 53.1116L51.8732 46.988C52.4882 46.3771 52.3235 45.4441 51.7812 44.9326C51.2389 44.4211 50.2462 44.4069 49.6457 44.9894L46.4401 48.1057L46.4111 36.7536C46.4111 35.8585 45.5588 35.4843 44.7841 35.508C44.0093 35.5317 43.2878 35.8869 43.2829 36.7536L43.2636 48.1389L40.0967 44.9942C39.4333 44.3359 38.3873 44.4827 37.8789 45.0321C37.3269 45.6335 37.2833 46.5049 37.908 47.1254L43.8301 52.9743C44.2805 53.4195 45.1763 53.642 45.7089 53.1116H45.7186Z"/>
         </defs>
     </svg>
-);
+)
 
 // SVG 3: Музика під настрій (#E869CA)
 const IconMood: React.FC = () => (
@@ -69,7 +69,7 @@ const IconMood: React.FC = () => (
             </clipPath>
         </defs>
     </svg>
-);
+)
 
 // SVG 4: Насолода від музики (#CD51CA)
 const IconLove: React.FC = () => (
@@ -101,7 +101,7 @@ const IconLove: React.FC = () => (
             <path id="stroke5_291_678" d="M43.9826 99.9561C43.8759 101.393 42.7861 102.416 41.3947 102.425C40.1333 102.434 38.8394 101.393 38.8394 100.011L38.8301 72.3636C38.8301 71.0005 40.0498 69.9495 41.3484 69.9312C42.6469 69.9128 43.9641 70.9409 43.9641 72.3407L43.9826 99.9561Z"/>
         </defs>
     </svg>
-);
+)
 
 const FEATURE_ICONS = [IconNoAds, IconOffline, IconMood, IconLove]
 const FEATURE_KEYS = ['noAds', 'offline', 'mood', 'love'] as const
@@ -109,25 +109,25 @@ const STEP_KEYS = [0, 1, 2] as const
 const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4'] as const
 
 export const StudentPage: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation()
 
-    const faqList = FAQ_KEYS.map((key) => ({ question: t(`student.faq.${key}`) }));
+    const faqList = FAQ_KEYS.map((key) => ({ question: t(`student.faq.${key}`) }))
 
     return (
         <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
             <Header />
 
             {/* Hero Section */}
-            <section className="bg-[#6829C6] text-white text-center py-20 px-4">
+            <section className="bg-sonora-purple text-white text-center py-20 px-4">
                 <div className="max-w-3xl mx-auto space-y-5">
-                    <h1 className="font-['Inter'] text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                    <h1 className="font-inter text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
                         {t('student.heroTitle1')}<br />{t('student.heroTitle2')}
                     </h1>
                     <p className="text-sm sm:text-base font-medium opacity-95 max-w-xl mx-auto leading-relaxed">
                         {t('student.heroText')}
                     </p>
                     <div className="pt-4">
-                        <button className="bg-white text-[#6829C6] font-extrabold py-3.5 px-24 rounded-full hover:bg-gray-50 transition shadow-md cursor-pointer text-base">
+                        <button className="bg-white text-sonora-purple font-extrabold py-3.5 px-24 rounded-full hover:bg-gray-50 transition shadow-md cursor-pointer text-base">
                             {t('student.cta')}
                         </button>
                     </div>
@@ -137,10 +137,10 @@ export const StudentPage: React.FC = () => {
             {/* Second Section */}
             <section className="sm:px-12 max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-16">
                 <div className="max-w-lg space-y-5 text-left">
-                    <h2 className="font-['Inter'] text-3xl sm:text-4xl font-extrabold text-[#120826] tracking-tight leading-tight">
+                    <h2 className="font-inter text-3xl sm:text-4xl font-extrabold text-sonora-deep tracking-tight leading-tight">
                         {t('student.secondTitle1')}<br />{t('student.secondTitle2')}
                     </h2>
-                    <p className="text-[#120826] text-base sm:text-lg font-bold leading-snug">
+                    <p className="text-sonora-deep text-base sm:text-lg font-bold leading-snug">
                         {t('student.secondText')}
                     </p>
                 </div>
@@ -149,15 +149,15 @@ export const StudentPage: React.FC = () => {
                     <img
                         src={studenthero}
                         alt={t('student.imgAlt')}
-                        className="w-full max-w-[340px] sm:max-w-[380px] object-contain"
+                        className="w-full max-w-xs sm:max-w-sm object-contain"
                     />
                 </div>
             </section>
 
             {/* Banner Section */}
-            <section className="bg-[#6829C6] text-white text-center py-10 px-4">
+            <section className="bg-sonora-purple text-white text-center py-10 px-4">
                 <div className="max-w-4xl mx-auto space-y-2">
-                    <h2 className="font-['Inter'] text-2xl sm:text-3xl font-extrabold tracking-tight">{t('student.bannerTitle')}</h2>
+                    <h2 className="font-inter text-2xl sm:text-3xl font-extrabold tracking-tight">{t('student.bannerTitle')}</h2>
                     <p className="text-sm sm:text-base font-medium opacity-95">
                         {t('student.bannerText')}
                     </p>
@@ -178,8 +178,8 @@ export const StudentPage: React.FC = () => {
                         return (
                             <div key={key} className="flex flex-col items-center text-center space-y-3">
                                 <Icon />
-                                <h3 className="font-extrabold text-lg text-[#120826]">{f.title}</h3>
-                                <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-[180px]">
+                                <h3 className="font-extrabold text-lg text-sonora-deep">{f.title}</h3>
+                                <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-44">
                                     {f.line1 ? (
                                         <>
                                             {f.line1}<br />{f.line2}
@@ -195,17 +195,17 @@ export const StudentPage: React.FC = () => {
             </section>
 
             {/* Steps Section */}
-            <section className="bg-[#6829C6] text-white py-20 px-6 text-center">
-                <h2 className="font-['Inter'] text-3xl sm:text-4xl font-extrabold mb-16 tracking-tight">
+            <section className="bg-sonora-purple text-white py-20 px-6 text-center">
+                <h2 className="font-inter text-3xl sm:text-4xl font-extrabold mb-16 tracking-tight">
                     {t('student.stepsTitle')}
                 </h2>
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
                     {STEP_KEYS.map((i) => (
                         <div key={i} className="flex flex-col items-center space-y-4">
-                            <div className="w-16 h-16 bg-[#E869CA] text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
+                            <div className="w-16 h-16 bg-sonora-pink text-white rounded-full flex items-center justify-center font-extrabold text-2xl shadow-lg">
                                 {i + 1}
                             </div>
-                            <p className="text-sm leading-relaxed opacity-95 max-w-[260px]">
+                            <p className="text-sm leading-relaxed opacity-95 max-w-xs">
                                 {t(`student.steps.${i}`)}
                             </p>
                         </div>
@@ -215,7 +215,7 @@ export const StudentPage: React.FC = () => {
 
             {/* FAQ Section */}
             <FAQ items={faqList} />
-            <Footer/>
+            <Footer />
         </div>
-    );
-};
+    )
+}

@@ -15,7 +15,6 @@ import imgLock from '../assets/support/lock.svg'
 import imgArrowDown from '../assets/support/arrow-down.svg'
 import imgArrowWhite from '../assets/support/arrow-white.svg'
 
-// Текст береться з i18n (support.categories), тут лишаються ідентифікатори, іконки і посилання.
 interface ArticleRef {
     to?: string
 }
@@ -28,7 +27,6 @@ interface SubSection {
 interface HelpCategory {
     id: string
     icon: string
-    iconHeight: number
     subSections: SubSection[]
 }
 
@@ -36,7 +34,6 @@ const HELP_CATEGORIES: HelpCategory[] = [
     {
         id: 'payments',
         icon: imgCard,
-        iconHeight: 20,
         subSections: [
             { id: 'recommended', articles: [{}, {}] },
             {
@@ -53,13 +50,11 @@ const HELP_CATEGORIES: HelpCategory[] = [
     {
         id: 'account',
         icon: imgPerson,
-        iconHeight: 25,
         subSections: [{ id: 'account-login', articles: [{}, {}, {}] }],
     },
     {
         id: 'premium',
         icon: imgSettings,
-        iconHeight: 25,
         subSections: [
             {
                 id: 'premium-plans',
@@ -76,19 +71,16 @@ const HELP_CATEGORIES: HelpCategory[] = [
     {
         id: 'features',
         icon: imgBlock,
-        iconHeight: 25,
         subSections: [{ id: 'app-features', articles: [{}, {}] }],
     },
     {
         id: 'devices',
         icon: imgDevices,
-        iconHeight: 20,
         subSections: [{ id: 'devices-help', articles: [{}, { to: '/support/payment-methods' }] }],
     },
     {
         id: 'security',
         icon: imgLock,
-        iconHeight: 25,
         subSections: [{ id: 'security-help', articles: [{}, { to: '/about' }] }],
     },
 ]
@@ -114,26 +106,15 @@ export const SupportHeader: React.FC = () => {
     const userInitial = displayName.charAt(0).toUpperCase()
 
     return (
-        <header className="w-full" style={{ backgroundColor: '#280a3a' }}>
-            <div
-                className="mx-auto flex items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-40"
-                style={{ maxWidth: 1440, height: 75 }}
-            >
+        <header className="w-full bg-sonora-dark">
+            <div className="max-w-7xl mx-auto h-20 flex items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-40">
                 <div className="flex items-center gap-8">
-                    <Link to="/" className="relative shrink-0" style={{ width: 115, height: 25 }}>
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                            <img
-                                alt="Sonora"
-                                className="absolute max-w-none"
-                                style={{
-                                    height: '480%',
-                                    left: '-2.4%',
-                                    top: '-164.21%',
-                                    width: '104.35%',
-                                }}
-                                src={imgLogoSonora}
-                            />
-                        </div>
+                    <Link to="/player" className="relative shrink-0 w-28 h-6 overflow-hidden flex items-center">
+                        <img
+                            alt="Sonora"
+                            className="w-full h-auto object-contain"
+                            src={imgLogoSonora}
+                        />
                     </Link>
 
                     <span className="hidden sm:inline-block font-semibold text-base text-white cursor-default">
@@ -148,10 +129,7 @@ export const SupportHeader: React.FC = () => {
                                 to="/me"
                                 className="flex items-center gap-2.5 font-semibold text-base text-white hover:opacity-80 transition-opacity"
                             >
-                                <span
-                                    className="rounded-full flex items-center justify-center font-bold text-sm text-black bg-white shrink-0"
-                                    style={{ width: 32, height: 32 }}
-                                >
+                                <span className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-black bg-white shrink-0">
                                     {userInitial}
                                 </span>
                                 <span>{displayName}</span>
@@ -159,13 +137,7 @@ export const SupportHeader: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => dispatch(logout())}
-                                className="flex items-center justify-center font-semibold text-sm text-white cursor-pointer hover:opacity-90 transition-opacity"
-                                style={{
-                                    backgroundColor: '#6829c6',
-                                    width: 120,
-                                    height: 45,
-                                    borderRadius: 35,
-                                }}
+                                className="w-28 h-11 rounded-full bg-sonora-purple flex items-center justify-center font-semibold text-sm text-white cursor-pointer hover:opacity-90 transition-opacity"
                             >
                                 {t('support.logOut')}
                             </button>
@@ -180,13 +152,7 @@ export const SupportHeader: React.FC = () => {
                             </Link>
                             <Link
                                 to="/login"
-                                className="flex items-center justify-center font-semibold text-sm text-white hover:opacity-90 transition-opacity"
-                                style={{
-                                    backgroundColor: '#6829c6',
-                                    width: 120,
-                                    height: 45,
-                                    borderRadius: 35,
-                                }}
+                                className="w-28 h-11 rounded-full bg-sonora-purple flex items-center justify-center font-semibold text-sm text-white hover:opacity-90 transition-opacity"
                             >
                                 {t('support.logIn')}
                             </Link>
@@ -230,32 +196,24 @@ export default function SupportPage() {
     }
 
     return (
-        <div className="min-h-screen w-full bg-white flex flex-col justify-between" style={{ color: '#280a3a' }}>
+        <div className="min-h-screen w-full bg-white flex flex-col justify-between text-sonora-dark">
             <SupportHeader />
 
             <main className="flex-1 w-full">
-                <section className="mx-auto px-4 sm:px-8 pt-14 sm:pt-16 pb-12" style={{ maxWidth: 1101 }}>
-                    <h1 className="font-extrabold text-center mb-10" style={{ lineHeight: '55px' }}>
-                        <span style={{ fontSize: 40 }}>{t('support.title')} </span>
-                        <span style={{ fontSize: 48 }}>Sonora</span>
+                <section className="max-w-6xl mx-auto px-4 sm:px-8 pt-14 sm:pt-16 pb-12">
+                    <h1 className="font-extrabold text-center mb-10 leading-tight">
+                        <span className="text-4xl">{t('support.title')} </span>
+                        <span className="text-5xl">Sonora</span>
                     </h1>
 
-                    <div className="mx-auto" style={{ maxWidth: 725 }}>
+                    <div className="max-w-3xl mx-auto">
                         <form
                             onSubmit={handleSendQuery}
-                            className="relative flex flex-col justify-between p-6"
-                            style={{
-                                minHeight: 180,
-                                border: '2px solid #280a3a',
-                                borderRadius: 30,
-                            }}
+                            className="relative flex flex-col justify-between p-6 min-h-44 border-2 border-sonora-dark rounded-3xl"
                         >
                             <div className="relative w-full">
                                 {!aiQuery && (
-                                    <span
-                                        className="absolute left-0 top-0 pointer-events-none select-none font-bold text-base"
-                                        style={{ color: '#280a3a', lineHeight: '25px' }}
-                                    >
+                                    <span className="absolute left-0 top-0 pointer-events-none select-none font-bold text-base leading-6 text-sonora-dark">
                                         {t('support.aiPlaceholder')}
                                     </span>
                                 )}
@@ -266,11 +224,7 @@ export default function SupportPage() {
                                         if (aiSubmitted) setAiSubmitted(false)
                                     }}
                                     rows={3}
-                                    className="relative w-full resize-none bg-transparent font-bold text-base outline-none"
-                                    style={{
-                                        color: '#280a3a',
-                                        lineHeight: '25px',
-                                    }}
+                                    className="relative w-full resize-none bg-transparent font-bold text-base leading-6 text-sonora-dark outline-none"
                                 />
                             </div>
 
@@ -278,40 +232,26 @@ export default function SupportPage() {
                                 <button
                                     type="submit"
                                     disabled={!hasQuery}
-                                    className="font-semibold text-sm text-white transition-opacity"
-                                    style={{
-                                        backgroundColor: '#6829c6',
-                                        width: 150,
-                                        height: 40,
-                                        borderRadius: 35,
-                                        opacity: hasQuery ? 1 : 0.5,
-                                        cursor: hasQuery ? 'pointer' : 'default',
-                                    }}
+                                    className={`w-36 h-10 rounded-full bg-sonora-purple font-semibold text-sm text-white transition-opacity ${
+                                        hasQuery ? 'opacity-100 cursor-pointer' : 'opacity-50 cursor-default'
+                                    }`}
                                 >
                                     {t('support.send')}
                                 </button>
                             </div>
                         </form>
 
-                        <p className="mt-3 text-base font-normal" style={{ lineHeight: '30px' }}>
+                        <p className="mt-3 text-base font-normal leading-8">
                             {t('support.aiNote')}
                         </p>
 
                         {aiSubmitted && (
-                            <div
-                                className="mt-4 p-5 text-base"
-                                style={{
-                                    borderRadius: 20,
-                                    border: '1px solid #aa71ff',
-                                    backgroundColor: '#f8f4ff',
-                                }}
-                            >
+                            <div className="mt-4 p-5 text-base rounded-2xl border border-sonora-light bg-purple-50">
                                 <p className="font-bold mb-1">{t('support.receivedTitle')}</p>
                                 <p className="font-normal mb-3">{t('support.receivedText')}</p>
                                 <Link
                                     to="/support/payment-methods"
-                                    className="font-bold underline"
-                                    style={{ color: '#6829c6' }}
+                                    className="font-bold underline text-sonora-purple"
                                 >
                                     {t('support.receivedLink')}
                                 </Link>
@@ -320,14 +260,14 @@ export default function SupportPage() {
                     </div>
                 </section>
 
-                <section className="mx-auto px-4 sm:px-8 pt-6 pb-20" style={{ maxWidth: 1101 }}>
-                    <div className="mx-auto mb-12" style={{ maxWidth: 725 }}>
-                        <h2 className="font-semibold" style={{ fontSize: 30, lineHeight: '50px' }}>
+                <section className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-20">
+                    <div className="max-w-3xl mx-auto mb-12">
+                        <h2 className="font-semibold text-3xl leading-tight">
                             {t('support.browseTitle')}
                         </h2>
                     </div>
 
-                    <div className="flex flex-col" style={{ gap: 40 }}>
+                    <div className="flex flex-col gap-10">
                         {HELP_CATEGORIES.map((category) => {
                             const isOpen = !!openCategories[category.id]
                             return (
@@ -335,35 +275,25 @@ export default function SupportPage() {
                                     <button
                                         type="button"
                                         onClick={() => toggleCategory(category.id)}
-                                        className="w-full flex items-center justify-between cursor-pointer text-left py-1 hover:opacity-80 transition-opacity"
-                                        style={{ gap: 20 }}
+                                        className="w-full flex items-center justify-between gap-5 cursor-pointer text-left py-1 hover:opacity-80 transition-opacity"
                                     >
-                                        <div className="flex items-center" style={{ gap: 20 }}>
-                                            <div
-                                                className="relative shrink-0 flex items-center justify-center"
-                                                style={{ width: 25, height: category.iconHeight }}
-                                            >
+                                        <div className="flex items-center gap-5">
+                                            <div className="relative shrink-0 w-6 h-6 flex items-center justify-center">
                                                 <img
                                                     src={category.icon}
                                                     alt=""
-                                                    className="block max-w-none w-full h-full"
+                                                    className="block max-w-none w-full h-full object-contain"
                                                 />
                                             </div>
-                                            <span
-                                                className="font-bold text-xl"
-                                                style={{ lineHeight: '35px', color: '#280a3a' }}
-                                            >
+                                            <span className="font-bold text-xl leading-9 text-sonora-dark">
                                                 {t(`support.categories.${category.id}.title`)}
                                             </span>
                                         </div>
 
                                         <div
-                                            className="relative shrink-0 transition-transform duration-200"
-                                            style={{
-                                                width: 25,
-                                                height: 10,
-                                                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                            }}
+                                            className={`relative shrink-0 w-6 h-2.5 transition-transform duration-200 ${
+                                                isOpen ? 'rotate-180' : ''
+                                            }`}
                                         >
                                             <img
                                                 src={imgArrowDown}
@@ -374,10 +304,7 @@ export default function SupportPage() {
                                     </button>
 
                                     {isOpen && (
-                                        <div
-                                            className="flex flex-col pl-6 sm:pl-11 pt-8"
-                                            style={{ gap: 32 }}
-                                        >
+                                        <div className="flex flex-col gap-8 pl-6 sm:pl-11 pt-8">
                                             {category.subSections.map((sub) => {
                                                 const isSubOpen = !!openSubSections[sub.id]
                                                 const base = `support.categories.${category.id}.subs.${sub.id}`
@@ -388,19 +315,13 @@ export default function SupportPage() {
                                                             onClick={() => toggleSubSection(sub.id)}
                                                             className="w-full flex items-center justify-between cursor-pointer text-left py-2 hover:opacity-80 transition-opacity"
                                                         >
-                                                            <span
-                                                                className="font-bold text-xl"
-                                                                style={{ lineHeight: '30px', color: '#280a3a' }}
-                                                            >
+                                                            <span className="font-bold text-xl leading-8 text-sonora-dark">
                                                                 {t(`${base}.title`)}
                                                             </span>
                                                             <div
-                                                                className="relative shrink-0 transition-transform duration-200"
-                                                                style={{
-                                                                    width: 25,
-                                                                    height: 10,
-                                                                    transform: isSubOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                                                }}
+                                                                className={`relative shrink-0 w-6 h-2.5 transition-transform duration-200 ${
+                                                                    isSubOpen ? 'rotate-180' : ''
+                                                                }`}
                                                             >
                                                                 <img
                                                                     src={imgArrowDown}
@@ -411,26 +332,21 @@ export default function SupportPage() {
                                                         </button>
 
                                                         {isSubOpen && (
-                                                            <div
-                                                                className="flex flex-col pt-4"
-                                                                style={{ gap: 20 }}
-                                                            >
+                                                            <div className="flex flex-col gap-5 pt-4">
                                                                 {sub.articles.map((article, idx) => {
                                                                     const text = t(`${base}.articles.${idx}`)
                                                                     return article.to ? (
                                                                         <Link
                                                                             key={idx}
                                                                             to={article.to}
-                                                                            className="font-medium text-xl hover:underline transition-opacity"
-                                                                            style={{ lineHeight: '30px', color: '#280a3a' }}
+                                                                            className="font-medium text-xl leading-8 text-sonora-dark hover:underline transition-opacity"
                                                                         >
                                                                             {text}
                                                                         </Link>
                                                                     ) : (
                                                                         <span
                                                                             key={idx}
-                                                                            className="font-medium text-xl cursor-default"
-                                                                            style={{ lineHeight: '30px', color: '#280a3a' }}
+                                                                            className="font-medium text-xl leading-8 text-sonora-dark cursor-default"
                                                                         >
                                                                             {text}
                                                                         </span>
@@ -449,36 +365,26 @@ export default function SupportPage() {
                     </div>
                 </section>
 
-                <section className="w-full py-10" style={{ backgroundColor: '#aa71ff', minHeight: 400 }}>
-                    <div className="mx-auto px-4 sm:px-8 flex flex-col" style={{ maxWidth: 1101, gap: 40 }}>
-                        <h2
-                            className="font-extrabold text-white"
-                            style={{ fontSize: 30, lineHeight: '50px' }}
-                        >
+                <section className="w-full py-10 bg-sonora-light min-h-96">
+                    <div className="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col gap-10">
+                        <h2 className="font-extrabold text-3xl leading-tight text-white">
                             {t('support.quickHelpTitle')}
                         </h2>
 
-                        <div className="flex flex-col" style={{ gap: 35 }}>
+                        <div className="flex flex-col gap-8">
                             {QUICK_HELP_INDEXES.map((index) => (
                                 <div
                                     key={index}
                                     className="w-full flex items-center justify-between text-white cursor-default"
                                 >
-                                    <span className="font-medium text-xl" style={{ lineHeight: '35px' }}>
+                                    <span className="font-medium text-xl leading-9">
                                         {t(`support.quickHelpItems.${index}`)}
                                     </span>
-                                    <div
-                                        className="shrink-0 flex items-center justify-center"
-                                        style={{ width: 25, height: 25 }}
-                                    >
+                                    <div className="shrink-0 w-6 h-6 flex items-center justify-center">
                                         <img
                                             src={imgArrowWhite}
                                             alt=""
-                                            style={{
-                                                width: 25,
-                                                height: 10,
-                                                transform: 'rotate(-90deg)',
-                                            }}
+                                            className="w-6 h-2.5 -rotate-90"
                                         />
                                     </div>
                                 </div>
@@ -487,30 +393,18 @@ export default function SupportPage() {
                     </div>
                 </section>
 
-                <section className="mx-auto px-4 sm:px-8 py-20 text-center flex flex-col items-center" style={{ maxWidth: 1100 }}>
-                    <h2
-                        className="font-extrabold mb-8"
-                        style={{ fontSize: 40, lineHeight: '55px', color: '#280a3a' }}
-                    >
+                <section className="max-w-6xl mx-auto px-4 sm:px-8 py-20 text-center flex flex-col items-center">
+                    <h2 className="font-extrabold text-4xl leading-tight text-sonora-dark mb-8">
                         {t('support.communityTitle')}
                     </h2>
 
-                    <p
-                        className="font-bold text-xl mb-10"
-                        style={{ maxWidth: 914, lineHeight: '25px', color: '#280a3a' }}
-                    >
+                    <p className="font-bold text-xl max-w-4xl leading-6 text-sonora-dark mb-10">
                         {t('support.communityText')}
                     </p>
 
                     <Link
                         to="/community"
-                        className="flex items-center justify-center font-semibold text-base text-white cursor-pointer no-underline"
-                        style={{
-                            backgroundColor: '#6829c6',
-                            width: 255,
-                            height: 50,
-                            borderRadius: 35,
-                        }}
+                        className="w-64 h-12 rounded-full bg-sonora-purple flex items-center justify-center font-semibold text-base text-white cursor-pointer no-underline hover:opacity-90 transition-opacity"
                     >
                         {t('support.communityCta')}
                     </Link>

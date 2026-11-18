@@ -16,8 +16,6 @@ void i18n
         },
         supportedLngs: ['uk', 'en'],
         fallbackLng: 'uk',
-        // Читаємо тільки localStorage, щоб мова збігалася з languageSlice,
-        // а не з мовою браузера.
         detection: {
             order: ['localStorage'],
             lookupLocalStorage: LANG_STORAGE_KEY,
