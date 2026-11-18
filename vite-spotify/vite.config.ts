@@ -8,7 +8,13 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': { target: 'http://localhost:8434', changeOrigin: true },
-      '/register': { target: 'http://localhost:8434', changeOrigin: true },
+      '/register': {
+        target: 'http://localhost:8434',
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.method === 'GET') return req.url
+        },
+      },
       '/login': {
         target: 'http://localhost:8434',
         changeOrigin: true,

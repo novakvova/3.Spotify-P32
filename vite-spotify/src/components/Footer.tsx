@@ -34,10 +34,10 @@ export const Footer: React.FC = () => {
         <footer className="w-full mt-12 md:mt-24 bg-sonora-dark">
             <div className="max-w-7xl mx-auto flex flex-col items-start px-6 sm:px-12 lg:px-16 xl:px-40 py-16 md:py-24 xl:py-32">
                 <div className="flex flex-col xl:flex-row gap-12 xl:gap-20 items-start relative shrink-0 w-full justify-between">
-                    <Link to="/player" className="relative shrink-0 w-29 h-6.5 overflow-hidden">
+                    <Link to="/player" className="relative shrink-0 w-31 h-5.5 overflow-hidden">
                         <img
                             alt="Sonora"
-                            className="absolute max-w-none w-30 h-30 -top-10 -left-0.5"
+                            className="absolute max-w-none w-36 h-36 -top-13.5 -left-2.5"
                             src={imgLogoSonora042}
                         />
                     </Link>

@@ -360,9 +360,7 @@ export default function LoginPage() {
                                 <img src={googleIcon} alt={t('login.google')} className="block" />
                             </span>
                             <span className="flex-1 text-center">
-                                {t('login.signUpWithGoogle1')}
-                                <br />
-                                {t('login.google')}
+                                {t('login.signUpWithGoogle1')} {t('login.google')}
                             </span>
                         </button>
 

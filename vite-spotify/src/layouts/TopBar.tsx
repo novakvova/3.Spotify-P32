@@ -132,8 +132,8 @@ export default function TopBar() {
     }
 
     return (
-        <header className="w-full h-20 bg-sonora-dark font-inter flex items-center justify-between px-5 shrink-0 select-none relative z-50">
-            <Link to="/player" className="relative shrink-0 block w-12 h-12">
+        <header className="w-full h-16 sm:h-20 bg-sonora-dark font-inter flex items-center justify-between px-3 sm:px-5 gap-2 sm:gap-4 shrink-0 select-none relative z-50">
+            <Link to="/player" className="relative shrink-0 block w-9 h-9 sm:w-12 sm:h-12">
                 <img
                     alt="Sonora"
                     className="w-full h-full object-cover block"
@@ -141,10 +141,10 @@ export default function TopBar() {
                 />
             </Link>
 
-            <div className="flex items-center justify-center flex-1 max-w-2xl mx-4 gap-2.5">
+            <div className="flex items-center justify-center flex-1 min-w-0 max-w-2xl mx-1 sm:mx-4 gap-2.5">
                 <Link
                     to="/player"
-                    className="w-12 h-12 rounded-full border border-solid border-white flex items-center justify-center p-3 shrink-0 cursor-pointer hover:opacity-85 transition-opacity"
+                    className="hidden sm:flex w-12 h-12 rounded-full border border-solid border-white items-center justify-center p-3 shrink-0 cursor-pointer hover:opacity-85 transition-opacity"
                     title={t('webPlayer.home')}
                 >
                     <div className="relative shrink-0 w-5 h-5">
@@ -152,14 +152,14 @@ export default function TopBar() {
                     </div>
                 </Link>
 
-                <div ref={searchWrapperRef} className="relative flex-1 max-w-lg">
+                <div ref={searchWrapperRef} className="relative flex-1 min-w-0 max-w-lg">
                     <form
                         onSubmit={handleSearch}
-                        className="w-full h-14 rounded-full border border-solid border-white bg-sonora-dark flex items-center justify-center overflow-hidden px-5 py-3.5 gap-3.5"
+                        className="w-full h-10 sm:h-14 rounded-full border border-solid border-white bg-sonora-dark flex items-center justify-center overflow-hidden px-3 sm:px-5 py-2 sm:py-3.5 gap-2 sm:gap-3.5"
                     >
                         <button
                             type="submit"
-                            className="relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity"
+                            className="relative shrink-0 w-4 h-4 sm:w-5 sm:h-5 cursor-pointer hover:opacity-80 transition-opacity"
                             title={t('catalog.searchBtn')}
                         >
                             <img alt="" className="block w-full h-full" src={imgSearchGlass} />
@@ -177,7 +177,7 @@ export default function TopBar() {
                                 if (e.key === 'Escape') setIsDropdownOpen(false)
                             }}
                             placeholder={t('webPlayer.searchPlaceholder')}
-                            className="flex-1 bg-transparent outline-none font-semibold text-base leading-6 text-white placeholder:text-white min-w-0"
+                            className="flex-1 bg-transparent outline-none font-semibold text-xs sm:text-base leading-6 text-white placeholder:text-white min-w-0"
                         />
 
                         {query && (
@@ -190,7 +190,7 @@ export default function TopBar() {
                             </button>
                         )}
 
-                        <div className="flex items-center justify-center shrink-0 h-6">
+                        <div className="hidden sm:flex items-center justify-center shrink-0 h-6">
                             <div className="rotate-90 w-6 h-0.5">
                                 <img alt="" className="block w-full h-full" src={imgDividerLine} />
                             </div>
@@ -199,7 +199,7 @@ export default function TopBar() {
                         <Link
                             to="/genres"
                             onClick={() => setIsDropdownOpen(false)}
-                            className="relative shrink-0 w-6 h-5 cursor-pointer hover:opacity-80 transition-opacity"
+                            className="hidden sm:block relative shrink-0 w-6 h-5 cursor-pointer hover:opacity-80 transition-opacity"
                             title={t('webPlayer.browseGenres')}
                         >
                             <img alt="" className="block w-full h-full" src={imgBrowseMenu} />
@@ -333,11 +333,11 @@ export default function TopBar() {
                 </div>
             </div>
 
-            <div className="flex items-center shrink-0 gap-5">
+            <div className="flex items-center shrink-0 gap-2.5 sm:gap-5">
                 <button
                     type="button"
                     onClick={() => dispatch(toggleLanguage())}
-                    className="text-sm font-semibold text-white cursor-pointer hover:opacity-80 transition-opacity"
+                    className="text-xs sm:text-sm font-semibold text-white cursor-pointer hover:opacity-80 transition-opacity"
                 >
                     {t('header.langShort')}
                 </button>
@@ -346,7 +346,7 @@ export default function TopBar() {
                     <>
                         <button
                             type="button"
-                            className="relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity"
+                            className="hidden sm:block relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity"
                             title={t('webPlayer.notifications')}
                         >
                             <img alt="" className="block w-full h-full" src={imgBell} />
@@ -354,7 +354,7 @@ export default function TopBar() {
 
                         <Link
                             to="/community"
-                            className="relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity"
+                            className="hidden sm:block relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity"
                             title={t('webPlayer.community')}
                         >
                             <img alt="" className="block w-full h-full" src={imgFriendsGroup} />
@@ -362,11 +362,11 @@ export default function TopBar() {
 
                         <Link
                             to="/me"
-                            className="relative w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                            className="relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
                             title={t('webPlayer.profile')}
                         >
                             <img alt="" className="absolute inset-0 block w-full h-full" src={imgAvatarCircle} />
-                            <span className="relative z-10 font-bold text-xl leading-none text-white text-center">
+                            <span className="relative z-10 font-bold text-base sm:text-xl leading-none text-white text-center">
                                 {userInitial}
                             </span>
                         </Link>
@@ -384,14 +384,14 @@ export default function TopBar() {
                     <>
                         <Link
                             to="/register"
-                            className="font-semibold text-white text-base hover:opacity-80 transition-opacity whitespace-nowrap"
+                            className="font-semibold text-white text-xs sm:text-base hover:opacity-80 transition-opacity whitespace-nowrap"
                         >
                             {t('header.signUp')}
                         </Link>
 
                         <Link
                             to="/login"
-                            className="font-bold text-base bg-white text-sonora-dark flex items-center justify-center px-6 py-2 rounded-full hover:scale-105 transition-transform whitespace-nowrap"
+                            className="font-bold text-xs sm:text-base bg-white text-sonora-dark flex items-center justify-center px-3 sm:px-6 py-1.5 sm:py-2 rounded-full hover:scale-105 transition-transform whitespace-nowrap"
                         >
                             {t('header.logIn')}
                         </Link>

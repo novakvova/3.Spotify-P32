@@ -89,11 +89,11 @@ export const CommunityPage: React.FC = () => {
             </section>
 
             {/* Bottom Gradient Cards Section */}
-            <section className="w-full overflow-hidden text-white sm:px-12 lg:px-16 py-12 bg-gradient-to-b from-sonora-magenta via-sonora-light to-sonora-purple">
+            <section className="w-full overflow-hidden text-white px-6 sm:px-12 lg:px-16 py-12 bg-gradient-to-b from-sonora-magenta via-sonora-light to-sonora-purple">
                 <div className="mx-auto grid w-full max-w-5xl grid-cols-1 md:grid-cols-2 gap-12 md:gap-8">
                     {CARD_KEYS.map((key) => (
                         <div key={key} className="relative min-w-0">
-                            <div className="relative py-8 px-10">
+                            <div className="relative mx-auto w-full max-w-md h-68">
                                 <svg
                                     viewBox="0 0 320 195"
                                     fill="none"
@@ -116,12 +116,12 @@ export const CommunityPage: React.FC = () => {
                                     />
                                 </svg>
 
-                                <div className="relative z-10 flex h-full flex-col pt-4">
+                                <div className="relative z-10 flex h-full flex-col pt-9 pb-10 pl-11 pr-20">
                                     <h3 className="text-center font-inter text-2xl font-bold leading-snug">
                                         {t(`community.cards.${key}.title`)}
                                     </h3>
 
-                                    <p className="mt-4 text-left text-base font-normal leading-relaxed">
+                                    <p className="mt-6 text-left text-base font-normal leading-relaxed">
                                         {t(`community.cards.${key}.description`)}
                                     </p>
                                 </div>

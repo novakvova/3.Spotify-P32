@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
@@ -12,7 +12,7 @@ import {
     toggleShuffle,
     toggleRepeat,
 } from '../store/slices/playerSlice'
-import { useGetSongsQuery, useIncrementPlayMutation } from '../services/songs/songsApi'
+import { useGetSongsQuery } from '../services/songs/songsApi'
 import { useAudio } from '../hooks/useAudio'
 import { formatTime } from '../utils/format'
 import { Play, Pause, Music } from 'lucide-react'
@@ -25,6 +25,7 @@ import imgMicrophone from '../assets/player/microphone.svg'
 import imgQueue from '../assets/player/queue.svg'
 import imgDevice from '../assets/player/device.svg'
 import imgSoundOn from '../assets/player/sound-on.svg'
+import imgSoundOff from '../assets/player/sound-off.svg'
 import imgMiniPlayer from '../assets/player/mini-player.svg'
 import imgFullScreen from '../assets/player/full-screen.svg'
 
@@ -44,15 +45,17 @@ export default function PlayerBar() {
     } = useAppSelector((s) => s.player)
     const { seek } = useAudio()
     const { data: songsPage } = useGetSongsQuery({ page: 0, size: 50 })
-    const [incrementPlay] = useIncrementPlayMutation()
+    const [hoverProgress, setHoverProgress] = useState(0)
+    const [hoverVolume, setHoverVolume] = useState(0)
 
     const fallbackSongs = songsPage?.content ?? []
+    const maxDuration = duration || 100
 
-    useEffect(() => {
-        if (isAuth && currentSong?.id) {
-            incrementPlay(currentSong.id)
-        }
-    }, [isAuth, currentSong?.id, incrementPlay])
+    const getHoverRatio = (e: React.MouseEvent<HTMLElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect()
+        if (rect.width <= 0) return 0
+        return Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width))
+    }
 
     if (!isAuth) {
         return (
@@ -122,32 +125,32 @@ export default function PlayerBar() {
     }
 
     return (
-        <footer className="fixed bottom-16 md:bottom-0 left-0 right-0 h-24 w-full bg-sonora-dark font-inter flex items-center justify-between px-5 shrink-0 select-none z-50 border-t border-white/10">
-            <div className="flex items-center min-w-0 gap-5 w-64">
+        <footer className="fixed bottom-16 md:bottom-0 left-0 right-0 h-20 sm:h-24 w-full bg-sonora-dark font-inter flex items-center justify-between px-2.5 sm:px-5 gap-1.5 sm:gap-4 shrink-0 select-none z-50 border-t border-white/10">
+            <div className="flex items-center min-w-0 gap-2 sm:gap-4 w-24 sm:w-44 lg:w-64 shrink-0">
                 <div
-                    className={`relative shrink-0 w-14 h-14 rounded-md flex items-center justify-center text-white ${
+                    className={`relative shrink-0 w-9 h-9 sm:w-14 sm:h-14 rounded-md flex items-center justify-center text-white ${
                         currentSong
                             ? 'bg-gradient-to-br from-sonora-purple to-sonora-light'
                             : 'bg-sonora-panel'
                     }`}
                 >
-                    <Music size={26} />
+                    <Music size={20} />
                 </div>
 
                 <div className="flex flex-col justify-center min-w-0">
-                    <p className="font-normal text-base leading-6 text-white truncate">
+                    <p className="font-normal text-xs sm:text-base leading-4 sm:leading-6 text-white truncate">
                         {currentSong ? currentSong.name : t('catalog.selectSong')}
                     </p>
                     {currentSong && (
-                        <p className="font-normal text-base leading-6 text-white/80 truncate">
+                        <p className="font-normal text-xs sm:text-base leading-4 sm:leading-6 text-white/80 truncate">
                             {currentSong.artist_name ?? '—'}
                         </p>
                     )}
                 </div>
             </div>
 
-            <div className="flex flex-col items-center flex-1 max-w-xl mx-4 gap-3">
-                <div className="flex items-center gap-10">
+            <div className="flex flex-col items-center flex-1 min-w-0 max-w-xl mx-1 sm:mx-4 gap-1 sm:gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-8 lg:gap-10">
                     <button
                         type="button"
                         onClick={() => dispatch(toggleShuffle())}
@@ -212,75 +215,108 @@ export default function PlayerBar() {
                     </button>
                 </div>
 
-                <div className="flex items-center w-full max-w-lg gap-3">
-                    <span className="font-normal text-base leading-5 text-white text-right shrink-0 min-w-9">
+                <div className="flex items-center w-full max-w-lg gap-2 sm:gap-3">
+                    <span className="font-normal text-xs sm:text-base leading-5 text-white text-right shrink-0 min-w-7 sm:min-w-9">
                         {formatTime(progress)}
                     </span>
 
-                    <div className="relative flex-1 flex items-center h-1.5 rounded-full bg-sonora-warm">
+                    <div
+                        className="relative flex-1 flex items-center h-4"
+                        onMouseMove={(e) => setHoverProgress(getHoverRatio(e) * maxDuration)}
+                        onMouseLeave={() => setHoverProgress(0)}
+                    >
+                        <progress
+                            value={hoverProgress}
+                            max={maxDuration}
+                            className="player-progress-hover absolute inset-x-0 w-full h-1.5 rounded-full overflow-hidden pointer-events-none"
+                        />
+                        <progress
+                            value={progress}
+                            max={maxDuration}
+                            className="player-progress relative w-full h-1.5 rounded-full overflow-hidden pointer-events-none"
+                        />
                         <input
                             type="range"
                             min={0}
-                            max={duration || 100}
+                            max={maxDuration}
+                            step={0.1}
                             value={progress}
                             onChange={(e) => seek(Number(e.target.value))}
-                            className="w-full h-1.5 rounded-full accent-white cursor-pointer"
+                            className="absolute inset-0 w-full h-full cursor-pointer"
                         />
                     </div>
 
-                    <span className="font-normal text-base leading-5 text-white shrink-0 min-w-9">
+                    <span className="font-normal text-xs sm:text-base leading-5 text-white shrink-0 min-w-7 sm:min-w-9">
                         {formatTime(duration)}
                     </span>
                 </div>
             </div>
 
-            <div className="hidden lg:flex items-center justify-end gap-5 w-64">
+            <div className="flex items-center justify-end gap-3 lg:gap-5 shrink-0">
                 <button
                     type="button"
-                    className="relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80"
+                    className="hidden lg:block relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80"
                 >
                     <img alt="" className="block w-full h-full" src={imgMicrophone} />
                 </button>
 
                 <button
                     type="button"
-                    className="relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80"
+                    className="hidden lg:block relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80"
                 >
                     <img alt="" className="block w-full h-full" src={imgQueue} />
                 </button>
 
                 <button
                     type="button"
-                    className="relative shrink-0 w-6 h-5 cursor-pointer hover:opacity-80"
+                    className="hidden lg:block relative shrink-0 w-6 h-5 cursor-pointer hover:opacity-80"
                 >
                     <img alt="" className="block w-full h-full" src={imgDevice} />
                 </button>
 
-                <div className="relative flex items-center w-32 h-4 gap-2.5">
+                <div className="relative flex items-center shrink-0 h-4 gap-1.5 sm:gap-2.5">
                     <button
                         type="button"
                         onClick={() => dispatch(setVolume(volume === 0 ? 0.8 : 0))}
-                        className={`relative shrink-0 w-5 h-4 cursor-pointer hover:opacity-80 ${
-                            volume === 0 ? 'opacity-40' : 'opacity-100'
-                        }`}
+                        className="relative shrink-0 w-4 h-3.5 sm:w-5 sm:h-4 cursor-pointer hover:opacity-80"
                     >
-                        <img alt="" className="block w-full h-full" src={imgSoundOn} />
+                        <img
+                            alt=""
+                            className="block w-full h-full"
+                            src={volume === 0 ? imgSoundOff : imgSoundOn}
+                        />
                     </button>
 
-                    <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={volume}
-                        onChange={(e) => dispatch(setVolume(Number(e.target.value)))}
-                        className="w-24 h-1.5 rounded-full accent-white cursor-pointer"
-                    />
+                    <div
+                        className="relative w-12 sm:w-20 lg:w-25 shrink-0 flex items-center h-4"
+                        onMouseMove={(e) => setHoverVolume(getHoverRatio(e))}
+                        onMouseLeave={() => setHoverVolume(0)}
+                    >
+                        <progress
+                            value={hoverVolume}
+                            max={1}
+                            className="player-progress-hover absolute inset-x-0 w-full h-1.5 rounded-full overflow-hidden pointer-events-none"
+                        />
+                        <progress
+                            value={volume}
+                            max={1}
+                            className="player-progress relative w-full h-1.5 rounded-full overflow-hidden pointer-events-none"
+                        />
+                        <input
+                            type="range"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={volume}
+                            onChange={(e) => dispatch(setVolume(Number(e.target.value)))}
+                            className="absolute inset-0 w-full h-full cursor-pointer"
+                        />
+                    </div>
                 </div>
 
                 <button
                     type="button"
-                    className="relative shrink-0 w-6 h-5 cursor-pointer hover:opacity-80"
+                    className="hidden lg:block relative shrink-0 w-6 h-5 cursor-pointer hover:opacity-80"
                 >
                     <img alt="" className="block w-full h-full" src={imgMiniPlayer} />
                 </button>
@@ -288,7 +324,7 @@ export default function PlayerBar() {
                 <button
                     type="button"
                     onClick={handleFullScreen}
-                    className="relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80"
+                    className="hidden sm:block relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80"
                 >
                     <img alt="" className="block w-full h-full" src={imgFullScreen} />
                 </button>

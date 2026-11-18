@@ -139,7 +139,9 @@ export default function HomePage() {
                                     </button>
 
                                     {openFaq[index] && (
-                                        <div className="font-normal text-base leading-7 text-left w-full pt-1" />
+                                        <p className="font-normal text-base leading-7 text-left text-gray-600 w-full pt-1">
+                                            {t('faq.defaultAnswer')}
+                                        </p>
                                     )}
                                 </div>
                             ))}

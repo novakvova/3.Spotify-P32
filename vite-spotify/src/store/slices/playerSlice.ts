@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
 import type { ISong } from '../../types/ISong.ts'
+import { isJwtTokenValid } from './authSlice'
 
 type RepeatMode = 'off' | 'one' | 'all'
 
@@ -35,7 +36,7 @@ const playerSlice = createSlice({
     initialState,
     reducers: {
         playSong: (state, action: PayloadAction<{ song: ISong; queue?: ISong[] }>) => {
-            if (!localStorage.getItem('token')) {
+            if (!isJwtTokenValid(localStorage.getItem('token'))) {
                 state.showAuthModal = true
                 state.isPlaying = false
                 return
@@ -49,7 +50,7 @@ const playerSlice = createSlice({
             state.progress = 0
         },
         togglePlay: (state) => {
-            if (!localStorage.getItem('token')) {
+            if (!isJwtTokenValid(localStorage.getItem('token'))) {
                 state.showAuthModal = true
                 state.isPlaying = false
                 return
@@ -67,7 +68,7 @@ const playerSlice = createSlice({
             state.showAuthModal = action.payload
         },
         nextSong: (state) => {
-            if (!localStorage.getItem('token')) {
+            if (!isJwtTokenValid(localStorage.getItem('token'))) {
                 state.showAuthModal = true
                 return
             }
@@ -90,7 +91,7 @@ const playerSlice = createSlice({
             state.progress = 0
         },
         prevSong: (state) => {
-            if (!localStorage.getItem('token')) {
+            if (!isJwtTokenValid(localStorage.getItem('token'))) {
                 state.showAuthModal = true
                 return
             }

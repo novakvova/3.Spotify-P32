@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
-import type {IUser} from "../../types/IUser.ts";
-import {authApi} from "../../services/auth/authApi.ts";
+import type { IUser } from '../../types/IUser.ts'
+import { authApi } from '../../services/auth/authApi.ts'
 
 interface AuthState {
     token: string | null
@@ -9,13 +9,34 @@ interface AuthState {
     isAuthenticated: boolean
 }
 
-const token = localStorage.getItem('token')
-const userStr = localStorage.getItem('user')
+export function isJwtTokenValid(token: string | null): boolean {
+    if (!token) return false
+    try {
+        const parts = token.split('.')
+        if (parts.length !== 3) return false
+        const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+        const payload = JSON.parse(atob(base64)) as { exp?: number }
+        if (typeof payload.exp !== 'number') return false
+        return payload.exp * 1000 > Date.now()
+    } catch {
+        return false
+    }
+}
+
+const storedToken = localStorage.getItem('token')
+const validToken = isJwtTokenValid(storedToken) ? storedToken : null
+
+if (!validToken && storedToken) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+}
+
+const userStr = validToken ? localStorage.getItem('user') : null
 
 const initialState: AuthState = {
-    token,
+    token: validToken,
     user: userStr ? (JSON.parse(userStr) as IUser) : null,
-    isAuthenticated: !!token,
+    isAuthenticated: !!validToken,
 }
 
 const authSlice = createSlice({

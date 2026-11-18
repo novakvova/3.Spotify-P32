@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { X, Music } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { selectShowAuthModal, setShowAuthModal } from '../store/slices/playerSlice'
+import { isJwtTokenValid, logout, selectIsAuthenticated } from '../store/slices/authSlice'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
 import PlayerBar from './PlayerBar'
@@ -13,6 +15,13 @@ export default function MainLayout() {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const showAuthModal = useAppSelector(selectShowAuthModal)
+    const isAuthenticated = useAppSelector(selectIsAuthenticated)
+
+    useEffect(() => {
+        if (isAuthenticated && !isJwtTokenValid(localStorage.getItem('token'))) {
+            dispatch(logout())
+        }
+    }, [isAuthenticated, showAuthModal, dispatch])
 
     return (
         <div className="min-h-screen w-full flex flex-col bg-sonora-dark font-inter text-white pb-28">

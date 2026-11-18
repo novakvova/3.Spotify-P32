@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGetProfileQuery, useUpdateProfileMutation } from '../services/auth/authApi'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { logout, selectCurrentUser } from '../store/slices/authSlice'
+import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
 import { User, Mail, Shield, Camera, Check, AlertCircle, Edit2, X, ArrowLeft, Calendar, LogOut } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 const GENDER_LABELS: Record<string, string> = {
     MALE: 'Чоловік',
@@ -18,11 +18,12 @@ export default function ProfilePage() {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
+    const isAuthenticated = useAppSelector(selectIsAuthenticated)
     const currentUser = useAppSelector(selectCurrentUser)
 
     const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery(undefined, {
         refetchOnMountOrArgChange: true,
-        skip: !localStorage.getItem('token'),
+        skip: !isAuthenticated,
     })
     const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
 
@@ -85,6 +86,10 @@ export default function ProfilePage() {
             const errorMsg = (err as { data?: { error?: string } })?.data?.error
             setMsg({ text: errorMsg ?? t('profile.updateError'), type: 'error' })
         }
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />
     }
 
     if (isProfileLoading && !currentUser)
