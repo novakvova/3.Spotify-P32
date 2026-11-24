@@ -5,4 +5,5 @@ export interface ISong {
     artist_name: string | null
     album_title: string | null
     genres_names: string[]
+    playCount?: number
 }

@@ -67,3 +67,6 @@ export default authSlice.reducer
 export const selectToken = (state: RootState) => state.auth.token
 export const selectCurrentUser = (state: RootState) => state.auth.user
 export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated
+export const selectIsAdmin = (state: RootState) =>
+    state.auth.isAuthenticated &&
+    Boolean(state.auth.user?.roles?.some((r) => r.toLowerCase().includes('admin')))

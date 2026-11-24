@@ -4,7 +4,7 @@ import imgLogoSonora042 from '../assets/home/logo-sonora.png'
 import { Menu, X } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
+import { logout, selectCurrentUser, selectIsAdmin, selectIsAuthenticated } from '../store/slices/authSlice'
 import { toggleLanguage } from '../store/slices/languageSlice'
 
 const PLAN_ITEMS = [
@@ -19,6 +19,7 @@ export const Header: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const isAuthenticated = useAppSelector(selectIsAuthenticated)
+    const isAdmin = useAppSelector(selectIsAdmin)
     const user = useAppSelector(selectCurrentUser)
     const [openPremium, setOpenPremium] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -95,6 +96,15 @@ export const Header: React.FC = () => {
 
                     {isAuthenticated ? (
                         <>
+                            {isAdmin && (
+                                <Link
+                                    to="/admin"
+                                    className="font-semibold shrink-0 text-base text-sonora-light hover:opacity-80 transition-opacity"
+                                >
+                                    {t('admin.openAdmin')}
+                                </Link>
+                            )}
+
                             <Link
                                 to="/me"
                                 className="flex items-center gap-2.5 font-semibold shrink-0 text-base cursor-pointer hover:opacity-80 transition-opacity"
@@ -188,6 +198,15 @@ export const Header: React.FC = () => {
                     </Link>
                     {isAuthenticated ? (
                         <>
+                            {isAdmin && (
+                                <Link
+                                    to="/admin"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="font-semibold text-base py-1 text-sonora-light cursor-pointer"
+                                >
+                                    {t('admin.panelTitle')}
+                                </Link>
+                            )}
                             <Link
                                 to="/me"
                                 onClick={() => setMobileMenuOpen(false)}

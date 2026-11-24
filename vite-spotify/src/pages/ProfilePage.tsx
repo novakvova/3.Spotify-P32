@@ -4,7 +4,7 @@ import { useGetProfileQuery, useUpdateProfileMutation } from '../services/auth/a
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
 import { User, Mail, Shield, Camera, Check, AlertCircle, Edit2, X, ArrowLeft, Calendar, LogOut } from 'lucide-react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 
 const GENDER_LABELS: Record<string, string> = {
     MALE: 'Чоловік',
@@ -162,6 +162,15 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+                        {displayUser.roles.some((r) => r.toLowerCase().includes('admin')) && (
+                            <Link
+                                to="/admin"
+                                className="px-6 py-2.5 rounded-full font-bold text-xs tracking-wide transition-all hover:scale-105 active:scale-95 flex items-center gap-2 bg-sonora-light text-sonora-dark cursor-pointer"
+                            >
+                                <Shield size={13} /> {t('admin.panelTitle')}
+                            </Link>
+                        )}
+
                         <button
                             onClick={() => setIsEditing(true)}
                             className="px-6 py-2.5 rounded-full font-bold text-xs tracking-wide transition-all hover:scale-105 active:scale-95 flex items-center gap-2 border border-white/15 text-white hover:bg-white/5 cursor-pointer"

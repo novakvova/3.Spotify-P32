@@ -1,67 +1,79 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
+import AdminLayout from './layouts/AdminLayout'
 import HomePage from './pages/HomePage'
 import SongsPage from './pages/SongsPage'
 import GenresPage from './pages/GenresPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
-import ArtistsPage from "./pages/ArtistPage.tsx";
-import AlbumsPage from "./pages/AlbumsPage.tsx";
-import AlbumDetailsPage from "./pages/AlbumDetailsPage.tsx";
-import GenreDetailsPage from "./pages/GenreDetailsPage.tsx";
-import ArtistDetailsPage from "./pages/ArtistDetailsPage.tsx";
-import ProfilePage from "./pages/ProfilePage.tsx";
-import SearchPage from "./pages/SearchPage.tsx";
-import {MainPage} from "./pages/MainPage.tsx";
-import {StudentPage} from "./pages/StudentPage.tsx";
-import {FamilyPage} from "./pages/FamilyPage.tsx";
-import {DuoPage} from "./pages/DuoPage.tsx";
-import {KidsPage} from "./pages/KidsPage.tsx";
-import SupportPage from "./pages/SupportPage.tsx";
-import SupportPaymentMethodsPage from "./pages/SupportPaymentMethodsPage.tsx";
-import AboutPage from "./pages/AboutPage.tsx";
-import {ScrollToTop} from "./components/ScrollToTop.tsx";
-import {LanguageTranslator} from "./components/LanguageTranslator.tsx";
-import CommunityPage from "./pages/CommunityPage.tsx";
-import WebPlayerPage from "./pages/WebPlayerPage.tsx";
-
+import ArtistsPage from './pages/ArtistPage.tsx'
+import AlbumsPage from './pages/AlbumsPage.tsx'
+import AlbumDetailsPage from './pages/AlbumDetailsPage.tsx'
+import GenreDetailsPage from './pages/GenreDetailsPage.tsx'
+import ArtistDetailsPage from './pages/ArtistDetailsPage.tsx'
+import ProfilePage from './pages/ProfilePage.tsx'
+import SearchPage from './pages/SearchPage.tsx'
+import { MainPage } from './pages/MainPage.tsx'
+import { StudentPage } from './pages/StudentPage.tsx'
+import { FamilyPage } from './pages/FamilyPage.tsx'
+import { DuoPage } from './pages/DuoPage.tsx'
+import { KidsPage } from './pages/KidsPage.tsx'
+import SupportPage from './pages/SupportPage.tsx'
+import SupportPaymentMethodsPage from './pages/SupportPaymentMethodsPage.tsx'
+import AboutPage from './pages/AboutPage.tsx'
+import { ScrollToTop } from './components/ScrollToTop.tsx'
+import { LanguageTranslator } from './components/LanguageTranslator.tsx'
+import CommunityPage from './pages/CommunityPage.tsx'
+import WebPlayerPage from './pages/WebPlayerPage.tsx'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminSongsPage from './pages/admin/AdminSongsPage'
+import AdminAlbumsPage from './pages/admin/AdminAlbumsPage'
+import AdminArtistsPage from './pages/admin/AdminArtistsPage'
+import AdminGenresPage from './pages/admin/AdminGenresPage'
+import AdminRolesPage from './pages/admin/AdminRolesPage'
 
 export default function App() {
     return (
-
-            <BrowserRouter>
-                <ScrollToTop/>
-                <LanguageTranslator/>
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/premium" element={<MainPage />} />
-                    <Route path="/premium/student" element={<StudentPage />} />
-                    <Route path="/premium/family" element={<FamilyPage />} />
-                    <Route path="/premium/duo" element={<DuoPage />} />
-                    <Route path="/premium/kids" element={<KidsPage />} />
-                    <Route path="/support" element={<SupportPage />} />
-                    <Route path="/support/payment-methods" element={<SupportPaymentMethodsPage />} />
-                    <Route path="/about" element={<AboutPage />} />
-                    <Route path="/community" element={<CommunityPage/>}/>
-                    <Route element={<MainLayout />}>
-                        <Route path="/player"  element={<WebPlayerPage />} />
-                        <Route path="/songs"   element={<SongsPage />} />
-                        <Route path="/genres"  element={<GenresPage />} />
-                        <Route path="/artists" element={<ArtistsPage />} />
-                        <Route path="/albums"  element={<AlbumsPage />} />
-                        <Route path="/albums/:id"  element={<AlbumDetailsPage />} />
-                        <Route path="/artists/:id" element={<ArtistDetailsPage />} />
-                        <Route path="/genres/:id"  element={<GenreDetailsPage />} />
-                        <Route path="/me" element={<ProfilePage />} />
-                        <Route path="/search" element={<SearchPage />} />
-                    </Route>
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route path="/forgot-password/:token" element={<ForgotPasswordPage />} />
-
-                </Routes>
-            </BrowserRouter>
+        <BrowserRouter>
+            <ScrollToTop />
+            <LanguageTranslator />
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/premium" element={<MainPage />} />
+                <Route path="/premium/student" element={<StudentPage />} />
+                <Route path="/premium/family" element={<FamilyPage />} />
+                <Route path="/premium/duo" element={<DuoPage />} />
+                <Route path="/premium/kids" element={<KidsPage />} />
+                <Route path="/support" element={<SupportPage />} />
+                <Route path="/support/payment-methods" element={<SupportPaymentMethodsPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/community" element={<CommunityPage />} />
+                <Route element={<MainLayout />}>
+                    <Route path="/player" element={<WebPlayerPage />} />
+                    <Route path="/songs" element={<SongsPage />} />
+                    <Route path="/genres" element={<GenresPage />} />
+                    <Route path="/artists" element={<ArtistsPage />} />
+                    <Route path="/albums" element={<AlbumsPage />} />
+                    <Route path="/albums/:id" element={<AlbumDetailsPage />} />
+                    <Route path="/artists/:id" element={<ArtistDetailsPage />} />
+                    <Route path="/genres/:id" element={<GenreDetailsPage />} />
+                    <Route path="/me" element={<ProfilePage />} />
+                    <Route path="/search" element={<SearchPage />} />
+                </Route>
+                <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboardPage />} />
+                    <Route path="songs" element={<AdminSongsPage />} />
+                    <Route path="albums" element={<AdminAlbumsPage />} />
+                    <Route path="artists" element={<AdminArtistsPage />} />
+                    <Route path="genres" element={<AdminGenresPage />} />
+                    <Route path="roles" element={<AdminRolesPage />} />
+                </Route>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/forgot-password/:token" element={<ForgotPasswordPage />} />
+            </Routes>
+        </BrowserRouter>
     )
 }

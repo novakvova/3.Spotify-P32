@@ -5,6 +5,34 @@ import { isJwtTokenValid } from './authSlice'
 
 type RepeatMode = 'off' | 'one' | 'all'
 
+const PLAY_COUNTS_STORAGE_KEY = 'sonora_song_plays'
+
+function loadStoredPlayCounts(): Record<number, number> {
+    try {
+        const raw = localStorage.getItem(PLAY_COUNTS_STORAGE_KEY)
+        if (!raw) return {}
+        const parsed = JSON.parse(raw) as Record<string, unknown>
+        const result: Record<number, number> = {}
+        for (const [key, value] of Object.entries(parsed)) {
+            const id = Number(key)
+            if (Number.isFinite(id) && typeof value === 'number' && value > 0) {
+                result[id] = Math.floor(value)
+            }
+        }
+        return result
+    } catch {
+        return {}
+    }
+}
+
+function saveStoredPlayCounts(counts: Record<number, number>): void {
+    try {
+        localStorage.setItem(PLAY_COUNTS_STORAGE_KEY, JSON.stringify(counts))
+    } catch {
+        return
+    }
+}
+
 interface PlayerState {
     currentSong: ISong | null
     queue: ISong[]
@@ -16,6 +44,7 @@ interface PlayerState {
     shuffle: boolean
     repeat: RepeatMode
     showAuthModal: boolean
+    playCounts: Record<number, number>
 }
 
 const initialState: PlayerState = {
@@ -29,6 +58,7 @@ const initialState: PlayerState = {
     shuffle: false,
     repeat: 'off',
     showAuthModal: false,
+    playCounts: loadStoredPlayCounts(),
 }
 
 const playerSlice = createSlice({
@@ -48,6 +78,8 @@ const playerSlice = createSlice({
             state.currentIndex = q.findIndex((s) => s.id === song.id)
             state.isPlaying = true
             state.progress = 0
+            state.playCounts[song.id] = (state.playCounts[song.id] ?? 0) + 1
+            saveStoredPlayCounts(state.playCounts)
         },
         togglePlay: (state) => {
             if (!isJwtTokenValid(localStorage.getItem('token'))) {
@@ -85,10 +117,15 @@ const playerSlice = createSlice({
                     return
                 }
             }
-            state.currentSong = state.queue[next]
+            const nextTrack = state.queue[next]
+            state.currentSong = nextTrack
             state.currentIndex = next
             state.isPlaying = true
             state.progress = 0
+            if (nextTrack) {
+                state.playCounts[nextTrack.id] = (state.playCounts[nextTrack.id] ?? 0) + 1
+                saveStoredPlayCounts(state.playCounts)
+            }
         },
         prevSong: (state) => {
             if (!isJwtTokenValid(localStorage.getItem('token'))) {
@@ -101,10 +138,15 @@ const playerSlice = createSlice({
                 return
             }
             const prev = Math.max(state.currentIndex - 1, 0)
-            state.currentSong = state.queue[prev]
+            const prevTrack = state.queue[prev]
+            state.currentSong = prevTrack
             state.currentIndex = prev
             state.isPlaying = true
             state.progress = 0
+            if (prevTrack) {
+                state.playCounts[prevTrack.id] = (state.playCounts[prevTrack.id] ?? 0) + 1
+                saveStoredPlayCounts(state.playCounts)
+            }
         },
         setVolume: (state, action: PayloadAction<number>) => {
             state.volume = action.payload
@@ -144,3 +186,4 @@ export const selectPlayerState = (state: RootState) => state.player
 export const selectCurrentSong = (state: RootState) => state.player.currentSong
 export const selectIsPlaying = (state: RootState) => state.player.isPlaying
 export const selectShowAuthModal = (state: RootState) => state.player.showAuthModal
+export const selectSongPlayCounts = (state: RootState) => state.player.playCounts
