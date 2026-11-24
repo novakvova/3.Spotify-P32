@@ -1,12 +1,14 @@
 package org.example.config;
 
 import lombok.RequiredArgsConstructor;
+import org.example.data.constants.RolesConstants;
 import org.example.services.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -31,7 +34,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)  // токен у заголовку, cookie не використовуємо
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -47,6 +50,27 @@ public class SecurityConfig {
                                 "/api/search/**").permitAll()
                         .requestMatchers("/images/**", "/uploads/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/roles/**").hasAuthority(RolesConstants.AdminRole)
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/songs/**",
+                                "/api/albums/**",
+                                "/api/artists/**",
+                                "/api/genres/**").hasAuthority(RolesConstants.AdminRole)
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/songs/**",
+                                "/api/albums/**",
+                                "/api/artists/**",
+                                "/api/genres/**").hasAuthority(RolesConstants.AdminRole)
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/api/songs/**",
+                                "/api/albums/**",
+                                "/api/artists/**",
+                                "/api/genres/**").hasAuthority(RolesConstants.AdminRole)
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/api/songs/**",
+                                "/api/albums/**",
+                                "/api/artists/**",
+                                "/api/genres/**").hasAuthority(RolesConstants.AdminRole)
                         .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable);

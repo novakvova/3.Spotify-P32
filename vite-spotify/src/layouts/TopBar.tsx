@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice'
+import { logout, selectCurrentUser, selectIsAdmin, selectIsAuthenticated } from '../store/slices/authSlice'
 import { toggleLanguage } from '../store/slices/languageSlice'
 import { playSong, togglePlay, selectCurrentSong, selectIsPlaying } from '../store/slices/playerSlice'
 import { useGlobalSearchQuery } from '../services/search/searchApi'
@@ -10,7 +10,7 @@ import { useGetSongsQuery } from '../services/songs/songsApi'
 import { useGetAlbumsQuery } from '../services/albums/albumsApi'
 import { useGetArtistsQuery } from '../services/artists/artistsApi'
 import type { ISong } from '../types/ISong'
-import { X, LogOut, Music, Disc, Play, Pause } from 'lucide-react'
+import { X, LogOut, Music, Disc, Play, Pause, Shield } from 'lucide-react'
 
 import imgLogoCircle from '../assets/player/logo-circle.png'
 import imgHome from '../assets/player/home.svg'
@@ -31,6 +31,7 @@ export default function TopBar() {
 
     const dispatch = useAppDispatch()
     const isAuth = useAppSelector(selectIsAuthenticated)
+    const isAdmin = useAppSelector(selectIsAdmin)
     const user = useAppSelector(selectCurrentUser)
     const currentSong = useAppSelector(selectCurrentSong)
     const isPlaying = useAppSelector(selectIsPlaying)
@@ -344,6 +345,17 @@ export default function TopBar() {
 
                 {isAuth ? (
                     <>
+                        {isAdmin && (
+                            <Link
+                                to="/admin"
+                                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full bg-sonora-light/20 border border-sonora-light/40 text-sonora-light hover:bg-sonora-light hover:text-sonora-dark font-bold text-xs transition-colors shrink-0"
+                                title={t('admin.panelTitle')}
+                            >
+                                <Shield size={14} />
+                                <span className="hidden md:inline">{t('admin.openAdmin')}</span>
+                            </Link>
+                        )}
+
                         <button
                             type="button"
                             className="hidden sm:block relative shrink-0 w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity"

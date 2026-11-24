@@ -66,6 +66,23 @@
     border-radius: 9999px;
   }
 
+  progress.admin-stat-bar {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  progress.admin-stat-bar::-webkit-progress-bar {
+    background-color: rgba(107, 48, 155, 0.35);
+    border-radius: 9999px;
+  }
+  progress.admin-stat-bar::-webkit-progress-value {
+    background: linear-gradient(90deg, #6829c6, #aa71ff, #e869ca);
+    border-radius: 9999px;
+  }
+  progress.admin-stat-bar::-moz-progress-bar {
+    background: linear-gradient(90deg, #6829c6, #aa71ff, #e869ca);
+    border-radius: 9999px;
+  }
+
   input[type=range] {
     -webkit-appearance: none;
     appearance: none;
