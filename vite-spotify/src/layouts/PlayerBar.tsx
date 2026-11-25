@@ -13,8 +13,10 @@ import {
     toggleRepeat,
 } from '../store/slices/playerSlice'
 import { useGetSongsQuery } from '../services/songs/songsApi'
+import { useGetAlbumsQuery } from '../services/albums/albumsApi'
 import { useAudio } from '../hooks/useAudio'
-import { formatTime } from '../utils/format'
+import { formatTime, resolveSongCover } from '../utils/format'
+import MediaImage from '../components/MediaImage'
 import { Play, Pause, Music } from 'lucide-react'
 
 import imgShuffle from '../assets/player/shuffle.svg'
@@ -45,10 +47,12 @@ export default function PlayerBar() {
     } = useAppSelector((s) => s.player)
     const { seek } = useAudio()
     const { data: songsPage } = useGetSongsQuery({ page: 0, size: 50 })
+    const { data: albumsData } = useGetAlbumsQuery()
     const [hoverProgress, setHoverProgress] = useState(0)
     const [hoverVolume, setHoverVolume] = useState(0)
 
     const fallbackSongs = songsPage?.content ?? []
+    const currentCoverUrl = resolveSongCover(currentSong, albumsData)
     const maxDuration = duration || 100
 
     const getHoverRatio = (e: React.MouseEvent<HTMLElement>) => {
@@ -127,15 +131,16 @@ export default function PlayerBar() {
     return (
         <footer className="fixed bottom-16 md:bottom-0 left-0 right-0 h-20 sm:h-24 w-full bg-sonora-dark font-inter flex items-center justify-between px-2.5 sm:px-5 gap-1.5 sm:gap-4 shrink-0 select-none z-50 border-t border-white/10">
             <div className="flex items-center min-w-0 gap-2 sm:gap-4 w-24 sm:w-44 lg:w-64 shrink-0">
-                <div
-                    className={`relative shrink-0 w-9 h-9 sm:w-14 sm:h-14 rounded-md flex items-center justify-center text-white ${
+                <MediaImage
+                    src={currentCoverUrl}
+                    alt={currentSong?.name ?? ''}
+                    className={`relative shrink-0 w-9 h-9 sm:w-14 sm:h-14 rounded-md overflow-hidden flex items-center justify-center text-white ${
                         currentSong
                             ? 'bg-gradient-to-br from-sonora-purple to-sonora-light'
                             : 'bg-sonora-panel'
                     }`}
-                >
-                    <Music size={20} />
-                </div>
+                    fallback={<Music size={20} />}
+                />
 
                 <div className="flex flex-col justify-center min-w-0">
                     <p className="font-normal text-xs sm:text-base leading-4 sm:leading-6 text-white truncate">

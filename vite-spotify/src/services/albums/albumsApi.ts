@@ -19,25 +19,19 @@ export const albumsApi = createApi({
             query: (title) => `/api/albums/search?title=${encodeURIComponent(title)}`,
             providesTags: ['Album'],
         }),
-        createAlbum: builder.mutation<
-            IAlbum,
-            { title: string; releaseYear: number; artistId: number }
-        >({
-            query: (body) => ({
+        createAlbum: builder.mutation<IAlbum, FormData>({
+            query: (formData) => ({
                 url: '/api/albums',
                 method: 'POST',
-                body,
+                body: formData,
             }),
             invalidatesTags: ['Album'],
         }),
-        updateAlbum: builder.mutation<
-            IAlbum,
-            { id: number; title: string; releaseYear: number; artistId: number }
-        >({
-            query: ({ id, ...body }) => ({
+        updateAlbum: builder.mutation<IAlbum, { id: number; formData: FormData }>({
+            query: ({ id, formData }) => ({
                 url: `/api/albums/${id}`,
                 method: 'PUT',
-                body,
+                body: formData,
             }),
             invalidatesTags: ['Album'],
         }),

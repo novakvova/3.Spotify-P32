@@ -2,13 +2,11 @@ import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from '../../utils/createBaseQuery'
 import type { ISong } from '../../types/ISong'
 import type { IPageResponse } from '../../types/IPageResponse'
+import type { ITrackPlayResponse } from '../../types/IAnalytics'
 
 export interface IUpdateSongPayload {
     id: number
-    name: string
-    artist_name: string
-    album_title: string
-    genres_names: string[]
+    formData: FormData
 }
 
 export const songsApi = createApi({
@@ -53,10 +51,10 @@ export const songsApi = createApi({
             invalidatesTags: ['Song'],
         }),
         updateSong: builder.mutation<ISong, IUpdateSongPayload>({
-            query: ({ id, ...body }) => ({
+            query: ({ id, formData }) => ({
                 url: `/api/songs/${id}`,
                 method: 'PUT',
-                body,
+                body: formData,
             }),
             invalidatesTags: ['Song'],
         }),
@@ -67,8 +65,15 @@ export const songsApi = createApi({
             }),
             invalidatesTags: ['Song'],
         }),
-        incrementPlay: builder.mutation<void, number>({
-            query: (id) => ({ url: `/api/songs/${id}/play`, method: 'POST' }),
+        incrementPlay: builder.mutation<
+            ITrackPlayResponse,
+            { id: number; listenedSeconds: number; durationSeconds?: number }
+        >({
+            query: ({ id, listenedSeconds, durationSeconds }) => ({
+                url: `/api/songs/${id}/play`,
+                method: 'POST',
+                body: { listenedSeconds, durationSeconds },
+            }),
         }),
     }),
 })

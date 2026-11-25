@@ -4,8 +4,19 @@ import type { ISong } from '../../types/ISong.ts'
 import { isJwtTokenValid } from './authSlice'
 
 type RepeatMode = 'off' | 'one' | 'all'
+export type AdminStatsMode = 'real' | 'demo'
 
 const PLAY_COUNTS_STORAGE_KEY = 'sonora_song_plays'
+const STATS_MODE_STORAGE_KEY = 'sonora_admin_stats_mode'
+
+function loadStoredStatsMode(): AdminStatsMode {
+    try {
+        const raw = localStorage.getItem(STATS_MODE_STORAGE_KEY)
+        return raw === 'demo' ? 'demo' : 'real'
+    } catch {
+        return 'real'
+    }
+}
 
 function loadStoredPlayCounts(): Record<number, number> {
     try {
@@ -45,6 +56,7 @@ interface PlayerState {
     repeat: RepeatMode
     showAuthModal: boolean
     playCounts: Record<number, number>
+    adminStatsMode: AdminStatsMode
 }
 
 const initialState: PlayerState = {
@@ -59,6 +71,7 @@ const initialState: PlayerState = {
     repeat: 'off',
     showAuthModal: false,
     playCounts: loadStoredPlayCounts(),
+    adminStatsMode: loadStoredStatsMode(),
 }
 
 const playerSlice = createSlice({
@@ -164,6 +177,14 @@ const playerSlice = createSlice({
             const cycle: RepeatMode[] = ['off', 'all', 'one']
             state.repeat = cycle[(cycle.indexOf(state.repeat) + 1) % cycle.length]
         },
+        setAdminStatsMode: (state, action: PayloadAction<AdminStatsMode>) => {
+            state.adminStatsMode = action.payload
+            try {
+                localStorage.setItem(STATS_MODE_STORAGE_KEY, action.payload)
+            } catch {
+                return
+            }
+        },
     },
 })
 
@@ -179,6 +200,7 @@ export const {
     setDuration,
     toggleShuffle,
     toggleRepeat,
+    setAdminStatsMode,
 } = playerSlice.actions
 export default playerSlice.reducer
 
@@ -187,3 +209,4 @@ export const selectCurrentSong = (state: RootState) => state.player.currentSong
 export const selectIsPlaying = (state: RootState) => state.player.isPlaying
 export const selectShowAuthModal = (state: RootState) => state.player.showAuthModal
 export const selectSongPlayCounts = (state: RootState) => state.player.playCounts
+export const selectAdminStatsMode = (state: RootState) => state.player.adminStatsMode

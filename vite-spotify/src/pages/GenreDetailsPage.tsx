@@ -2,9 +2,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useGetGenresQuery } from '../services/genres/genresApi'
 import { useGetSongsQuery } from '../services/songs/songsApi'
+import { useGetAlbumsQuery } from '../services/albums/albumsApi'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { playSong, togglePlay, selectCurrentSong, selectIsPlaying } from '../store/slices/playerSlice'
 import type { ISong } from '../types/ISong'
+import MediaImage from '../components/MediaImage'
+import { resolveSongCover } from '../utils/format'
 import { Play, Pause, ArrowLeft, Layers, Music } from 'lucide-react'
 
 export default function GenreDetailsPage() {
@@ -20,6 +23,7 @@ export default function GenreDetailsPage() {
     const currentGenre = genres?.find((g) => g.id === Number(id))
 
     const { data: songsData, isLoading } = useGetSongsQuery({ page: 0, size: 100 })
+    const { data: albumsData } = useGetAlbumsQuery()
 
     const genreSongs = songsData?.content
         ? songsData.content.filter((song: ISong) =>
@@ -85,9 +89,17 @@ export default function GenreDetailsPage() {
                             >
                                 {active && isPlaying ? '♫' : i + 1}
                             </span>
-                            <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center shrink-0">
-                                <Music size={14} className={active ? 'text-sonora-light' : 'text-sonora-muted'} />
-                            </div>
+                            <MediaImage
+                                src={resolveSongCover(song, albumsData)}
+                                alt={song.name}
+                                className="w-9 h-9 rounded-md overflow-hidden bg-white/5 flex items-center justify-center shrink-0"
+                                fallback={
+                                    <Music
+                                        size={14}
+                                        className={active ? 'text-sonora-light' : 'text-sonora-muted'}
+                                    />
+                                }
+                            />
                             <div className="flex-1 min-w-0">
                                 <p
                                     className={`text-sm font-semibold truncate ${

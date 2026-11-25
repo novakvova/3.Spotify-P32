@@ -39,9 +39,17 @@ export const Header: React.FC = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
+    const showAdminLink = isAuthenticated && isAdmin
+
     return (
         <header className="w-full relative z-40 bg-sonora-dark">
-            <div className="max-w-7xl mx-auto h-20 flex items-center justify-between px-4 sm:px-8 lg:px-16 xl:px-40 py-2.5">
+            <div
+                className={`max-w-7xl mx-auto h-20 flex items-center justify-between gap-6 py-2.5 ${
+                    showAdminLink
+                        ? 'px-4 sm:px-8 lg:px-10 xl:px-24'
+                        : 'px-4 sm:px-8 lg:px-16 xl:px-40'
+                }`}
+            >
                 <Link to="/player" className="relative shrink-0 w-31 h-5.5 overflow-hidden">
                     <img
                         alt="Sonora"
@@ -50,7 +58,11 @@ export const Header: React.FC = () => {
                     />
                 </Link>
 
-                <nav className="hidden lg:flex gap-6 xl:gap-12 items-center justify-end xl:justify-center text-white shrink-0">
+                <nav
+                    className={`hidden lg:flex items-center justify-end xl:justify-center text-white shrink-0 ${
+                        showAdminLink ? 'gap-5 xl:gap-9' : 'gap-6 xl:gap-12'
+                    }`}
+                >
                     <div ref={premiumRef} className="relative shrink-0">
                         <button
                             type="button"
@@ -99,7 +111,7 @@ export const Header: React.FC = () => {
                             {isAdmin && (
                                 <Link
                                     to="/admin"
-                                    className="font-semibold shrink-0 text-base text-sonora-light hover:opacity-80 transition-opacity"
+                                    className="font-semibold shrink-0 whitespace-nowrap text-base text-sonora-light hover:opacity-80 transition-opacity"
                                 >
                                     {t('admin.openAdmin')}
                                 </Link>

@@ -13,6 +13,10 @@ import {
     Check,
     AlertCircle,
     Headphones,
+    Music,
+    ImagePlus,
+    Database,
+    Sparkles,
 } from 'lucide-react'
 import {
     useGetAllSongsQuery,
@@ -27,15 +31,22 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import {
     playSong,
     togglePlay,
+    setAdminStatsMode,
     selectCurrentSong,
     selectIsPlaying,
-    selectSongPlayCounts,
+    selectAdminStatsMode,
 } from '../../store/slices/playerSlice'
+import {
+    analyticsApi,
+    useGetSongsPlaysQuery,
+} from '../../services/analytics/analyticsApi'
 import type { ISong } from '../../types/ISong'
+import MediaImage from '../../components/MediaImage'
+import { resolveSongCover } from '../../utils/format'
 import {
     extractApiErrorMessage,
     formatNumber,
-    getEffectiveSongPlays,
+    getDeterministicDemoPlays,
 } from './adminUtils'
 
 type SongSortOption = 'id' | 'plays_desc' | 'plays_asc' | 'name_asc'
@@ -46,9 +57,13 @@ export default function AdminSongsPage() {
     const [searchParams, setSearchParams] = useSearchParams()
     const currentSong = useAppSelector(selectCurrentSong)
     const isPlaying = useAppSelector(selectIsPlaying)
-    const livePlayCounts = useAppSelector(selectSongPlayCounts)
+    const statsMode = useAppSelector(selectAdminStatsMode)
+    const isDemo = statsMode === 'demo'
 
     const { data: songs = [], isLoading } = useGetAllSongsQuery()
+    const { data: songsPlays = [] } = useGetSongsPlaysQuery(undefined, {
+        refetchOnMountOrArgChange: true,
+    })
     const { data: artists = [] } = useGetArtistsQuery()
     const { data: albums = [] } = useGetAlbumsQuery()
     const { data: genres = [] } = useGetGenresQuery()
@@ -68,6 +83,8 @@ export default function AdminSongsPage() {
     const [albumTitle, setAlbumTitle] = useState('')
     const [selectedGenres, setSelectedGenres] = useState<string[]>([])
     const [audioFile, setAudioFile] = useState<File | null>(null)
+    const [coverFile, setCoverFile] = useState<File | null>(null)
+    const [coverPreview, setCoverPreview] = useState<string | null>(null)
     const [formError, setFormError] = useState<string | null>(null)
     const [banner, setBanner] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
@@ -78,6 +95,8 @@ export default function AdminSongsPage() {
         setAlbumTitle(albums[0]?.title ?? '')
         setSelectedGenres([])
         setAudioFile(null)
+        setCoverFile(null)
+        setCoverPreview(null)
         setFormError(null)
         setModalMode('create')
     }, [artists, albums])
@@ -96,6 +115,8 @@ export default function AdminSongsPage() {
         setAlbumTitle(song.album_title ?? '')
         setSelectedGenres(song.genres_names ?? [])
         setAudioFile(null)
+        setCoverFile(null)
+        setCoverPreview(song.coverUrl ?? null)
         setFormError(null)
         setModalMode('edit')
     }
@@ -103,7 +124,19 @@ export default function AdminSongsPage() {
     const closeModal = () => {
         setModalMode(null)
         setEditingSong(null)
+        setCoverFile(null)
+        setCoverPreview(null)
         setFormError(null)
+    }
+
+    const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null
+        setCoverFile(file)
+        if (file) {
+            setCoverPreview(URL.createObjectURL(file))
+        } else {
+            setCoverPreview(editingSong?.coverUrl ?? null)
+        }
     }
 
     const toggleGenre = (genreName: string) => {
@@ -162,16 +195,27 @@ export default function AdminSongsPage() {
                     formData.append('genres_names', selectedGenres.join(','))
                 }
                 formData.append('file', audioFile)
+                if (coverFile) {
+                    formData.append('cover', coverFile)
+                }
                 await createSong(formData).unwrap()
             } else if (modalMode === 'edit' && editingSong) {
+                const formData = new FormData()
+                formData.append('name', name.trim())
+                formData.append('artist_name', artistName.trim())
+                formData.append('album_title', albumTitle.trim())
+                if (selectedGenres.length > 0) {
+                    formData.append('genres_names', selectedGenres.join(','))
+                }
+                if (coverFile) {
+                    formData.append('cover', coverFile)
+                }
                 await updateSong({
                     id: editingSong.id,
-                    name: name.trim(),
-                    artist_name: artistName.trim(),
-                    album_title: albumTitle.trim(),
-                    genres_names: selectedGenres,
+                    formData,
                 }).unwrap()
             }
+            dispatch(analyticsApi.util.invalidateTags(['Analytics']))
             setBanner({ text: t('admin.common.successSaved'), type: 'success' })
             closeModal()
         } catch (err) {
@@ -184,6 +228,7 @@ export default function AdminSongsPage() {
         setBanner(null)
         try {
             await deleteSong(deletingTarget.id).unwrap()
+            dispatch(analyticsApi.util.invalidateTags(['Analytics']))
             setBanner({ text: t('admin.common.successDeleted'), type: 'success' })
             setDeletingTarget(null)
         } catch (err) {
@@ -194,6 +239,14 @@ export default function AdminSongsPage() {
             setDeletingTarget(null)
         }
     }
+
+    const playsBySongId = new Map<number, number>(
+        songsPlays.map((stat) => [stat.id, stat.playCount])
+    )
+    const getSongPlayCount = (song: ISong): number =>
+        isDemo
+            ? getDeterministicDemoPlays(song)
+            : (playsBySongId.get(song.id) ?? song.playCount ?? 0)
 
     const q = search.trim().toLowerCase()
     const filteredSongs = songs
@@ -208,16 +261,10 @@ export default function AdminSongsPage() {
         })
         .sort((a, b) => {
             if (sortBy === 'plays_desc') {
-                return (
-                    getEffectiveSongPlays(b, livePlayCounts, true) -
-                    getEffectiveSongPlays(a, livePlayCounts, true)
-                )
+                return getSongPlayCount(b) - getSongPlayCount(a) || b.id - a.id
             }
             if (sortBy === 'plays_asc') {
-                return (
-                    getEffectiveSongPlays(a, livePlayCounts, true) -
-                    getEffectiveSongPlays(b, livePlayCounts, true)
-                )
+                return getSongPlayCount(a) - getSongPlayCount(b) || a.id - b.id
             }
             if (sortBy === 'name_asc') {
                 return a.name.localeCompare(b.name)
@@ -277,7 +324,7 @@ export default function AdminSongsPage() {
                 </div>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div className="relative w-full max-w-md">
                     <Search
                         size={16}
@@ -301,16 +348,47 @@ export default function AdminSongsPage() {
                     )}
                 </div>
 
-                <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SongSortOption)}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-sonora-dark border border-white/15 text-sm font-semibold text-white outline-none focus:border-sonora-light transition-colors cursor-pointer"
-                >
-                    <option value="plays_desc">{t('admin.songs.sortPlaysDesc')}</option>
-                    <option value="plays_asc">{t('admin.songs.sortPlaysAsc')}</option>
-                    <option value="name_asc">{t('admin.songs.sortNameAsc')}</option>
-                    <option value="id">{t('admin.songs.sortDefault')}</option>
-                </select>
+                <div className="flex flex-wrap items-center gap-2.5">
+                    <div className="inline-flex items-center p-1 rounded-full bg-sonora-dark border border-white/15">
+                        <button
+                            type="button"
+                            onClick={() => dispatch(setAdminStatsMode('real'))}
+                            title={t('admin.dashboard.modeRealHint')}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                                !isDemo
+                                    ? 'bg-sonora-light text-sonora-dark'
+                                    : 'text-sonora-lavender hover:text-white'
+                            }`}
+                        >
+                            <Database size={13} />
+                            <span>{t('admin.dashboard.modeReal')}</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => dispatch(setAdminStatsMode('demo'))}
+                            title={t('admin.dashboard.modeDemoHint')}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                                isDemo
+                                    ? 'bg-sonora-pink text-sonora-dark'
+                                    : 'text-sonora-lavender hover:text-white'
+                            }`}
+                        >
+                            <Sparkles size={13} />
+                            <span>{t('admin.dashboard.modeDemo')}</span>
+                        </button>
+                    </div>
+
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as SongSortOption)}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-sonora-dark border border-white/15 text-sm font-semibold text-white outline-none focus:border-sonora-light transition-colors cursor-pointer"
+                    >
+                        <option value="plays_desc">{t('admin.songs.sortPlaysDesc')}</option>
+                        <option value="plays_asc">{t('admin.songs.sortPlaysAsc')}</option>
+                        <option value="name_asc">{t('admin.songs.sortNameAsc')}</option>
+                        <option value="id">{t('admin.songs.sortDefault')}</option>
+                    </select>
+                </div>
             </div>
 
             {isLoading ? (
@@ -345,11 +423,7 @@ export default function AdminSongsPage() {
                         <tbody className="divide-y divide-white/5 text-sm">
                             {filteredSongs.map((song) => {
                                 const active = currentSong?.id === song.id
-                                const songPlays = getEffectiveSongPlays(
-                                    song,
-                                    livePlayCounts,
-                                    true
-                                )
+                                const songPlays = getSongPlayCount(song)
                                 return (
                                     <tr
                                         key={song.id}
@@ -365,13 +439,21 @@ export default function AdminSongsPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => handlePlay(song)}
-                                                    className="w-8 h-8 rounded-lg bg-sonora-warm hover:bg-sonora-light text-white flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+                                                    className="relative group/play w-10 h-10 rounded-lg overflow-hidden bg-sonora-warm text-white flex items-center justify-center shrink-0 cursor-pointer"
                                                 >
-                                                    {active && isPlaying ? (
-                                                        <Pause size={14} fill="currentColor" />
-                                                    ) : (
-                                                        <Play size={14} fill="currentColor" className="ml-0.5" />
-                                                    )}
+                                                    <MediaImage
+                                                        src={resolveSongCover(song, albums)}
+                                                        alt={song.name}
+                                                        className="w-full h-full flex items-center justify-center"
+                                                        fallback={<Music size={15} className="text-white/70" />}
+                                                    />
+                                                    <span className="absolute inset-0 bg-sonora-dark/65 opacity-0 group-hover/play:opacity-100 transition-opacity flex items-center justify-center">
+                                                        {active && isPlaying ? (
+                                                            <Pause size={14} fill="currentColor" />
+                                                        ) : (
+                                                            <Play size={14} fill="currentColor" className="ml-0.5" />
+                                                        )}
+                                                    </span>
                                                 </button>
                                                 <div className="min-w-0">
                                                     <p
@@ -553,6 +635,31 @@ export default function AdminSongsPage() {
                                         )
                                     })}
                                 </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-bold uppercase tracking-wider text-sonora-lavender">
+                                    {t('admin.songs.coverLabel')}
+                                </label>
+                                <label className="flex items-center gap-3.5 px-4 py-3 rounded-2xl border border-dashed border-white/20 hover:border-sonora-light bg-sonora-dark/60 cursor-pointer transition-colors">
+                                    <MediaImage
+                                        src={coverPreview}
+                                        alt=""
+                                        className="w-12 h-12 rounded-xl overflow-hidden bg-sonora-warm/50 flex items-center justify-center shrink-0 text-sonora-light"
+                                        fallback={<ImagePlus size={20} />}
+                                    />
+                                    <span className="text-xs sm:text-sm font-semibold text-white truncate">
+                                        {coverFile
+                                            ? t('admin.songs.fileSelected', { name: coverFile.name })
+                                            : t('admin.songs.coverHint')}
+                                    </span>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleCoverChange}
+                                        className="hidden"
+                                    />
+                                </label>
                             </div>
 
                             {modalMode === 'create' && (

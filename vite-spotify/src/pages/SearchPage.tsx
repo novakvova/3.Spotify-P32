@@ -2,6 +2,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Disc, Music } from 'lucide-react'
 import { useGlobalSearchQuery } from '../services/search/searchApi'
+import { useGetAlbumsQuery } from '../services/albums/albumsApi'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import {
     playSong,
@@ -10,6 +11,8 @@ import {
     selectIsPlaying,
 } from '../store/slices/playerSlice'
 import type { ISong } from '../types/ISong'
+import MediaImage from '../components/MediaImage'
+import { resolveSongCover } from '../utils/format'
 
 export default function SearchPage() {
     const { t } = useTranslation()
@@ -22,6 +25,7 @@ export default function SearchPage() {
     const { data, isLoading } = useGlobalSearchQuery(query, {
         skip: query.trim().length < 2,
     })
+    const { data: albumsData } = useGetAlbumsQuery()
 
     const handlePlay = (song: ISong, queue: ISong[]) => {
         if (currentSong?.id === song.id) dispatch(togglePlay())
@@ -101,9 +105,12 @@ export default function SearchPage() {
                                             {active && isPlaying ? '⏸' : '▶'}
                                         </button>
                                     </div>
-                                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white bg-sonora-warm">
-                                        <Music size={18} />
-                                    </div>
+                                    <MediaImage
+                                        src={resolveSongCover(song, albumsData ?? data.albums)}
+                                        alt={song.name}
+                                        className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center shrink-0 text-white bg-sonora-warm"
+                                        fallback={<Music size={18} />}
+                                    />
                                     <div className="flex-1 min-w-0">
                                         <p
                                             className={`text-sm font-medium truncate ${
@@ -141,9 +148,12 @@ export default function SearchPage() {
                                 to={`/artists/${artist.id}`}
                                 className="flex flex-col items-start gap-2 transition-all group"
                             >
-                                <div className="w-full aspect-square rounded-full flex items-center justify-center text-4xl font-black text-white shadow-md transition-transform group-hover:scale-105 bg-linear-to-br from-sonora-purple to-sonora-pink">
-                                    {artist.name[0]?.toUpperCase() ?? '?'}
-                                </div>
+                                <MediaImage
+                                    src={artist.imageUrl}
+                                    alt={artist.name}
+                                    className="w-full aspect-square rounded-full overflow-hidden flex items-center justify-center text-4xl font-black text-white shadow-md transition-transform group-hover:scale-105 bg-linear-to-br from-sonora-purple to-sonora-pink"
+                                    fallback={<span>{artist.name[0]?.toUpperCase() ?? '?'}</span>}
+                                />
                                 <p className="text-base font-bold truncate w-full text-white">
                                     {artist.name}
                                 </p>
@@ -168,9 +178,12 @@ export default function SearchPage() {
                                 to={`/albums/${album.id}`}
                                 className="flex flex-col gap-2 transition-all group"
                             >
-                                <div className="w-full aspect-square rounded-lg flex items-center justify-center shadow-md transition-transform group-hover:scale-105 bg-linear-to-br from-sonora-purple to-sonora-light">
-                                    <Disc size={44} className="text-white/80" />
-                                </div>
+                                <MediaImage
+                                    src={album.coverUrl}
+                                    alt={album.title}
+                                    className="w-full aspect-square rounded-lg overflow-hidden flex items-center justify-center shadow-md transition-transform group-hover:scale-105 bg-linear-to-br from-sonora-purple to-sonora-light"
+                                    fallback={<Disc size={44} className="text-white/80" />}
+                                />
                                 <p className="text-base font-bold truncate text-white">
                                     {album.title}
                                 </p>

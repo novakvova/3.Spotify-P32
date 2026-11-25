@@ -10,7 +10,7 @@ import {
     X,
     Check,
     AlertCircle,
-    Info,
+    ImagePlus,
 } from 'lucide-react'
 import {
     useGetAlbumsQuery,
@@ -20,7 +20,9 @@ import {
 } from '../../services/albums/albumsApi'
 import { useGetArtistsQuery } from '../../services/artists/artistsApi'
 import { useGetAllSongsQuery } from '../../services/songs/songsApi'
+import { useGetAlbumsTracksCountQuery } from '../../services/analytics/analyticsApi'
 import type { IAlbum } from '../../types/IAlbum'
+import MediaImage from '../../components/MediaImage'
 import { extractApiErrorMessage } from './adminUtils'
 
 export default function AdminAlbumsPage() {
@@ -30,6 +32,9 @@ export default function AdminAlbumsPage() {
     const { data: albums = [], isLoading } = useGetAlbumsQuery()
     const { data: artists = [] } = useGetArtistsQuery()
     const { data: songs = [] } = useGetAllSongsQuery()
+    const { data: albumsStats = [] } = useGetAlbumsTracksCountQuery(undefined, {
+        refetchOnMountOrArgChange: true,
+    })
 
     const [createAlbum, { isLoading: isCreating }] = useCreateAlbumMutation()
     const [updateAlbum, { isLoading: isUpdating }] = useUpdateAlbumMutation()
@@ -43,6 +48,8 @@ export default function AdminAlbumsPage() {
     const [title, setTitle] = useState('')
     const [releaseYear, setReleaseYear] = useState<string>(String(new Date().getFullYear()))
     const [artistId, setArtistId] = useState<string>('')
+    const [coverFile, setCoverFile] = useState<File | null>(null)
+    const [coverPreview, setCoverPreview] = useState<string | null>(null)
     const [formError, setFormError] = useState<string | null>(null)
     const [banner, setBanner] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
@@ -51,6 +58,8 @@ export default function AdminAlbumsPage() {
         setTitle('')
         setReleaseYear(String(new Date().getFullYear()))
         setArtistId(artists[0] ? String(artists[0].id) : '')
+        setCoverFile(null)
+        setCoverPreview(null)
         setFormError(null)
         setModalMode('create')
     }, [artists])
@@ -67,6 +76,8 @@ export default function AdminAlbumsPage() {
         setTitle(album.title)
         setReleaseYear(String(album.releaseYear))
         setArtistId(String(album.artistId))
+        setCoverFile(null)
+        setCoverPreview(album.coverUrl ?? null)
         setFormError(null)
         setModalMode('edit')
     }
@@ -74,7 +85,19 @@ export default function AdminAlbumsPage() {
     const closeModal = () => {
         setModalMode(null)
         setEditingAlbum(null)
+        setCoverFile(null)
+        setCoverPreview(null)
         setFormError(null)
+    }
+
+    const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null
+        setCoverFile(file)
+        if (file) {
+            setCoverPreview(URL.createObjectURL(file))
+        } else {
+            setCoverPreview(editingAlbum?.coverUrl ?? null)
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -91,18 +114,20 @@ export default function AdminAlbumsPage() {
         }
 
         try {
+            const formData = new FormData()
+            formData.append('title', title.trim())
+            formData.append('releaseYear', String(parsedYear))
+            formData.append('artistId', String(parsedArtistId))
+            if (coverFile) {
+                formData.append('cover', coverFile)
+            }
+
             if (modalMode === 'create') {
-                await createAlbum({
-                    title: title.trim(),
-                    releaseYear: parsedYear,
-                    artistId: parsedArtistId,
-                }).unwrap()
+                await createAlbum(formData).unwrap()
             } else if (modalMode === 'edit' && editingAlbum) {
                 await updateAlbum({
                     id: editingAlbum.id,
-                    title: title.trim(),
-                    releaseYear: parsedYear,
-                    artistId: parsedArtistId,
+                    formData,
                 }).unwrap()
             }
             setBanner({ text: t('admin.common.successSaved'), type: 'success' })
@@ -131,8 +156,13 @@ export default function AdminAlbumsPage() {
     const getArtistName = (id: number) =>
         artists.find((a) => a.id === id)?.name ?? t('catalog.unknownArtist')
 
-    const getTrackCount = (albumTitle: string) =>
-        songs.filter((s) => s.album_title?.toLowerCase() === albumTitle.toLowerCase()).length
+    const albumTrackMap = new Map<number, number>(
+        albumsStats.map((item) => [item.id, item.tracksCount])
+    )
+
+    const getTrackCount = (album: IAlbum) =>
+        albumTrackMap.get(album.id) ??
+        songs.filter((s) => s.album_title?.toLowerCase() === album.title.toLowerCase()).length
 
     const q = search.trim().toLowerCase()
     const filteredAlbums = albums.filter((album) => {
@@ -246,9 +276,12 @@ export default function AdminAlbumsPage() {
                                     </td>
                                     <td className="py-3 px-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-sonora-purple to-sonora-light flex items-center justify-center shrink-0 text-white">
-                                                <Disc size={15} />
-                                            </div>
+                                            <MediaImage
+                                                src={album.coverUrl}
+                                                alt={album.title}
+                                                className="w-10 h-10 rounded-lg overflow-hidden bg-linear-to-br from-sonora-purple to-sonora-light flex items-center justify-center shrink-0 text-white"
+                                                fallback={<Disc size={16} />}
+                                            />
                                             <span className="font-semibold text-white truncate max-w-44 sm:max-w-64">
                                                 {album.title}
                                             </span>
@@ -261,7 +294,7 @@ export default function AdminAlbumsPage() {
                                         {album.releaseYear}
                                     </td>
                                     <td className="py-3 px-4 text-sonora-muted hidden md:table-cell">
-                                        {getTrackCount(album.title)}
+                                        {getTrackCount(album)}
                                     </td>
                                     <td className="py-3 px-4 text-right">
                                         <div className="inline-flex items-center justify-end gap-1.5">
@@ -371,12 +404,30 @@ export default function AdminAlbumsPage() {
                                 </div>
                             </div>
 
-                            {modalMode === 'edit' && (
-                                <div className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl bg-yellow-500/10 border border-yellow-500/25 text-xs text-yellow-400">
-                                    <Info size={15} className="shrink-0 mt-0.5" />
-                                    <span>{t('admin.albums.backendUpdateHint')}</span>
-                                </div>
-                            )}
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-bold uppercase tracking-wider text-sonora-lavender">
+                                    {t('admin.albums.coverLabel')}
+                                </label>
+                                <label className="flex items-center gap-3.5 px-4 py-3 rounded-2xl border border-dashed border-white/20 hover:border-sonora-light bg-sonora-dark/60 cursor-pointer transition-colors">
+                                    <MediaImage
+                                        src={coverPreview}
+                                        alt=""
+                                        className="w-12 h-12 rounded-xl overflow-hidden bg-sonora-warm/50 flex items-center justify-center shrink-0 text-sonora-light"
+                                        fallback={<ImagePlus size={20} />}
+                                    />
+                                    <span className="text-xs sm:text-sm font-semibold text-white truncate">
+                                        {coverFile
+                                            ? t('admin.songs.fileSelected', { name: coverFile.name })
+                                            : t('admin.albums.coverHint')}
+                                    </span>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleCoverChange}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </div>
 
                             {formError && (
                                 <div className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-xs font-semibold text-red-400">
