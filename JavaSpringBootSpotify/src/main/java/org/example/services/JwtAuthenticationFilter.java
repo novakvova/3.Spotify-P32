@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
 @Slf4j
@@ -33,9 +34,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(token)) {
                 String email = jwtUtil.extractUsername(token);
                 userRepository.findByEmailIgnoreCase(email).ifPresentOrElse(
-                        user -> SecurityContextHolder.getContext().setAuthentication(
-                                new UsernamePasswordAuthenticationToken(
-                                        user, null, user.getAuthorities())),
+                        user -> {
+                            if (user.isBlocked()) {
+                                log.warn("Користувача {} заблоковано, доступ заборонено", email);
+                                return;
+                            }
+                            SecurityContextHolder.getContext().setAuthentication(
+                                    new UsernamePasswordAuthenticationToken(
+                                            user, null, user.getAuthorities()));
+                        },
                         () -> log.warn("Токен валідний, але користувача {} не знайдено", email));
             }
         }

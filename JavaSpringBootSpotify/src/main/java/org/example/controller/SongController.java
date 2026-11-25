@@ -4,14 +4,20 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dtos.*;
+import org.example.dtos.analytics.TrackPlayRequestDto;
+import org.example.dtos.analytics.TrackPlayResponseDto;
+import org.example.services.PlayTrackingService;
 import org.example.services.SongService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +31,7 @@ import java.util.List;
 @Tag(name = "Songs", description = "Song Management API")
 public class SongController {
     private final SongService songService;
+    private final PlayTrackingService playTrackingService;
 
     @GetMapping
     @Operation(summary = "Get all songs", description = "Retrieve list of all songs")
@@ -56,6 +63,29 @@ public class SongController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(song);
+    }
+
+    @PostMapping("/{id}/play")
+    @Operation(summary = "Track real song play", description = "Records a play when listening threshold and anti-spam cooldown are satisfied")
+    public ResponseEntity<?> trackPlay(
+            @PathVariable Long id,
+            @RequestBody(required = false) TrackPlayRequestDto request,
+            @RequestHeader(value = "X-Forwarded-For", required = false) String forwardedFor,
+            HttpServletRequest httpServletRequest
+    ) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String clientKey = (auth != null && auth.isAuthenticated()
+                    && auth.getPrincipal() != null
+                    && !"anonymousUser".equals(auth.getPrincipal()))
+                    ? auth.getName()
+                    : resolveClientIp(forwardedFor, httpServletRequest);
+
+            TrackPlayResponseDto response = playTrackingService.trackPlay(id, clientKey, request);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Помилка: " + e.getMessage());
+        }
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -182,5 +212,12 @@ public class SongController {
     @GetMapping("/by-album/{albumId}")
     public ResponseEntity<List<SongItemDto>> getSongsByAlbum(@PathVariable Long albumId) {
         return ResponseEntity.ok(songService.getSongsByAlbum(albumId));
+    }
+
+    private String resolveClientIp(String forwardedFor, HttpServletRequest request) {
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }
