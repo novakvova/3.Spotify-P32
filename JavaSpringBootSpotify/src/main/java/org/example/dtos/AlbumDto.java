@@ -9,5 +9,6 @@ public class AlbumDto {
     private Long id;
     private String title;
     private Integer releaseYear;
+    private String coverUrl;
     private Long artistId;
 }

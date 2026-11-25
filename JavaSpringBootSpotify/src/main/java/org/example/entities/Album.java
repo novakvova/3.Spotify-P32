@@ -19,6 +19,9 @@ public class Album {
     @Column(nullable = false)
     private Integer releaseYear;
 
+    @Column(length = 500)
+    private String coverUrl;
+
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;

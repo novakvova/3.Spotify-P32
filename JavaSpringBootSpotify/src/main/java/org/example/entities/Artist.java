@@ -20,6 +20,9 @@ public class Artist {
     @Column(nullable = false)
     private LocalDate birthDate;
 
+    @Column(length = 500)
+    private String imageUrl;
+
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL)
     private List<Album> albums;
 }

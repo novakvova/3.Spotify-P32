@@ -18,6 +18,7 @@ public class AlbumMapper {
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setReleaseYear(entity.getReleaseYear());
+        dto.setCoverUrl(entity.getCoverUrl());
         if (entity.getArtist() != null) {
             dto.setArtistId(entity.getArtist().getId());
         }
@@ -27,7 +28,6 @@ public class AlbumMapper {
     public Album toEntity(CreateAlbumDto dto, Artist artist) {
         Album entity = new Album();
         entity.setTitle(dto.getTitle());
-        entity.setArtist(artistRepository.findById(dto.getArtistId()).orElse(null));
         entity.setReleaseYear(dto.getReleaseYear());
         entity.setArtist(artist);
         return entity;
