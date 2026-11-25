@@ -9,6 +9,7 @@ import {
     X,
     Check,
     AlertCircle,
+    ImagePlus,
 } from 'lucide-react'
 import {
     useGetArtistsQuery,
@@ -18,7 +19,9 @@ import {
 } from '../../services/artists/artistsApi'
 import { useGetAlbumsQuery } from '../../services/albums/albumsApi'
 import { useGetAllSongsQuery } from '../../services/songs/songsApi'
+import { useGetArtistsBreakdownQuery } from '../../services/analytics/analyticsApi'
 import type { IArtist } from '../../types/IArtist'
+import MediaImage from '../../components/MediaImage'
 import { extractApiErrorMessage } from './adminUtils'
 
 export default function AdminArtistsPage() {
@@ -28,6 +31,9 @@ export default function AdminArtistsPage() {
     const { data: artists = [], isLoading } = useGetArtistsQuery()
     const { data: albums = [] } = useGetAlbumsQuery()
     const { data: songs = [] } = useGetAllSongsQuery()
+    const { data: artistsBreakdown = [] } = useGetArtistsBreakdownQuery(undefined, {
+        refetchOnMountOrArgChange: true,
+    })
 
     const [createArtist, { isLoading: isCreating }] = useCreateArtistMutation()
     const [updateArtist, { isLoading: isUpdating }] = useUpdateArtistMutation()
@@ -40,6 +46,8 @@ export default function AdminArtistsPage() {
 
     const [name, setName] = useState('')
     const [birthDate, setBirthDate] = useState('1995-01-01')
+    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [imagePreview, setImagePreview] = useState<string | null>(null)
     const [formError, setFormError] = useState<string | null>(null)
     const [banner, setBanner] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
@@ -47,6 +55,8 @@ export default function AdminArtistsPage() {
         setEditingArtist(null)
         setName('')
         setBirthDate('1995-01-01')
+        setImageFile(null)
+        setImagePreview(null)
         setFormError(null)
         setModalMode('create')
     }
@@ -62,6 +72,8 @@ export default function AdminArtistsPage() {
         setEditingArtist(artist)
         setName(artist.name)
         setBirthDate(artist.birthDate ? artist.birthDate.slice(0, 10) : '1995-01-01')
+        setImageFile(null)
+        setImagePreview(artist.imageUrl ?? null)
         setFormError(null)
         setModalMode('edit')
     }
@@ -69,7 +81,19 @@ export default function AdminArtistsPage() {
     const closeModal = () => {
         setModalMode(null)
         setEditingArtist(null)
+        setImageFile(null)
+        setImagePreview(null)
         setFormError(null)
+    }
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null
+        setImageFile(file)
+        if (file) {
+            setImagePreview(URL.createObjectURL(file))
+        } else {
+            setImagePreview(editingArtist?.imageUrl ?? null)
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -83,16 +107,19 @@ export default function AdminArtistsPage() {
         }
 
         try {
+            const formData = new FormData()
+            formData.append('name', name.trim())
+            formData.append('birthDate', birthDate)
+            if (imageFile) {
+                formData.append('image', imageFile)
+            }
+
             if (modalMode === 'create') {
-                await createArtist({
-                    name: name.trim(),
-                    birthDate,
-                }).unwrap()
+                await createArtist(formData).unwrap()
             } else if (modalMode === 'edit' && editingArtist) {
                 await updateArtist({
                     id: editingArtist.id,
-                    name: name.trim(),
-                    birthDate,
+                    formData,
                 }).unwrap()
             }
             setBanner({ text: t('admin.common.successSaved'), type: 'success' })
@@ -118,11 +145,17 @@ export default function AdminArtistsPage() {
         }
     }
 
+    const artistStatsMap = new Map(
+        artistsBreakdown.map((item) => [item.id, item])
+    )
+
     const getAlbumCount = (artistId: number) =>
+        artistStatsMap.get(artistId)?.albumsCount ??
         albums.filter((al) => al.artistId === artistId).length
 
-    const getSongCount = (artistName: string) =>
-        songs.filter((s) => s.artist_name?.toLowerCase() === artistName.toLowerCase()).length
+    const getSongCount = (artist: IArtist) =>
+        artistStatsMap.get(artist.id)?.tracksCount ??
+        songs.filter((s) => s.artist_name?.toLowerCase() === artist.name.toLowerCase()).length
 
     const q = search.trim().toLowerCase()
     const filteredArtists = artists.filter((artist) => {
@@ -234,9 +267,12 @@ export default function AdminArtistsPage() {
                                     </td>
                                     <td className="py-3 px-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-linear-to-br from-sonora-purple to-sonora-pink flex items-center justify-center shrink-0 font-bold text-xs text-white">
-                                                {artist.name[0]?.toUpperCase() ?? '?'}
-                                            </div>
+                                            <MediaImage
+                                                src={artist.imageUrl}
+                                                alt={artist.name}
+                                                className="w-10 h-10 rounded-full overflow-hidden bg-linear-to-br from-sonora-purple to-sonora-pink flex items-center justify-center shrink-0 font-bold text-xs text-white"
+                                                fallback={<span>{artist.name[0]?.toUpperCase() ?? '?'}</span>}
+                                            />
                                             <span className="font-semibold text-white truncate max-w-44 sm:max-w-64">
                                                 {artist.name}
                                             </span>
@@ -249,7 +285,7 @@ export default function AdminArtistsPage() {
                                         {getAlbumCount(artist.id)}
                                     </td>
                                     <td className="py-3 px-4 text-sonora-muted hidden md:table-cell">
-                                        {getSongCount(artist.name)}
+                                        {getSongCount(artist)}
                                     </td>
                                     <td className="py-3 px-4 text-right">
                                         <div className="inline-flex items-center justify-end gap-1.5">
@@ -328,6 +364,31 @@ export default function AdminArtistsPage() {
                                     required
                                     className="w-full px-4 py-2.5 rounded-xl bg-sonora-dark border border-white/15 text-sm text-white outline-none focus:border-sonora-light"
                                 />
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-bold uppercase tracking-wider text-sonora-lavender">
+                                    {t('admin.artists.imageLabel')}
+                                </label>
+                                <label className="flex items-center gap-3.5 px-4 py-3 rounded-2xl border border-dashed border-white/20 hover:border-sonora-light bg-sonora-dark/60 cursor-pointer transition-colors">
+                                    <MediaImage
+                                        src={imagePreview}
+                                        alt=""
+                                        className="w-12 h-12 rounded-full overflow-hidden bg-sonora-warm/50 flex items-center justify-center shrink-0 text-sonora-light"
+                                        fallback={<ImagePlus size={20} />}
+                                    />
+                                    <span className="text-xs sm:text-sm font-semibold text-white truncate">
+                                        {imageFile
+                                            ? t('admin.songs.fileSelected', { name: imageFile.name })
+                                            : t('admin.artists.imageHint')}
+                                    </span>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="hidden"
+                                    />
+                                </label>
                             </div>
 
                             {formError && (

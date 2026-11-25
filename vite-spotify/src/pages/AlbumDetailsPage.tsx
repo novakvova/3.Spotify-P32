@@ -12,6 +12,7 @@ import {
 import type { ISong } from '../types/ISong'
 import { Play, Pause, ArrowLeft, Disc, Music } from 'lucide-react'
 import { useGetArtistByIdQuery } from '../services/artists/artistsApi.ts'
+import MediaImage from '../components/MediaImage'
 
 export default function AlbumDetailsPage() {
     const { t } = useTranslation()
@@ -69,9 +70,12 @@ export default function AlbumDetailsPage() {
             </button>
 
             <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-8">
-                <div className="w-40 h-40 md:w-48 md:h-48 rounded-xl shadow-xl flex items-center justify-center shrink-0 bg-linear-to-br from-sonora-purple to-sonora-light">
-                    <Disc size={72} className="text-white/80" />
-                </div>
+                <MediaImage
+                    src={album.coverUrl}
+                    alt={album.title}
+                    className="w-40 h-40 md:w-48 md:h-48 rounded-xl overflow-hidden shadow-xl flex items-center justify-center shrink-0 bg-linear-to-br from-sonora-purple to-sonora-light"
+                    fallback={<Disc size={72} className="text-white/80" />}
+                />
                 <div className="text-center md:text-left min-w-0">
                     <p className="text-xs font-black uppercase tracking-widest opacity-60 text-white">
                         {t('catalog.albumBadge')}
@@ -79,13 +83,25 @@ export default function AlbumDetailsPage() {
                     <h1 className="text-3xl md:text-5xl font-black tracking-tight my-1 truncate text-white">
                         {album.title}
                     </h1>
-                    <p className="text-sm font-semibold opacity-90 flex items-center gap-1.5 text-sonora-lavender">
+                    <p className="text-sm font-semibold opacity-90 flex items-center justify-center md:justify-start gap-2 text-sonora-lavender">
+                        {artist && (
+                            <MediaImage
+                                src={artist.imageUrl}
+                                alt={finalArtistName}
+                                className="w-6 h-6 rounded-full overflow-hidden shrink-0 bg-sonora-warm flex items-center justify-center text-xs font-bold text-white"
+                                fallback={<span>{finalArtistName[0]?.toUpperCase() ?? '?'}</span>}
+                            />
+                        )}
                         <Link
                             to={`/artists/${album.artistId}`}
                             className="hover:underline transition-colors font-bold text-sonora-light"
                         >
                             {finalArtistName}
                         </Link>
+                        <span className="opacity-40">•</span>
+                        <span className="font-normal text-sonora-muted">
+                            {album.releaseYear}
+                        </span>
                         <span className="opacity-40">•</span>
                         <span className="font-normal text-sonora-muted">
                             {t('catalog.tracksCount', { count: albumSongs.length })}
@@ -122,12 +138,17 @@ export default function AlbumDetailsPage() {
                             >
                                 {active && isPlaying ? '♫' : i + 1}
                             </span>
-                            <div className="w-8 h-8 rounded bg-white/10 flex items-center justify-center shrink-0">
-                                <Music
-                                    size={14}
-                                    className={active ? 'text-sonora-light' : 'text-sonora-muted'}
-                                />
-                            </div>
+                            <MediaImage
+                                src={song.coverUrl || album.coverUrl}
+                                alt={song.name}
+                                className="w-9 h-9 rounded-md overflow-hidden bg-white/10 flex items-center justify-center shrink-0"
+                                fallback={
+                                    <Music
+                                        size={14}
+                                        className={active ? 'text-sonora-light' : 'text-sonora-muted'}
+                                    />
+                                }
+                            />
                             <div className="flex-1 min-w-0">
                                 <p
                                     className={`text-sm font-semibold truncate ${

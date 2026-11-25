@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
     LayoutDashboard,
+    Users,
     Music,
     Disc,
     Mic2,
@@ -27,6 +28,7 @@ import imgLogoCircle from '../assets/player/logo-circle.png'
 
 const ADMIN_NAV_ITEMS = [
     { to: '/admin', labelKey: 'admin.nav.dashboard', icon: LayoutDashboard, end: true },
+    { to: '/admin/users', labelKey: 'admin.nav.users', icon: Users, end: false },
     { to: '/admin/songs', labelKey: 'admin.nav.songs', icon: Music, end: false },
     { to: '/admin/albums', labelKey: 'admin.nav.albums', icon: Disc, end: false },
     { to: '/admin/artists', labelKey: 'admin.nav.artists', icon: Mic2, end: false },

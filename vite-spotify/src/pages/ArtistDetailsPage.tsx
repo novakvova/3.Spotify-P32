@@ -12,6 +12,8 @@ import {
 import type { ISong } from '../types/ISong'
 import { Play, Pause, ArrowLeft, Music, Disc } from 'lucide-react'
 import { useGetAlbumsQuery } from '../services/albums/albumsApi.ts'
+import MediaImage from '../components/MediaImage'
+import { resolveSongCover } from '../utils/format'
 
 export default function ArtistDetailsPage() {
     const { t } = useTranslation()
@@ -62,9 +64,12 @@ export default function ArtistDetailsPage() {
             </button>
 
             <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-8">
-                <div className="w-40 h-40 md:w-48 md:h-48 rounded-full shadow-xl flex items-center justify-center shrink-0 text-white font-black text-5xl bg-linear-to-br from-sonora-purple to-sonora-pink">
-                    {artist.name[0]?.toUpperCase() ?? '?'}
-                </div>
+                <MediaImage
+                    src={artist.imageUrl}
+                    alt={artist.name}
+                    className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden shadow-xl flex items-center justify-center shrink-0 text-white font-black text-5xl bg-linear-to-br from-sonora-purple to-sonora-pink"
+                    fallback={<span>{artist.name[0]?.toUpperCase() ?? '?'}</span>}
+                />
                 <div className="text-center md:text-left min-w-0">
                     <p className="text-xs font-black uppercase tracking-widest opacity-60 text-white">
                         {t('catalog.artistBadge')}
@@ -92,9 +97,12 @@ export default function ArtistDetailsPage() {
                                 to={`/albums/${album.id}`}
                                 className="flex flex-col gap-2 transition-all group"
                             >
-                                <div className="w-full aspect-square rounded-lg flex items-center justify-center shadow-md transition-transform group-hover:scale-105 bg-linear-to-br from-sonora-purple to-sonora-light">
-                                    <Disc size={44} className="text-white/80" />
-                                </div>
+                                <MediaImage
+                                    src={album.coverUrl}
+                                    alt={album.title}
+                                    className="w-full aspect-square rounded-lg overflow-hidden flex items-center justify-center shadow-md transition-transform group-hover:scale-105 bg-linear-to-br from-sonora-purple to-sonora-light"
+                                    fallback={<Disc size={44} className="text-white/80" />}
+                                />
                                 <p className="font-bold text-sm truncate transition-colors text-white">
                                     {album.title}
                                 </p>
@@ -129,12 +137,17 @@ export default function ArtistDetailsPage() {
                                 >
                                     {active && isPlaying ? '♫' : i + 1}
                                 </span>
-                                <div className="w-8 h-8 rounded bg-white/10 flex items-center justify-center shrink-0">
-                                    <Music
-                                        size={14}
-                                        className={active ? 'text-sonora-light' : 'text-sonora-muted'}
-                                    />
-                                </div>
+                                <MediaImage
+                                    src={resolveSongCover(song, albumsData)}
+                                    alt={song.name}
+                                    className="w-9 h-9 rounded-md overflow-hidden bg-white/10 flex items-center justify-center shrink-0"
+                                    fallback={
+                                        <Music
+                                            size={14}
+                                            className={active ? 'text-sonora-light' : 'text-sonora-muted'}
+                                        />
+                                    }
+                                />
                                 <div className="flex-1 min-w-0">
                                     <p
                                         className={`text-sm font-semibold truncate ${

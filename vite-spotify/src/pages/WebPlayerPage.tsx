@@ -14,6 +14,8 @@ import { useGetArtistsQuery } from '../services/artists/artistsApi'
 import { useGetSongsQuery } from '../services/songs/songsApi'
 import { useGetGenresQuery } from '../services/genres/genresApi'
 import type { ISong } from '../types/ISong'
+import MediaImage from '../components/MediaImage'
+import { resolveSongCover } from '../utils/format'
 
 const CARD_GRADIENT_CLASSES = [
     'bg-gradient-to-br from-sonora-purple to-sonora-light',
@@ -167,24 +169,33 @@ export default function WebPlayerPage() {
                                         to={`/albums/${album.id}`}
                                         className="flex flex-col items-start group cursor-pointer w-full"
                                     >
-                                        <div
-                                            className={`relative overflow-hidden w-full aspect-square rounded-xl ${gradientClass} flex flex-col items-center justify-center p-4 text-center shadow-md transition-transform duration-200 group-hover:scale-105`}
+                                        <MediaImage
+                                            src={album.coverUrl}
+                                            alt={album.title}
+                                            className={`relative overflow-hidden w-full aspect-square rounded-xl ${gradientClass} shadow-md transition-transform duration-200 group-hover:scale-105`}
+                                            fallback={
+                                                <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                                                    <Disc
+                                                        size={54}
+                                                        className="text-white/80 mb-2 transition-transform duration-500 group-hover:rotate-90"
+                                                    />
+                                                    <span className="font-bold text-sm text-white line-clamp-2 px-1">
+                                                        {album.title}
+                                                    </span>
+                                                    <span className="text-xs text-white/75 mt-1">
+                                                        {album.releaseYear}
+                                                    </span>
+                                                </div>
+                                            }
                                         >
-                                            <Disc size={54} className="text-white/80 mb-2 transition-transform duration-500 group-hover:rotate-90" />
-                                            <span className="font-bold text-sm text-white line-clamp-2 px-1">
-                                                {album.title}
-                                            </span>
-                                            <span className="text-xs text-white/75 mt-1">
-                                                {album.releaseYear}
-                                            </span>
                                             <button
                                                 type="button"
                                                 onClick={(e) => handlePlayAlbum(e, album.title)}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-3 right-3 w-11 h-11 rounded-full bg-sonora-dark text-white flex items-center justify-center shadow-lg cursor-pointer"
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-3 right-3 w-11 h-11 rounded-full bg-sonora-dark text-white flex items-center justify-center shadow-lg cursor-pointer z-10"
                                             >
                                                 <Play size={20} fill="currentColor" className="ml-0.5" />
                                             </button>
-                                        </div>
+                                        </MediaImage>
 
                                         <div className="flex flex-col items-start w-full mt-3.5 gap-1">
                                             <p className="font-bold text-base leading-6 text-white truncate w-full">
@@ -212,9 +223,12 @@ export default function WebPlayerPage() {
                                 to={`/artists/${featuredArtist.id}`}
                                 className="flex items-center group gap-4"
                             >
-                                <div className="relative shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-sonora-purple to-sonora-pink flex items-center justify-center font-bold text-xl text-white">
-                                    {featuredArtist.name[0]?.toUpperCase() ?? '?'}
-                                </div>
+                                <MediaImage
+                                    src={featuredArtist.imageUrl}
+                                    alt={featuredArtist.name}
+                                    className="relative shrink-0 w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-sonora-purple to-sonora-pink flex items-center justify-center font-bold text-xl text-white"
+                                    fallback={<span>{featuredArtist.name[0]?.toUpperCase() ?? '?'}</span>}
+                                />
 
                                 <div className="flex flex-col items-start">
                                     <p className="font-normal text-base leading-6 text-white/90">
@@ -243,28 +257,35 @@ export default function WebPlayerPage() {
                         {(activeTab === 'music' ? songs : songs.slice(0, 4)).map((song, idx) => {
                             const isActive = currentSong?.id === song.id
                             const gradientClass = CARD_GRADIENT_CLASSES[(idx + 2) % CARD_GRADIENT_CLASSES.length]
+                            const coverSrc = resolveSongCover(song, albums)
                             return (
                                 <div
                                     key={song.id}
                                     onClick={() => handlePlaySong(song, songs)}
                                     className="flex flex-col items-start group cursor-pointer w-full"
                                 >
-                                    <div
-                                        className={`relative overflow-hidden w-full aspect-square rounded-xl ${gradientClass} flex flex-col items-center justify-center p-4 text-center shadow-md transition-transform duration-200 group-hover:scale-105 ${
+                                    <MediaImage
+                                        src={coverSrc}
+                                        alt={song.name}
+                                        className={`relative overflow-hidden w-full aspect-square rounded-xl ${gradientClass} shadow-md transition-transform duration-200 group-hover:scale-105 ${
                                             isActive ? 'ring-2 ring-white' : ''
                                         }`}
+                                        fallback={
+                                            <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                                                <Music size={48} className="text-white/85 mb-2" />
+                                                <span className="font-bold text-sm text-white line-clamp-2 px-1">
+                                                    {song.name}
+                                                </span>
+                                                {song.album_title && (
+                                                    <span className="text-xs text-white/75 mt-1 truncate max-w-full px-2">
+                                                        {song.album_title}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        }
                                     >
-                                        <Music size={48} className="text-white/85 mb-2" />
-                                        <span className="font-bold text-sm text-white line-clamp-2 px-1">
-                                            {song.name}
-                                        </span>
-                                        {song.album_title && (
-                                            <span className="text-xs text-white/75 mt-1 truncate max-w-full px-2">
-                                                {song.album_title}
-                                            </span>
-                                        )}
                                         <div
-                                            className={`transition-opacity absolute bottom-3 right-3 w-11 h-11 rounded-full bg-sonora-dark text-white flex items-center justify-center shadow-lg ${
+                                            className={`transition-opacity absolute bottom-3 right-3 w-11 h-11 rounded-full bg-sonora-dark text-white flex items-center justify-center shadow-lg z-10 ${
                                                 isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                                             }`}
                                         >
@@ -274,7 +295,7 @@ export default function WebPlayerPage() {
                                                 <Play size={20} fill="currentColor" className="ml-0.5" />
                                             )}
                                         </div>
-                                    </div>
+                                    </MediaImage>
 
                                     <div className="flex flex-col items-start w-full mt-3.5 gap-1">
                                         <p
@@ -301,13 +322,16 @@ export default function WebPlayerPage() {
                                         to={`/artists/${artist.id}`}
                                         className="flex flex-col items-start group cursor-pointer w-full"
                                     >
-                                        <div
+                                        <MediaImage
+                                            src={artist.imageUrl}
+                                            alt={artist.name}
                                             className={`relative overflow-hidden w-full aspect-square rounded-full ${gradientClass} flex flex-col items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-105`}
-                                        >
-                                            <span className="font-black text-5xl text-white">
-                                                {artist.name[0]?.toUpperCase() ?? '?'}
-                                            </span>
-                                        </div>
+                                            fallback={
+                                                <span className="font-black text-5xl text-white">
+                                                    {artist.name[0]?.toUpperCase() ?? '?'}
+                                                </span>
+                                            }
+                                        />
 
                                         <div className="flex flex-col items-start w-full mt-3.5 gap-1">
                                             <p className="font-bold text-base leading-6 text-white truncate w-full">
@@ -347,14 +371,19 @@ export default function WebPlayerPage() {
                                     to={`/artists/${artist.id}`}
                                     className="flex flex-col items-start group cursor-pointer w-full"
                                 >
-                                    <div
+                                    <MediaImage
+                                        src={artist.imageUrl}
+                                        alt={artist.name}
                                         className={`relative overflow-hidden w-full aspect-square rounded-full ${gradientClass} flex flex-col items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-105`}
-                                    >
-                                        <Mic2 size={32} className="text-white/60 mb-1" />
-                                        <span className="font-black text-3xl text-white">
-                                            {artist.name[0]?.toUpperCase() ?? '?'}
-                                        </span>
-                                    </div>
+                                        fallback={
+                                            <div className="w-full h-full flex flex-col items-center justify-center">
+                                                <Mic2 size={32} className="text-white/60 mb-1" />
+                                                <span className="font-black text-3xl text-white">
+                                                    {artist.name[0]?.toUpperCase() ?? '?'}
+                                                </span>
+                                            </div>
+                                        }
+                                    />
 
                                     <div className="flex flex-col items-start w-full mt-3.5 gap-1">
                                         <p className="font-bold text-base leading-6 text-white truncate w-full">

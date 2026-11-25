@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Home, Music, Layers, Mic2, Disc } from 'lucide-react'
 import { useGetAlbumsQuery } from '../services/albums/albumsApi'
 import { useGetArtistsQuery } from '../services/artists/artistsApi'
+import MediaImage from '../components/MediaImage'
 
 import imgLibrary from '../assets/player/library.svg'
 
@@ -68,13 +69,18 @@ export default function Sidebar() {
                                     key={`artist-${artist.id}`}
                                     to={`/artists/${artist.id}`}
                                     title={artist.name}
-                                    className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 font-bold text-lg text-white transition-transform hover:scale-105 ${
-                                        isActive
-                                            ? 'bg-sonora-light ring-2 ring-white'
-                                            : 'bg-gradient-to-br from-sonora-purple to-sonora-pink'
-                                    }`}
+                                    className="shrink-0 transition-transform hover:scale-105"
                                 >
-                                    {artist.name[0]?.toUpperCase() ?? '?'}
+                                    <MediaImage
+                                        src={artist.imageUrl}
+                                        alt={artist.name}
+                                        className={`w-12 h-12 rounded-full overflow-hidden flex items-center justify-center font-bold text-lg text-white ${
+                                            isActive
+                                                ? 'bg-sonora-light ring-2 ring-white'
+                                                : 'bg-gradient-to-br from-sonora-purple to-sonora-pink'
+                                        }`}
+                                        fallback={<span>{artist.name[0]?.toUpperCase() ?? '?'}</span>}
+                                    />
                                 </Link>
                             )
                         })}
@@ -90,13 +96,18 @@ export default function Sidebar() {
                                     key={`album-${album.id}`}
                                     to={`/albums/${album.id}`}
                                     title={album.title}
-                                    className={`w-12 h-12 rounded-md flex items-center justify-center shrink-0 font-bold text-base text-white transition-transform hover:scale-105 ${
-                                        isActive
-                                            ? 'bg-sonora-light ring-2 ring-white'
-                                            : 'bg-gradient-to-br from-sonora-warm to-sonora-light'
-                                    }`}
+                                    className="shrink-0 transition-transform hover:scale-105"
                                 >
-                                    <Disc size={22} />
+                                    <MediaImage
+                                        src={album.coverUrl}
+                                        alt={album.title}
+                                        className={`w-12 h-12 rounded-md overflow-hidden flex items-center justify-center font-bold text-base text-white ${
+                                            isActive
+                                                ? 'bg-sonora-light ring-2 ring-white'
+                                                : 'bg-gradient-to-br from-sonora-warm to-sonora-light'
+                                        }`}
+                                        fallback={<Disc size={22} />}
+                                    />
                                 </Link>
                             )
                         })}

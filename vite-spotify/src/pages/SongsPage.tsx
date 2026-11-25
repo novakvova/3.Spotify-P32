@@ -1,9 +1,13 @@
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Music } from 'lucide-react'
 import { useGetSongsQuery, useSearchSongsQuery } from '../services/songs/songsApi'
+import { useGetAlbumsQuery } from '../services/albums/albumsApi'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { playSong, togglePlay, selectCurrentSong, selectIsPlaying } from '../store/slices/playerSlice'
 import type { ISong } from '../types/ISong'
+import MediaImage from '../components/MediaImage'
+import { resolveSongCover } from '../utils/format'
 import { useEffect, useState } from 'react'
 
 export default function SongsPage() {
@@ -26,6 +30,7 @@ export default function SongsPage() {
         search,
         { skip: !search }
     )
+    const { data: albumsData } = useGetAlbumsQuery()
     const songs = search ? (searchData ?? []) : (pageData?.content ?? [])
     const isLoading = search ? isSearchLoading : isPageLoading
     useEffect(() => {
@@ -89,6 +94,18 @@ export default function SongsPage() {
                                     )}
                                 </button>
                             </div>
+
+                            <MediaImage
+                                src={resolveSongCover(song, albumsData)}
+                                alt={song.name}
+                                className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-sonora-warm/60 flex items-center justify-center text-white"
+                                fallback={
+                                    <Music
+                                        size={16}
+                                        className={active ? 'text-sonora-light' : 'text-sonora-lavender'}
+                                    />
+                                }
+                            />
 
                             <div className="flex-1 min-w-0">
                                 <p

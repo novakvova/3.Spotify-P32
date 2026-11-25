@@ -352,7 +352,7 @@ export default function TopBar() {
                                 title={t('admin.panelTitle')}
                             >
                                 <Shield size={14} />
-                                <span className="hidden md:inline">{t('admin.openAdmin')}</span>
+                                <span className="hidden md:inline whitespace-nowrap">{t('admin.openAdmin')}</span>
                             </Link>
                         )}
 

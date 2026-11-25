@@ -16,64 +16,264 @@ import {
     BarChart3,
     Calendar,
     Flame,
+    Users,
+    RefreshCw,
+    Database,
+    Sparkles,
 } from 'lucide-react'
 import { useGetAllSongsQuery } from '../../services/songs/songsApi'
 import { useGetAlbumsQuery } from '../../services/albums/albumsApi'
 import { useGetArtistsQuery } from '../../services/artists/artistsApi'
 import { useGetGenresQuery } from '../../services/genres/genresApi'
 import { useGetRolesQuery } from '../../services/roles/rolesApi'
+import { useGetAdminUsersQuery } from '../../services/users/adminUsersApi'
+import {
+    useGetArtistsBreakdownQuery,
+    useGetPlatformOverviewQuery,
+} from '../../services/analytics/analyticsApi'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import {
     playSong,
     togglePlay,
+    setAdminStatsMode,
     selectCurrentSong,
     selectIsPlaying,
-    selectSongPlayCounts,
+    selectAdminStatsMode,
 } from '../../store/slices/playerSlice'
 import type { ISong } from '../../types/ISong'
-import { formatNumber, getEffectiveSongPlays } from './adminUtils'
+import type {
+    IAnalyticsDecade,
+    IAnalyticsGenre,
+    IAnalyticsTopAlbum,
+    IAnalyticsTopArtist,
+    IAnalyticsTopSong,
+} from '../../types/IAnalytics'
+import MediaImage from '../../components/MediaImage'
+import { resolveSongCover } from '../../utils/format'
+import { formatNumber, getDeterministicDemoPlays } from './adminUtils'
+
+const FALLBACK_DEMO_SONGS: IAnalyticsTopSong[] = [
+    { id: -1, name: 'Shape of You', artistName: 'Ed Sheeran', albumTitle: 'Divide', coverUrl: null, playCount: 29840 },
+    { id: -2, name: 'Blinding Lights', artistName: 'The Weeknd', albumTitle: 'After Hours', coverUrl: null, playCount: 26410 },
+    { id: -3, name: 'Старі фотографії', artistName: 'Скрябін', albumTitle: 'Танго', coverUrl: null, playCount: 22190 },
+    { id: -4, name: 'Perfect', artistName: 'Ed Sheeran', albumTitle: 'Divide', coverUrl: null, playCount: 18750 },
+    { id: -5, name: 'Обійми', artistName: 'Океан Ельзи', albumTitle: 'Земля', coverUrl: null, playCount: 16320 },
+    { id: -6, name: 'Basket Case', artistName: 'Green Day', albumTitle: 'Dookie', coverUrl: null, playCount: 14110 },
+]
 
 export default function AdminDashboardPage() {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const currentSong = useAppSelector(selectCurrentSong)
     const isPlaying = useAppSelector(selectIsPlaying)
-    const livePlayCounts = useAppSelector(selectSongPlayCounts)
+    const statsMode = useAppSelector(selectAdminStatsMode)
+    const isDemo = statsMode === 'demo'
 
-    const [includeDemo, setIncludeDemo] = useState(true)
     const [genreMode, setGenreMode] = useState<'streams' | 'tracks'>('streams')
 
-    const { data: songs = [], isLoading: isSongsLoading } = useGetAllSongsQuery()
-    const { data: albums = [], isLoading: isAlbumsLoading } = useGetAlbumsQuery()
-    const { data: artists = [], isLoading: isArtistsLoading } = useGetArtistsQuery()
-    const { data: genres = [], isLoading: isGenresLoading } = useGetGenresQuery()
+    const {
+        data: overview,
+        isLoading: isOverviewLoading,
+        isFetching: isOverviewFetching,
+        refetch: refetchOverview,
+    } = useGetPlatformOverviewQuery(
+        { topLimit: 10, recentLimit: 6 },
+        { refetchOnMountOrArgChange: true }
+    )
+    const { data: artistsBreakdown = [] } = useGetArtistsBreakdownQuery(undefined, {
+        refetchOnMountOrArgChange: true,
+    })
+    const { data: songs = [] } = useGetAllSongsQuery()
+    const { data: albums = [] } = useGetAlbumsQuery()
+    const { data: artists = [] } = useGetArtistsQuery()
+    const { data: genres = [] } = useGetGenresQuery()
     const { data: roles = [] } = useGetRolesQuery()
+    const { data: users = [] } = useGetAdminUsersQuery()
 
-    const isLoading = isSongsLoading || isAlbumsLoading || isArtistsLoading || isGenresLoading
+    const demoSongItems: IAnalyticsTopSong[] =
+        songs.length > 0
+            ? songs.map((song) => ({
+                  id: song.id,
+                  name: song.name,
+                  artistName: song.artist_name,
+                  albumTitle: song.album_title,
+                  coverUrl: resolveSongCover(song, albums),
+                  playCount: getDeterministicDemoPlays(song),
+              }))
+            : FALLBACK_DEMO_SONGS
 
-    const totalLiveSessionPlays = Object.values(livePlayCounts).reduce(
-        (acc, val) => acc + val,
+    const demoTotalStreams = demoSongItems.reduce(
+        (acc, item) => acc + item.playCount,
         0
     )
 
-    const songsWithPlays = songs.map((song) => ({
-        song,
-        plays: getEffectiveSongPlays(song, livePlayCounts, includeDemo),
-    }))
-
-    const totalStreams = songsWithPlays.reduce((sum, item) => sum + item.plays, 0)
-
-    const topPlayedSongs = [...songsWithPlays]
-        .sort((a, b) => b.plays - a.plays || b.song.id - a.song.id)
+    const demoTopSongs = [...demoSongItems]
+        .sort((a, b) => b.playCount - a.playCount || b.id - a.id)
         .slice(0, 10)
 
-    const maxTopSongPlays = Math.max(1, ...topPlayedSongs.map((item) => item.plays))
+    const demoLatestSongs = [...demoSongItems]
+        .sort((a, b) => b.id - a.id)
+        .slice(0, 6)
 
-    const avgPlaysPerSong = songs.length > 0 ? Math.round(totalStreams / songs.length) : 0
-    const avgSongsPerAlbum =
-        albums.length > 0 ? (songs.length / albums.length).toFixed(1) : '0.0'
-    const avgSongsPerArtist =
-        artists.length > 0 ? (songs.length / artists.length).toFixed(1) : '0.0'
+    const demoTopArtists: IAnalyticsTopArtist[] =
+        artists.length > 0
+            ? artists
+                  .map((artist, idx) => {
+                      const matching = demoSongItems.filter(
+                          (s) =>
+                              s.artistName?.toLowerCase() ===
+                              artist.name.toLowerCase()
+                      )
+                      const plays =
+                          matching.length > 0
+                              ? matching.reduce((sum, s) => sum + s.playCount, 0)
+                              : 5400 + ((artist.id * 2713 + idx * 911) % 14000)
+                      return {
+                          id: artist.id,
+                          name: artist.name,
+                          imageUrl: artist.imageUrl ?? null,
+                          tracksCount: Math.max(matching.length, 2),
+                          playsCount: plays,
+                      }
+                  })
+                  .sort((a, b) => b.playsCount - a.playsCount)
+                  .slice(0, 6)
+            : [
+                  { id: -1, name: 'Ed Sheeran', imageUrl: null, tracksCount: 8, playsCount: 48590 },
+                  { id: -2, name: 'The Weeknd', imageUrl: null, tracksCount: 6, playsCount: 39200 },
+                  { id: -3, name: 'Скрябін', imageUrl: null, tracksCount: 7, playsCount: 34150 },
+                  { id: -4, name: 'Океан Ельзи', imageUrl: null, tracksCount: 5, playsCount: 27840 },
+              ]
+
+    const demoTopAlbums: IAnalyticsTopAlbum[] =
+        albums.length > 0
+            ? albums
+                  .map((album, idx) => {
+                      const matching = demoSongItems.filter(
+                          (s) =>
+                              s.albumTitle?.toLowerCase() ===
+                              album.title.toLowerCase()
+                      )
+                      const artistObj = artists.find((ar) => ar.id === album.artistId)
+                      const plays =
+                          matching.length > 0
+                              ? matching.reduce((sum, s) => sum + s.playCount, 0)
+                              : 3800 + ((album.id * 1931 + idx * 733) % 11500)
+                      return {
+                          id: album.id,
+                          title: album.title,
+                          artistName:
+                              artistObj?.name ?? matching[0]?.artistName ?? '—',
+                          releaseYear: album.releaseYear,
+                          coverUrl: album.coverUrl ?? null,
+                          tracksCount: Math.max(matching.length, 1),
+                          playsCount: plays,
+                      }
+                  })
+                  .sort((a, b) => b.playsCount - a.playsCount)
+                  .slice(0, 6)
+            : [
+                  { id: -1, title: 'Divide', artistName: 'Ed Sheeran', releaseYear: 2017, coverUrl: null, tracksCount: 5, playsCount: 48590 },
+                  { id: -2, title: 'After Hours', artistName: 'The Weeknd', releaseYear: 2020, coverUrl: null, tracksCount: 4, playsCount: 31400 },
+                  { id: -3, title: 'Танго', artistName: 'Скрябін', releaseYear: 2005, coverUrl: null, tracksCount: 4, playsCount: 25900 },
+              ]
+
+    const demoGenres: IAnalyticsGenre[] =
+        genres.length > 0
+            ? genres.map((genre, idx) => {
+                  const matchingSongs = songs.filter((s) =>
+                      s.genres_names?.some(
+                          (gn) => gn.toLowerCase() === genre.name.toLowerCase()
+                      )
+                  )
+                  const matchingPlays = matchingSongs.reduce(
+                      (sum, s) => sum + getDeterministicDemoPlays(s),
+                      0
+                  )
+                  return {
+                      genreId: genre.id,
+                      genreName: genre.name,
+                      tracksCount:
+                          matchingSongs.length > 0
+                              ? matchingSongs.length
+                              : 3 + ((genre.id + idx) % 6),
+                      playsCount:
+                          matchingPlays > 0
+                              ? matchingPlays
+                              : 6200 + ((genre.id * 3191 + idx * 829) % 18000),
+                  }
+              })
+            : [
+                  { genreId: -1, genreName: 'Pop', playsCount: 54200, tracksCount: 12 },
+                  { genreId: -2, genreName: 'Rock', playsCount: 38900, tracksCount: 9 },
+                  { genreId: -3, genreName: 'Indie', playsCount: 24600, tracksCount: 7 },
+                  { genreId: -4, genreName: 'Synthwave', playsCount: 19300, tracksCount: 5 },
+              ]
+
+    const demoDecadeMap = new Map<number, IAnalyticsDecade>()
+    for (const album of albums) {
+        if (!Number.isFinite(album.releaseYear) || album.releaseYear <= 1900) continue
+        const decadeStart = Math.floor(album.releaseYear / 10) * 10
+        const matching = demoSongItems.filter(
+            (s) => s.albumTitle?.toLowerCase() === album.title.toLowerCase()
+        )
+        const plays =
+            matching.length > 0
+                ? matching.reduce((sum, s) => sum + s.playCount, 0)
+                : 4500 + ((album.id * 1597) % 9000)
+        const existing = demoDecadeMap.get(decadeStart) ?? {
+            decadeStart,
+            label: '',
+            albumsCount: 0,
+            tracksCount: 0,
+            playsCount: 0,
+        }
+        existing.albumsCount += 1
+        existing.tracksCount += Math.max(matching.length, 1)
+        existing.playsCount += plays
+        demoDecadeMap.set(decadeStart, existing)
+    }
+    const demoDecades: IAnalyticsDecade[] =
+        demoDecadeMap.size > 0
+            ? Array.from(demoDecadeMap.values())
+            : [
+                  { decadeStart: 2020, label: '', albumsCount: 4, tracksCount: 14, playsCount: 52400 },
+                  { decadeStart: 2010, label: '', albumsCount: 6, tracksCount: 21, playsCount: 68900 },
+                  { decadeStart: 2000, label: '', albumsCount: 3, tracksCount: 11, playsCount: 31200 },
+                  { decadeStart: 1990, label: '', albumsCount: 2, tracksCount: 7, playsCount: 18400 },
+              ]
+
+    const summary = overview?.summary
+    const totalStreams = isDemo ? demoTotalStreams : (summary?.totalPlays ?? 0)
+    const totalSongs = isDemo
+        ? Math.max(songs.length, demoSongItems.length)
+        : (summary?.totalSongs ?? songs.length)
+    const totalAlbums = isDemo
+        ? Math.max(albums.length, demoTopAlbums.length)
+        : (summary?.totalAlbums ?? albums.length)
+    const totalArtists = isDemo
+        ? Math.max(artists.length, demoTopArtists.length)
+        : (summary?.totalArtists ?? artistsBreakdown.length)
+    const totalGenres = isDemo
+        ? Math.max(genres.length, demoGenres.length)
+        : (summary?.totalGenres ?? (overview?.genres.length ?? 0))
+    const totalUsers = isDemo ? Math.max(users.length, 48) : users.length
+
+    const avgPlaysPerTrack = isDemo
+        ? Math.round(demoTotalStreams / Math.max(1, demoSongItems.length))
+        : summary
+        ? Math.round(summary.avgPlaysPerTrack)
+        : 0
+    const avgTracksPerAlbum = isDemo
+        ? (totalSongs / Math.max(1, totalAlbums)).toFixed(1)
+        : summary
+        ? summary.avgTracksPerAlbum.toFixed(1)
+        : '0.0'
+    const avgTracksPerArtist = isDemo
+        ? (totalSongs / Math.max(1, totalArtists)).toFixed(1)
+        : summary
+        ? summary.avgTracksPerArtist.toFixed(1)
+        : '0.0'
 
     const validYears = albums
         .map((a) => a.releaseYear)
@@ -81,7 +281,67 @@ export default function AdminDashboardPage() {
     const releaseSpanText =
         validYears.length > 0
             ? `${Math.min(...validYears)} – ${Math.max(...validYears)}`
+            : isDemo
+            ? '1994 – 2025'
             : '—'
+
+    const topPlayedSongs = isDemo ? demoTopSongs : (overview?.topSongs ?? [])
+    const maxTopSongPlays = Math.max(
+        1,
+        ...topPlayedSongs.map((item) => item.playCount)
+    )
+
+    const artistAlbumsMap = new Map<number, number>(
+        artistsBreakdown.map((item) => [item.id, item.albumsCount])
+    )
+    const topArtists = isDemo
+        ? demoTopArtists
+        : (overview?.topArtists ?? []).slice(0, 6)
+    const maxArtistPlays = Math.max(
+        1,
+        ...topArtists.map((a) => (a.playsCount > 0 ? a.playsCount : a.tracksCount))
+    )
+
+    const topAlbums = isDemo
+        ? demoTopAlbums
+        : (overview?.topAlbums ?? []).slice(0, 6)
+    const maxAlbumPlays = Math.max(
+        1,
+        ...topAlbums.map((al) => (al.playsCount > 0 ? al.playsCount : al.tracksCount))
+    )
+
+    const allGenreAnalytics = isDemo ? demoGenres : (overview?.genres ?? [])
+    const topGenreByStreams = [...allGenreAnalytics].sort(
+        (a, b) => b.playsCount - a.playsCount || b.tracksCount - a.tracksCount
+    )[0]
+
+    const genreStats = [...allGenreAnalytics]
+        .sort((a, b) =>
+            genreMode === 'streams'
+                ? b.playsCount - a.playsCount || b.tracksCount - a.tracksCount
+                : b.tracksCount - a.tracksCount || b.playsCount - a.playsCount
+        )
+        .slice(0, 8)
+
+    const maxGenreMetric = Math.max(
+        1,
+        ...genreStats.map((g) =>
+            genreMode === 'streams' ? g.playsCount : g.tracksCount
+        )
+    )
+
+    const decadeStats = [...(isDemo ? demoDecades : (overview?.decades ?? []))].sort(
+        (a, b) => b.decadeStart - a.decadeStart
+    )
+    const maxDecadePlays = Math.max(
+        1,
+        ...decadeStats.map((d) =>
+            d.playsCount > 0 ? d.playsCount : d.tracksCount
+        )
+    )
+
+    const recentSongs = isDemo ? demoLatestSongs : (overview?.latestSongs ?? [])
+    const showLoadingPlaceholder = !isDemo && isOverviewLoading
 
     const statCards = [
         {
@@ -93,31 +353,38 @@ export default function AdminDashboardPage() {
         },
         {
             label: t('admin.dashboard.totalSongs'),
-            value: formatNumber(songs.length),
+            value: formatNumber(totalSongs),
             to: '/admin/songs',
             icon: Music,
             gradient: 'from-sonora-purple to-sonora-light',
         },
         {
             label: t('admin.dashboard.totalAlbums'),
-            value: formatNumber(albums.length),
+            value: formatNumber(totalAlbums),
             to: '/admin/albums',
             icon: Disc,
             gradient: 'from-sonora-warm to-sonora-pink',
         },
         {
             label: t('admin.dashboard.totalArtists'),
-            value: formatNumber(artists.length),
+            value: formatNumber(totalArtists),
             to: '/admin/artists',
             icon: Mic2,
             gradient: 'from-purple-700 to-pink-500',
         },
         {
             label: t('admin.dashboard.totalGenres'),
-            value: formatNumber(genres.length),
+            value: formatNumber(totalGenres),
             to: '/admin/genres',
             icon: Layers,
             gradient: 'from-violet-900 to-purple-500',
+        },
+        {
+            label: t('admin.dashboard.totalUsers'),
+            value: formatNumber(totalUsers),
+            to: '/admin/users',
+            icon: Users,
+            gradient: 'from-indigo-700 to-sonora-light',
         },
         {
             label: t('admin.dashboard.totalRoles'),
@@ -128,146 +395,66 @@ export default function AdminDashboardPage() {
         },
     ]
 
-    const artistStats = artists
-        .map((artist) => {
-            const artistSongs = songsWithPlays.filter(
-                (item) =>
-                    item.song.artist_name?.toLowerCase() === artist.name.toLowerCase()
-            )
-            const artistAlbumsCount = albums.filter(
-                (al) => al.artistId === artist.id
-            ).length
-            const plays = artistSongs.reduce((sum, item) => sum + item.plays, 0)
-            return {
-                id: artist.id,
-                name: artist.name,
-                tracksCount: artistSongs.length,
-                albumsCount: artistAlbumsCount,
-                plays,
-            }
-        })
-        .sort((a, b) => b.plays - a.plays || b.tracksCount - a.tracksCount)
-        .slice(0, 6)
-
-    const maxArtistPlays = Math.max(1, ...artistStats.map((a) => a.plays))
-
-    const albumStats = albums
-        .map((album) => {
-            const albumSongs = songsWithPlays.filter(
-                (item) =>
-                    item.song.album_title?.toLowerCase() === album.title.toLowerCase()
-            )
-            const artistObj = artists.find((ar) => ar.id === album.artistId)
-            const plays = albumSongs.reduce((sum, item) => sum + item.plays, 0)
-            return {
-                id: album.id,
-                title: album.title,
-                year: album.releaseYear,
-                artistName: artistObj?.name ?? albumSongs[0]?.song.artist_name ?? '—',
-                tracksCount: albumSongs.length,
-                plays,
-            }
-        })
-        .sort((a, b) => b.plays - a.plays || b.tracksCount - a.tracksCount)
-        .slice(0, 6)
-
-    const maxAlbumPlays = Math.max(1, ...albumStats.map((al) => al.plays))
-
-    const genreStatsAll = genres.map((g) => {
-        const matching = songsWithPlays.filter((item) =>
-            item.song.genres_names?.some(
-                (gn) => gn.toLowerCase() === g.name.toLowerCase()
-            )
-        )
-        const plays = matching.reduce((sum, item) => sum + item.plays, 0)
-        return {
-            id: g.id,
-            name: g.name,
-            count: matching.length,
-            plays,
-        }
-    })
-
-    const topGenreByStreams = [...genreStatsAll].sort((a, b) => b.plays - a.plays)[0]
-
-    const genreStats = [...genreStatsAll]
-        .sort((a, b) =>
-            genreMode === 'streams'
-                ? b.plays - a.plays || b.count - a.count
-                : b.count - a.count || b.plays - a.plays
-        )
-        .slice(0, 8)
-
-    const maxGenreMetric = Math.max(
-        1,
-        ...genreStats.map((g) => (genreMode === 'streams' ? g.plays : g.count))
-    )
-
-    const decadeMap = new Map<
-        number,
-        { decade: number; albumsCount: number; tracksCount: number; plays: number }
-    >()
-    for (const album of albums) {
-        if (!Number.isFinite(album.releaseYear) || album.releaseYear <= 1900) continue
-        const decade = Math.floor(album.releaseYear / 10) * 10
-        const albumSongs = songsWithPlays.filter(
-            (item) => item.song.album_title?.toLowerCase() === album.title.toLowerCase()
-        )
-        const plays = albumSongs.reduce((sum, item) => sum + item.plays, 0)
-        const existing = decadeMap.get(decade) ?? {
-            decade,
-            albumsCount: 0,
-            tracksCount: 0,
-            plays: 0,
-        }
-        existing.albumsCount += 1
-        existing.tracksCount += albumSongs.length
-        existing.plays += plays
-        decadeMap.set(decade, existing)
-    }
-
-    const decadeStats = Array.from(decadeMap.values()).sort(
-        (a, b) => b.decade - a.decade
-    )
-    const maxDecadePlays = Math.max(
-        1,
-        ...decadeStats.map((d) => (d.plays > 0 ? d.plays : d.tracksCount))
-    )
-
-    const recentSongs = [...songsWithPlays]
-        .sort((a, b) => b.song.id - a.song.id)
-        .slice(0, 6)
-
     const secondaryMetrics = [
         {
             label: t('admin.dashboard.avgPlaysPerSong'),
-            value: isLoading ? '…' : formatNumber(avgPlaysPerSong),
+            value: showLoadingPlaceholder ? '…' : formatNumber(avgPlaysPerTrack),
             icon: TrendingUp,
         },
         {
             label: t('admin.dashboard.avgSongsPerAlbum'),
-            value: isLoading ? '…' : avgSongsPerAlbum,
+            value: showLoadingPlaceholder ? '…' : avgTracksPerAlbum,
             icon: BarChart3,
         },
         {
             label: t('admin.dashboard.avgSongsPerArtist'),
-            value: isLoading ? '…' : avgSongsPerArtist,
+            value: showLoadingPlaceholder ? '…' : avgTracksPerArtist,
             icon: Flame,
         },
         {
             label: t('admin.dashboard.topGenreKpi'),
-            value: isLoading ? '…' : topGenreByStreams?.name ?? '—',
-            sub: releaseSpanText !== '—' ? `${t('admin.dashboard.releaseSpanKpi')}: ${releaseSpanText}` : undefined,
+            value: showLoadingPlaceholder ? '…' : topGenreByStreams?.genreName ?? '—',
+            sub:
+                releaseSpanText !== '—'
+                    ? `${t('admin.dashboard.releaseSpanKpi')}: ${releaseSpanText}`
+                    : undefined,
             icon: Calendar,
         },
     ]
 
-    const handlePlayPreview = (song: ISong, queueSource: ISong[]) => {
-        if (currentSong?.id === song.id) {
+    const handlePlayById = (songId: number, queueIds: number[]) => {
+        const matched = songs.find((s) => s.id === songId) ?? songs[0]
+        if (!matched) return
+        if (currentSong?.id === matched.id) {
             dispatch(togglePlay())
-        } else {
-            dispatch(playSong({ song, queue: queueSource }))
+            return
         }
+        const resolvedQueue: ISong[] = queueIds
+            .map((qid) => songs.find((s) => s.id === qid))
+            .filter((item): item is ISong => Boolean(item))
+        dispatch(
+            playSong({
+                song: matched,
+                queue: resolvedQueue.length > 0 ? resolvedQueue : songs,
+            })
+        )
+    }
+
+    const resolveAnalyticsSongCover = (
+        songId: number,
+        directCoverUrl: string | null,
+        albumTitle: string | null
+    ): string | null => {
+        if (directCoverUrl) return directCoverUrl
+        const fullSong = songs.find((s) => s.id === songId)
+        if (fullSong) return resolveSongCover(fullSong, albums)
+        if (albumTitle) {
+            const matchedAlbum = albums.find(
+                (a) => a.title.toLowerCase() === albumTitle.toLowerCase()
+            )
+            if (matchedAlbum?.coverUrl) return matchedAlbum.coverUrl
+        }
+        return null
     }
 
     const getRankBadgeClass = (index: number): string => {
@@ -291,46 +478,62 @@ export default function AdminDashboardPage() {
                         {t('admin.dashboard.title')}
                     </h1>
                     <p className="text-sm text-sonora-muted mt-1">
-                        {t('admin.dashboard.subtitle')}
+                        {isDemo
+                            ? t('admin.dashboard.modeDemoHint')
+                            : t('admin.dashboard.modeRealHint')}
                     </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-sonora-dark/80 border border-sonora-light/30 text-xs font-semibold text-sonora-lavender">
-                        <Headphones size={14} className="text-sonora-light" />
-                        {t('admin.dashboard.liveSessionBadge', {
-                            count: totalLiveSessionPlays,
-                        })}
-                    </span>
-
-                    <div className="inline-flex items-center p-1 rounded-full bg-sonora-dark border border-white/10">
+                    <div className="inline-flex items-center p-1 rounded-full bg-sonora-dark border border-white/15">
                         <button
                             type="button"
-                            onClick={() => setIncludeDemo(true)}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-                                includeDemo
-                                    ? 'bg-sonora-light text-sonora-dark'
+                            onClick={() => dispatch(setAdminStatsMode('real'))}
+                            title={t('admin.dashboard.modeRealHint')}
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                                !isDemo
+                                    ? 'bg-sonora-light text-sonora-dark shadow-xs'
                                     : 'text-sonora-lavender hover:text-white'
                             }`}
                         >
-                            {t('admin.dashboard.modeCombined')}
+                            <Database size={13} />
+                            <span>{t('admin.dashboard.modeReal')}</span>
                         </button>
                         <button
                             type="button"
-                            onClick={() => setIncludeDemo(false)}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-                                !includeDemo
-                                    ? 'bg-sonora-light text-sonora-dark'
+                            onClick={() => dispatch(setAdminStatsMode('demo'))}
+                            title={t('admin.dashboard.modeDemoHint')}
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                                isDemo
+                                    ? 'bg-sonora-pink text-sonora-dark shadow-xs'
                                     : 'text-sonora-lavender hover:text-white'
                             }`}
                         >
-                            {t('admin.dashboard.modeLiveOnly')}
+                            <Sparkles size={13} />
+                            <span>{t('admin.dashboard.modeDemo')}</span>
                         </button>
                     </div>
+
+                    {!isDemo && (
+                        <button
+                            type="button"
+                            onClick={() => void refetchOverview()}
+                            disabled={isOverviewFetching}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sonora-dark border border-white/15 hover:border-sonora-light/50 text-xs font-bold text-white transition-colors cursor-pointer shrink-0 disabled:opacity-60"
+                        >
+                            <RefreshCw
+                                size={14}
+                                className={`text-sonora-light ${
+                                    isOverviewFetching ? 'animate-spin' : ''
+                                }`}
+                            />
+                            <span>{t('admin.dashboard.refreshBtn')}</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-6 gap-3.5 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7 gap-3.5 sm:gap-4">
                 {statCards.map(({ label, value, to, icon: Icon, gradient }) => (
                     <Link
                         key={label}
@@ -348,7 +551,7 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
                         <p className="text-2xl sm:text-3xl font-black text-white truncate">
-                            {isLoading ? '…' : value}
+                            {showLoadingPlaceholder ? '…' : value}
                         </p>
                     </Link>
                 ))}
@@ -411,6 +614,13 @@ export default function AdminDashboardPage() {
                         <Plus size={15} />
                         {t('admin.dashboard.addGenreBtn')}
                     </Link>
+                    <Link
+                        to="/admin/users?create=1"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-sonora-warm text-white font-semibold text-xs sm:text-sm hover:opacity-90 transition-opacity"
+                    >
+                        <Plus size={15} />
+                        {t('admin.dashboard.addUserBtn')}
+                    </Link>
                 </div>
             </div>
 
@@ -440,15 +650,15 @@ export default function AdminDashboardPage() {
 
                 {topPlayedSongs.length > 0 ? (
                     <div className="grid grid-cols-1 2xl:grid-cols-2 gap-3">
-                        {topPlayedSongs.map(({ song, plays }, idx) => {
+                        {topPlayedSongs.map((song, idx) => {
                             const active = currentSong?.id === song.id
                             const sharePercent =
                                 totalStreams > 0
-                                    ? ((plays / totalStreams) * 100).toFixed(1)
+                                    ? ((song.playCount / totalStreams) * 100).toFixed(1)
                                     : '0.0'
                             return (
                                 <div
-                                    key={song.id}
+                                    key={`${song.id}-${idx}`}
                                     className={`flex items-center gap-3.5 p-3.5 rounded-2xl border transition-colors ${
                                         active
                                             ? 'bg-sonora-warm/50 border-sonora-light/40'
@@ -466,22 +676,30 @@ export default function AdminDashboardPage() {
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            handlePlayPreview(
-                                                song,
-                                                topPlayedSongs.map((item) => item.song)
+                                            handlePlayById(
+                                                song.id,
+                                                topPlayedSongs.map((item) => item.id)
                                             )
                                         }
-                                        className="w-9 h-9 rounded-xl bg-sonora-warm hover:bg-sonora-light text-white flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+                                        className="relative group/play w-11 h-11 rounded-xl overflow-hidden bg-sonora-warm text-white flex items-center justify-center shrink-0 cursor-pointer"
                                     >
-                                        {active && isPlaying ? (
-                                            <Pause size={15} fill="currentColor" />
-                                        ) : (
-                                            <Play
-                                                size={15}
-                                                fill="currentColor"
-                                                className="ml-0.5"
-                                            />
-                                        )}
+                                        <MediaImage
+                                            src={resolveAnalyticsSongCover(
+                                                song.id,
+                                                song.coverUrl,
+                                                song.albumTitle
+                                            )}
+                                            alt={song.name}
+                                            className="w-full h-full flex items-center justify-center"
+                                            fallback={<Music size={17} className="text-white/70" />}
+                                        />
+                                        <span className="absolute inset-0 bg-sonora-dark/60 opacity-0 group-hover/play:opacity-100 transition-opacity flex items-center justify-center">
+                                            {active && isPlaying ? (
+                                                <Pause size={15} fill="currentColor" />
+                                            ) : (
+                                                <Play size={15} fill="currentColor" className="ml-0.5" />
+                                            )}
+                                        </span>
                                     </button>
 
                                     <div className="flex-1 min-w-0 flex flex-col gap-1.5">
@@ -497,14 +715,14 @@ export default function AdminDashboardPage() {
                                                     {song.name}
                                                 </p>
                                                 <p className="text-xs text-sonora-muted truncate">
-                                                    {song.artist_name ?? '—'} •{' '}
-                                                    {song.album_title ?? '—'}
+                                                    {song.artistName ?? '—'} •{' '}
+                                                    {song.albumTitle ?? '—'}
                                                 </p>
                                             </div>
 
                                             <div className="text-right shrink-0">
                                                 <p className="text-sm font-extrabold text-white">
-                                                    {formatNumber(plays)}
+                                                    {formatNumber(song.playCount)}
                                                 </p>
                                                 <p className="text-xs text-sonora-lavender">
                                                     {t('admin.dashboard.sharePercent', {
@@ -515,7 +733,7 @@ export default function AdminDashboardPage() {
                                         </div>
 
                                         <progress
-                                            value={plays}
+                                            value={song.playCount}
                                             max={maxTopSongPlays}
                                             className="admin-stat-bar w-full h-2 rounded-full overflow-hidden"
                                         />
@@ -545,47 +763,69 @@ export default function AdminDashboardPage() {
                         </Link>
                     </div>
 
-                    {artistStats.length > 0 ? (
+                    {topArtists.length > 0 ? (
                         <div className="flex flex-col gap-3.5">
-                            {artistStats.map((artist, idx) => (
-                                <div key={artist.id} className="flex items-center gap-3">
-                                    <span
-                                        className={`w-7 h-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${getRankBadgeClass(
-                                            idx
-                                        )}`}
+                            {topArtists.map((artist, idx) => {
+                                const albumsCount =
+                                    artistAlbumsMap.get(artist.id) ??
+                                    Math.max(
+                                        albums.filter((al) => al.artistId === artist.id)
+                                            .length,
+                                        isDemo ? 1 : 0
+                                    )
+                                return (
+                                    <div
+                                        key={`${artist.id}-${idx}`}
+                                        className="flex items-center gap-3"
                                     >
-                                        {idx + 1}
-                                    </span>
-                                    <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-                                        <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
-                                            <div className="min-w-0 flex items-center gap-2">
-                                                <span className="font-bold text-white truncate">
-                                                    {artist.name}
-                                                </span>
-                                                <span className="text-xs text-sonora-muted shrink-0">
-                                                    {t('admin.dashboard.albumsCountShort', {
-                                                        count: artist.albumsCount,
-                                                    })}{' '}
-                                                    •{' '}
-                                                    {t('admin.dashboard.tracksCount', {
-                                                        count: artist.tracksCount,
+                                        <span
+                                            className={`w-7 h-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${getRankBadgeClass(
+                                                idx
+                                            )}`}
+                                        >
+                                            {idx + 1}
+                                        </span>
+                                        <MediaImage
+                                            src={artist.imageUrl}
+                                            alt={artist.name}
+                                            className="w-9 h-9 rounded-full overflow-hidden shrink-0 bg-linear-to-br from-sonora-purple to-sonora-pink flex items-center justify-center font-bold text-xs text-white"
+                                            fallback={<span>{artist.name[0]?.toUpperCase() ?? '?'}</span>}
+                                        />
+                                        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                                            <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
+                                                <div className="min-w-0 flex items-center gap-2">
+                                                    <span className="font-bold text-white truncate">
+                                                        {artist.name}
+                                                    </span>
+                                                    <span className="text-xs text-sonora-muted shrink-0">
+                                                        {t('admin.dashboard.albumsCountShort', {
+                                                            count: albumsCount,
+                                                        })}{' '}
+                                                        •{' '}
+                                                        {t('admin.dashboard.tracksCount', {
+                                                            count: artist.tracksCount,
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                <span className="font-extrabold text-sonora-lavender shrink-0">
+                                                    {t('admin.dashboard.playsShort', {
+                                                        count: formatNumber(artist.playsCount),
                                                     })}
                                                 </span>
                                             </div>
-                                            <span className="font-extrabold text-sonora-lavender shrink-0">
-                                                {t('admin.dashboard.playsShort', {
-                                                    count: formatNumber(artist.plays),
-                                                })}
-                                            </span>
+                                            <progress
+                                                value={
+                                                    artist.playsCount > 0
+                                                        ? artist.playsCount
+                                                        : artist.tracksCount
+                                                }
+                                                max={maxArtistPlays}
+                                                className="admin-stat-bar w-full h-2 rounded-full overflow-hidden"
+                                            />
                                         </div>
-                                        <progress
-                                            value={artist.plays}
-                                            max={maxArtistPlays}
-                                            className="admin-stat-bar w-full h-2 rounded-full overflow-hidden"
-                                        />
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     ) : (
                         <p className="text-sm text-sonora-muted py-6 text-center">
@@ -607,10 +847,13 @@ export default function AdminDashboardPage() {
                         </Link>
                     </div>
 
-                    {albumStats.length > 0 ? (
+                    {topAlbums.length > 0 ? (
                         <div className="flex flex-col gap-3.5">
-                            {albumStats.map((album, idx) => (
-                                <div key={album.id} className="flex items-center gap-3">
+                            {topAlbums.map((album, idx) => (
+                                <div
+                                    key={`${album.id}-${idx}`}
+                                    className="flex items-center gap-3"
+                                >
                                     <span
                                         className={`w-7 h-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${getRankBadgeClass(
                                             idx
@@ -618,6 +861,12 @@ export default function AdminDashboardPage() {
                                     >
                                         {idx + 1}
                                     </span>
+                                    <MediaImage
+                                        src={album.coverUrl}
+                                        alt={album.title}
+                                        className="w-9 h-9 rounded-lg overflow-hidden shrink-0 bg-linear-to-br from-sonora-purple to-sonora-light flex items-center justify-center text-white"
+                                        fallback={<Disc size={16} />}
+                                    />
                                     <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                                         <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
                                             <div className="min-w-0">
@@ -625,7 +874,8 @@ export default function AdminDashboardPage() {
                                                     {album.title}
                                                 </span>
                                                 <span className="text-xs text-sonora-muted ml-2">
-                                                    {album.artistName} ({album.year}) •{' '}
+                                                    {album.artistName ?? '—'}{' '}
+                                                    {album.releaseYear ? `(${album.releaseYear})` : ''} •{' '}
                                                     {t('admin.dashboard.tracksCount', {
                                                         count: album.tracksCount,
                                                     })}
@@ -633,12 +883,16 @@ export default function AdminDashboardPage() {
                                             </div>
                                             <span className="font-extrabold text-sonora-lavender shrink-0">
                                                 {t('admin.dashboard.playsShort', {
-                                                    count: formatNumber(album.plays),
+                                                    count: formatNumber(album.playsCount),
                                                 })}
                                             </span>
                                         </div>
                                         <progress
-                                            value={album.plays}
+                                            value={
+                                                album.playsCount > 0
+                                                    ? album.playsCount
+                                                    : album.tracksCount
+                                            }
                                             max={maxAlbumPlays}
                                             className="admin-stat-bar w-full h-2 rounded-full overflow-hidden"
                                         />
@@ -688,19 +942,24 @@ export default function AdminDashboardPage() {
 
                     {genreStats.length > 0 ? (
                         <div className="flex flex-col gap-3.5">
-                            {genreStats.map((g) => {
+                            {genreStats.map((g, idx) => {
                                 const metricValue =
-                                    genreMode === 'streams' ? g.plays : g.count
+                                    genreMode === 'streams'
+                                        ? g.playsCount
+                                        : g.tracksCount
                                 return (
-                                    <div key={g.id} className="flex flex-col gap-1.5">
+                                    <div
+                                        key={`${g.genreId}-${idx}`}
+                                        className="flex flex-col gap-1.5"
+                                    >
                                         <div className="flex items-center justify-between text-xs sm:text-sm">
                                             <span className="font-semibold text-white truncate">
-                                                {g.name}
+                                                {g.genreName}
                                             </span>
                                             <span className="text-sonora-muted shrink-0 ml-2">
-                                                {formatNumber(g.plays)} •{' '}
+                                                {formatNumber(g.playsCount)} •{' '}
                                                 {t('admin.dashboard.tracksCount', {
-                                                    count: g.count,
+                                                    count: g.tracksCount,
                                                 })}
                                             </span>
                                         </div>
@@ -736,12 +995,13 @@ export default function AdminDashboardPage() {
                     {decadeStats.length > 0 ? (
                         <div className="flex flex-col gap-3.5">
                             {decadeStats.map((d) => (
-                                <div key={d.decade} className="flex flex-col gap-1.5">
+                                <div key={d.decadeStart} className="flex flex-col gap-1.5">
                                     <div className="flex items-center justify-between text-xs sm:text-sm">
                                         <span className="font-bold text-white">
-                                            {t('admin.dashboard.decadeLabel', {
-                                                decade: d.decade,
-                                            })}
+                                            {d.label ||
+                                                t('admin.dashboard.decadeLabel', {
+                                                    decade: d.decadeStart,
+                                                })}
                                         </span>
                                         <span className="text-sonora-muted shrink-0 ml-2">
                                             {t('admin.dashboard.albumsCountShort', {
@@ -751,11 +1011,15 @@ export default function AdminDashboardPage() {
                                             {t('admin.dashboard.tracksCount', {
                                                 count: d.tracksCount,
                                             })}{' '}
-                                            • {formatNumber(d.plays)}
+                                            • {formatNumber(d.playsCount)}
                                         </span>
                                     </div>
                                     <progress
-                                        value={d.plays > 0 ? d.plays : d.tracksCount}
+                                        value={
+                                            d.playsCount > 0
+                                                ? d.playsCount
+                                                : d.tracksCount
+                                        }
                                         max={maxDecadePlays}
                                         className="player-progress-hover w-full h-2 rounded-full overflow-hidden"
                                     />
@@ -784,11 +1048,11 @@ export default function AdminDashboardPage() {
 
                     {recentSongs.length > 0 ? (
                         <div className="flex flex-col gap-1.5">
-                            {recentSongs.map(({ song, plays }) => {
+                            {recentSongs.map((song, idx) => {
                                 const active = currentSong?.id === song.id
                                 return (
                                     <div
-                                        key={song.id}
+                                        key={`${song.id}-${idx}`}
                                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
                                             active
                                                 ? 'bg-sonora-warm/50'
@@ -798,22 +1062,30 @@ export default function AdminDashboardPage() {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                handlePlayPreview(
-                                                    song,
-                                                    recentSongs.map((r) => r.song)
+                                                handlePlayById(
+                                                    song.id,
+                                                    recentSongs.map((r) => r.id)
                                                 )
                                             }
-                                            className="w-8 h-8 rounded-lg bg-sonora-warm flex items-center justify-center shrink-0 text-white hover:bg-sonora-light transition-colors cursor-pointer"
+                                            className="relative group/play w-9 h-9 rounded-lg overflow-hidden bg-sonora-warm flex items-center justify-center shrink-0 text-white cursor-pointer"
                                         >
-                                            {active && isPlaying ? (
-                                                <Pause size={14} fill="currentColor" />
-                                            ) : (
-                                                <Play
-                                                    size={14}
-                                                    fill="currentColor"
-                                                    className="ml-0.5"
-                                                />
-                                            )}
+                                            <MediaImage
+                                                src={resolveAnalyticsSongCover(
+                                                    song.id,
+                                                    song.coverUrl,
+                                                    song.albumTitle
+                                                )}
+                                                alt={song.name}
+                                                className="w-full h-full flex items-center justify-center"
+                                                fallback={<Music size={15} className="text-white/75" />}
+                                            />
+                                            <span className="absolute inset-0 bg-sonora-dark/60 opacity-0 group-hover/play:opacity-100 transition-opacity flex items-center justify-center">
+                                                {active && isPlaying ? (
+                                                    <Pause size={14} fill="currentColor" />
+                                                ) : (
+                                                    <Play size={14} fill="currentColor" className="ml-0.5" />
+                                                )}
+                                            </span>
                                         </button>
                                         <div className="flex-1 min-w-0">
                                             <p
@@ -826,12 +1098,12 @@ export default function AdminDashboardPage() {
                                                 {song.name}
                                             </p>
                                             <p className="text-xs text-sonora-muted truncate">
-                                                {song.artist_name ?? '—'} •{' '}
-                                                {song.album_title ?? '—'}
+                                                {song.artistName ?? '—'} •{' '}
+                                                {song.albumTitle ?? '—'}
                                             </p>
                                         </div>
                                         <span className="text-xs font-bold text-sonora-lavender shrink-0">
-                                            {formatNumber(plays)}
+                                            {formatNumber(song.playCount)}
                                         </span>
                                     </div>
                                 )

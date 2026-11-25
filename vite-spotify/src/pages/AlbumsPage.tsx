@@ -2,6 +2,7 @@ import { useGetAlbumsQuery } from '../services/albums/albumsApi'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Disc } from 'lucide-react'
+import MediaImage from '../components/MediaImage'
 
 const CARD_GRADIENT_CLASSES = [
     'bg-linear-to-br from-sonora-purple to-sonora-light',
@@ -54,17 +55,22 @@ export default function AlbumsPage() {
                             to={`/albums/${album.id}`}
                             className="flex flex-col gap-3 transition-all group cursor-pointer"
                         >
-                            <div
-                                className={`w-full aspect-square rounded-lg flex flex-col items-center justify-center p-4 text-center relative overflow-hidden shadow-md transition-transform group-hover:scale-105 ${CARD_GRADIENT_CLASSES[idx % CARD_GRADIENT_CLASSES.length]}`}
-                            >
-                                <Disc
-                                    size={52}
-                                    className="text-white/80 mb-2 transition-transform duration-500 group-hover:rotate-180"
-                                />
-                                <span className="font-bold text-sm text-white line-clamp-2">
-                                    {album.title}
-                                </span>
-                            </div>
+                            <MediaImage
+                                src={album.coverUrl}
+                                alt={album.title}
+                                className={`w-full aspect-square rounded-lg relative overflow-hidden shadow-md transition-transform group-hover:scale-105 ${CARD_GRADIENT_CLASSES[idx % CARD_GRADIENT_CLASSES.length]}`}
+                                fallback={
+                                    <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                                        <Disc
+                                            size={52}
+                                            className="text-white/80 mb-2 transition-transform duration-500 group-hover:rotate-180"
+                                        />
+                                        <span className="font-bold text-sm text-white line-clamp-2">
+                                            {album.title}
+                                        </span>
+                                    </div>
+                                }
+                            />
 
                             <div className="min-w-0 px-0.5">
                                 <p className="font-bold text-base truncate transition-colors text-white">

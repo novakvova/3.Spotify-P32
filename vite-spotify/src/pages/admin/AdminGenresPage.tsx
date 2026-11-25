@@ -18,6 +18,7 @@ import {
     useDeleteGenreMutation,
 } from '../../services/genres/genresApi'
 import { useGetAllSongsQuery } from '../../services/songs/songsApi'
+import { useGetGenresTracksCountQuery } from '../../services/analytics/analyticsApi'
 import type { IGenre } from '../../types/IGenre'
 import { extractApiErrorMessage } from './adminUtils'
 
@@ -27,6 +28,9 @@ export default function AdminGenresPage() {
 
     const { data: genres = [], isLoading } = useGetGenresQuery()
     const { data: songs = [] } = useGetAllSongsQuery()
+    const { data: genresStats = [] } = useGetGenresTracksCountQuery(undefined, {
+        refetchOnMountOrArgChange: true,
+    })
 
     const [createGenre, { isLoading: isCreating }] = useCreateGenreMutation()
     const [updateGenre, { isLoading: isUpdating }] = useUpdateGenreMutation()
@@ -118,9 +122,14 @@ export default function AdminGenresPage() {
         }
     }
 
-    const getSongCount = (genreName: string) =>
+    const genreTrackMap = new Map<number, number>(
+        genresStats.map((item) => [item.id, item.tracksCount])
+    )
+
+    const getSongCount = (genre: IGenre) =>
+        genreTrackMap.get(genre.id) ??
         songs.filter((s) =>
-            s.genres_names?.some((gn) => gn.toLowerCase() === genreName.toLowerCase())
+            s.genres_names?.some((gn) => gn.toLowerCase() === genre.name.toLowerCase())
         ).length
 
     const q = search.trim().toLowerCase()
@@ -245,7 +254,7 @@ export default function AdminGenresPage() {
                                         {genre.description || t('admin.genres.noDesc')}
                                     </td>
                                     <td className="py-3 px-4 text-sonora-muted hidden md:table-cell">
-                                        {getSongCount(genre.name)}
+                                        {getSongCount(genre)}
                                     </td>
                                     <td className="py-3 px-4 text-right">
                                         <div className="inline-flex items-center justify-end gap-1.5">

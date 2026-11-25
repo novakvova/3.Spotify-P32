@@ -11,16 +11,23 @@ import {
     selectPlayerState,
 } from '../store/slices/playerSlice'
 import { logout, isJwtTokenValid } from '../store/slices/authSlice'
+import { useIncrementPlayMutation } from '../services/songs/songsApi'
+import { analyticsApi } from '../services/analytics/analyticsApi'
 import { getSongUrl } from '../utils/format'
 
 export function useAudio() {
     const audioRef = useRef<HTMLAudioElement | null>(null)
     const isPlayingRef = useRef<boolean>(false)
     const loadedSongIdRef = useRef<number | null>(null)
+    const listenedSecondsRef = useRef<number>(0)
+    const lastTimeRef = useRef<number>(0)
+    const playReportedRef = useRef<boolean>(false)
+
     const dispatch = useAppDispatch()
     const currentSong = useAppSelector(selectCurrentSong)
     const isPlaying = useAppSelector(selectIsPlaying)
     const { volume, repeat } = useAppSelector(selectPlayerState)
+    const [incrementPlay] = useIncrementPlayMutation()
 
     useEffect(() => {
         isPlayingRef.current = isPlaying
@@ -30,12 +37,62 @@ export function useAudio() {
         if (!audioRef.current) audioRef.current = new Audio()
         const audio = audioRef.current
 
-        const onTimeUpdate = () => dispatch(setProgress(audio.currentTime))
+        const onTimeUpdate = () => {
+            const current = audio.currentTime
+            const delta = current - lastTimeRef.current
+            lastTimeRef.current = current
+            dispatch(setProgress(current))
+
+            if (delta > 0 && delta < 2) {
+                listenedSecondsRef.current += delta
+            }
+
+            const songId = loadedSongIdRef.current
+            if (songId !== null && !playReportedRef.current) {
+                const dur =
+                    Number.isFinite(audio.duration) && audio.duration > 0
+                        ? audio.duration
+                        : 0
+                const threshold =
+                    dur > 0 ? Math.min(15, Math.ceil(dur * 0.3)) : 15
+
+                if (listenedSecondsRef.current >= threshold) {
+                    playReportedRef.current = true
+                    void incrementPlay({
+                        id: songId,
+                        listenedSeconds: Math.max(
+                            threshold,
+                            Math.floor(listenedSecondsRef.current)
+                        ),
+                        durationSeconds: dur > 0 ? Math.round(dur) : undefined,
+                    })
+                        .unwrap()
+                        .then((res) => {
+                            if (res.counted) {
+                                dispatch(
+                                    analyticsApi.util.invalidateTags(['Analytics'])
+                                )
+                            }
+                        })
+                        .catch(() => {})
+                }
+            }
+        }
+
         const onLoadedMetadata = () => dispatch(setDuration(audio.duration))
-        const onEnded = () =>
-            repeat === 'one'
-                ? ((audio.currentTime = 0), void audio.play())
-                : dispatch(nextSong())
+
+        const onEnded = () => {
+            if (repeat === 'one') {
+                listenedSecondsRef.current = 0
+                lastTimeRef.current = 0
+                playReportedRef.current = false
+                audio.currentTime = 0
+                void audio.play()
+            } else {
+                dispatch(nextSong())
+            }
+        }
+
         const onError = () => {
             if (loadedSongIdRef.current !== null) {
                 dispatch(setPlaying(false))
@@ -53,7 +110,7 @@ export function useAudio() {
             audio.removeEventListener('ended', onEnded)
             audio.removeEventListener('error', onError)
         }
-    }, [repeat, dispatch])
+    }, [repeat, dispatch, incrementPlay])
 
     useEffect(() => {
         const audio = audioRef.current
@@ -62,6 +119,9 @@ export function useAudio() {
         let cancelled = false
         let objectUrl: string | null = null
         loadedSongIdRef.current = null
+        listenedSecondsRef.current = 0
+        lastTimeRef.current = 0
+        playReportedRef.current = false
         dispatch(setDuration(0))
         dispatch(setProgress(0))
 
@@ -135,6 +195,7 @@ export function useAudio() {
 
     const seek = (time: number) => {
         if (audioRef.current && loadedSongIdRef.current !== null) {
+            lastTimeRef.current = time
             audioRef.current.currentTime = time
             dispatch(setProgress(time))
         }

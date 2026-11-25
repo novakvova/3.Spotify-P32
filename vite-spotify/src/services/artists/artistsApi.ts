@@ -19,19 +19,19 @@ export const artistsApi = createApi({
             query: (name) => `/api/artists/search?name=${encodeURIComponent(name)}`,
             providesTags: ['Artist'],
         }),
-        createArtist: builder.mutation<IArtist, { name: string; birthDate: string }>({
-            query: (body) => ({
+        createArtist: builder.mutation<IArtist, FormData>({
+            query: (formData) => ({
                 url: '/api/artists',
                 method: 'POST',
-                body,
+                body: formData,
             }),
             invalidatesTags: ['Artist'],
         }),
-        updateArtist: builder.mutation<IArtist, { id: number; name: string; birthDate: string }>({
-            query: ({ id, ...body }) => ({
+        updateArtist: builder.mutation<IArtist, { id: number; formData: FormData }>({
+            query: ({ id, formData }) => ({
                 url: `/api/artists/${id}`,
                 method: 'PUT',
-                body,
+                body: formData,
             }),
             invalidatesTags: ['Artist'],
         }),

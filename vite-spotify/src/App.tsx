@@ -27,6 +27,7 @@ import { LanguageTranslator } from './components/LanguageTranslator.tsx'
 import CommunityPage from './pages/CommunityPage.tsx'
 import WebPlayerPage from './pages/WebPlayerPage.tsx'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminUsersPage from './pages/admin/AdminUsersPage'
 import AdminSongsPage from './pages/admin/AdminSongsPage'
 import AdminAlbumsPage from './pages/admin/AdminAlbumsPage'
 import AdminArtistsPage from './pages/admin/AdminArtistsPage'
@@ -63,6 +64,7 @@ export default function App() {
                 </Route>
                 <Route path="/admin" element={<AdminLayout />}>
                     <Route index element={<AdminDashboardPage />} />
+                    <Route path="users" element={<AdminUsersPage />} />
                     <Route path="songs" element={<AdminSongsPage />} />
                     <Route path="albums" element={<AdminAlbumsPage />} />
                     <Route path="artists" element={<AdminArtistsPage />} />

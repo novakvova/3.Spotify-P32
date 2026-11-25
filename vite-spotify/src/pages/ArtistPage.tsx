@@ -1,6 +1,7 @@
 import { useGetArtistsQuery, useSearchArtistsQuery } from '../services/artists/artistsApi'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import MediaImage from '../components/MediaImage'
 
 const CARD_GRADIENT_CLASSES = [
     'bg-linear-to-br from-sonora-purple to-sonora-light',
@@ -56,11 +57,12 @@ export default function ArtistsPage() {
                             to={`/artists/${artist.id}`}
                             className="flex flex-col items-start gap-3 transition-all group cursor-pointer"
                         >
-                            <div
-                                className={`w-full aspect-square rounded-full flex items-center justify-center text-5xl font-black text-white shadow-md transition-transform group-hover:scale-105 ${CARD_GRADIENT_CLASSES[idx % CARD_GRADIENT_CLASSES.length]}`}
-                            >
-                                {artist.name[0]?.toUpperCase() ?? '?'}
-                            </div>
+                            <MediaImage
+                                src={artist.imageUrl}
+                                alt={artist.name}
+                                className={`w-full aspect-square rounded-full overflow-hidden flex items-center justify-center text-5xl font-black text-white shadow-md transition-transform group-hover:scale-105 ${CARD_GRADIENT_CLASSES[idx % CARD_GRADIENT_CLASSES.length]}`}
+                                fallback={<span>{artist.name[0]?.toUpperCase() ?? '?'}</span>}
+                            />
                             <div className="min-w-0 w-full">
                                 <p className="font-bold text-base truncate text-white">
                                     {artist.name}

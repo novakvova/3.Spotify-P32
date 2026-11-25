@@ -10,6 +10,8 @@ import { artistsApi } from '../services/artists/artistsApi'
 import { albumsApi } from '../services/albums/albumsApi'
 import { searchApi } from '../services/search/searchApi.ts'
 import { rolesApi } from '../services/roles/rolesApi'
+import { adminUsersApi } from '../services/users/adminUsersApi'
+import { analyticsApi } from '../services/analytics/analyticsApi'
 
 export const store = configureStore({
     reducer: {
@@ -24,6 +26,8 @@ export const store = configureStore({
         [albumsApi.reducerPath]: albumsApi.reducer,
         [searchApi.reducerPath]: searchApi.reducer,
         [rolesApi.reducerPath]: rolesApi.reducer,
+        [adminUsersApi.reducerPath]: adminUsersApi.reducer,
+        [analyticsApi.reducerPath]: analyticsApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(
@@ -34,6 +38,8 @@ export const store = configureStore({
             albumsApi.middleware,
             searchApi.middleware,
             rolesApi.middleware,
+            adminUsersApi.middleware,
+            analyticsApi.middleware,
         ),
 })
 
