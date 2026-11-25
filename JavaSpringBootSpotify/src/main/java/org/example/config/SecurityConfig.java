@@ -50,6 +50,8 @@ public class SecurityConfig {
                                 "/api/search/**").permitAll()
                         .requestMatchers("/images/**", "/uploads/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/songs/*/play").permitAll()
+                        .requestMatchers("/api/analytics/**").hasAuthority(RolesConstants.AdminRole)
                         .requestMatchers("/api/admin/**").hasAuthority(RolesConstants.AdminRole)
                         .requestMatchers("/api/roles/**").hasAuthority(RolesConstants.AdminRole)
                         .requestMatchers(HttpMethod.POST,
