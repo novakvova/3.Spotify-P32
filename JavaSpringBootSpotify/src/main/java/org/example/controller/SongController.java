@@ -1,4 +1,5 @@
 package org.example.controller;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,7 +26,6 @@ import java.util.List;
 public class SongController {
     private final SongService songService;
 
-    // ОТРИМАТИ ВСІ ПІСНІ
     @GetMapping
     @Operation(summary = "Get all songs", description = "Retrieve list of all songs")
     @ApiResponse(responseCode = "200", description = "Successful retrieval")
@@ -33,7 +34,6 @@ public class SongController {
         return ResponseEntity.ok(songs);
     }
 
-    // ОТРИМАТИ ПІСНІ ЗІ СТОРІНКУВАННЯМ
     @GetMapping("/page")
     @Operation(summary = "Get songs with pagination", description = "Retrieve songs with pagination support")
     @ApiResponse(responseCode = "200", description = "Successful retrieval")
@@ -44,7 +44,6 @@ public class SongController {
         return ResponseEntity.ok(songsPage);
     }
 
-    // ОТРИМАТИ ПІСНЮ ПО ID
     @GetMapping("/{id}")
     @Operation(summary = "Get song by ID", description = "Retrieve a specific song by its ID")
     @ApiResponses(value = {
@@ -59,33 +58,30 @@ public class SongController {
         return ResponseEntity.ok(song);
     }
 
-    // СТВОРИТИ НОВУ ПІСНЮ
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Create new song", description = "Create a new song with audio file")
+    @Operation(summary = "Create new song", description = "Create a new song with audio file and optional cover image converted to WebP")
     @ApiResponse(responseCode = "201", description = "Song created successfully")
     public ResponseEntity<?> create(
             @RequestParam String name,
             @RequestParam String artist_name,
             @RequestParam String album_title,
             @RequestParam(required = false) String genres_names,
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file,
+            @RequestPart(value = "cover", required = false) MultipartFile cover) {
         try {
             log.info("Отримано запит на створення пісні: {}", name);
 
-            // Парсимо жанри (строка розділена комами або одиничний жанр)
             List<String> genresList = genres_names != null && !genres_names.isEmpty()
                     ? Arrays.asList(genres_names.split(","))
                     : List.of();
 
-            // Створюємо DTO з отриманими параметрами
             CreateSongDto dto = new CreateSongDto();
             dto.setName(name);
             dto.setArtistName(artist_name);
             dto.setAlbumTitle(album_title);
             dto.setGenres(genresList);
 
-            // Передаємо в сервіс для обробки та збереження файлу
-            SongItemDto createdSong = songService.createSong(dto, file);
+            SongItemDto createdSong = songService.createSong(dto, file, cover);
 
             log.info("Пісня успішно створена з ID: {}", createdSong.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(createdSong);
@@ -103,22 +99,37 @@ public class SongController {
         }
     }
 
-    // ОНОВИТИ ПІСНЮ
-    @PutMapping("/{id}")
-    @Operation(summary = "Update song", description = "Update an existing song")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update song", description = "Update an existing song and optionally replace cover image (converted to WebP)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Song updated successfully"),
             @ApiResponse(responseCode = "404", description = "Song not found"),
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody SongItemDto dto) {
+    public ResponseEntity<?> update(
+            @PathVariable Long id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String artist_name,
+            @RequestParam(required = false) String album_title,
+            @RequestParam(required = false) String genres_names,
+            @RequestPart(value = "cover", required = false) MultipartFile cover) {
         try {
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest().body("ID пісні невалідне");
             }
             log.info("Отримано запит на оновлення пісні з ID: {}", id);
 
-            SongItemDto updated = songService.updateSong(id, dto);
+            List<String> genresList = genres_names != null && !genres_names.isBlank()
+                    ? Arrays.asList(genres_names.split(","))
+                    : null;
+
+            SongItemDto dto = new SongItemDto();
+            dto.setName(name);
+            dto.setArtist_name(artist_name);
+            dto.setAlbum_title(album_title);
+            dto.setGenres_names(genresList);
+
+            SongItemDto updated = songService.updateSong(id, dto, cover);
             if (updated == null) {
                 log.warn("Пісня з ID {} не знайдена", id);
                 return ResponseEntity.notFound().build();
@@ -133,7 +144,6 @@ public class SongController {
         }
     }
 
-    // ВИДАЛИТИ ПІСНЮ
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete song", description = "Delete a song by ID")
     @ApiResponses(value = {
@@ -147,7 +157,6 @@ public class SongController {
             }
             log.info("Отримано запит на видалення пісні з ID: {}", id);
 
-            // Перевіряємо, чи існує пісня
             if (songService.getSongById(id) == null) {
                 log.warn("Пісня з ID {} не знайдена", id);
                 return ResponseEntity.notFound().build();
@@ -162,6 +171,7 @@ public class SongController {
                     .body("Помилка при видаленні: " + e.getMessage());
         }
     }
+
     @GetMapping("/search")
     @Operation(summary = "Search songs by name", description = "Search for songs by their name")
     @ApiResponse(responseCode = "200", description = "Successful")

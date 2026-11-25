@@ -1,10 +1,10 @@
 package org.example.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
 
 @Getter
 @Setter

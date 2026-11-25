@@ -19,6 +19,9 @@ public class Song {
     @Column(nullable = false, length = 150)
     private String fileName;
 
+    @Column(length = 500)
+    private String coverUrl;
+
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;
@@ -30,7 +33,6 @@ public class Song {
     @JoinColumn(name = "album_id", nullable = false)
     private Album album;
 
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "song_genres",
@@ -38,5 +40,4 @@ public class Song {
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
     private List<Genre> genres;
-    
 }
