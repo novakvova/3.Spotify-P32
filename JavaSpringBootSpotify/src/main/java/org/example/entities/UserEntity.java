@@ -51,6 +51,9 @@ public class UserEntity implements UserDetails {
     @Column(length = 200)
     private String image;
 
+    @Column(nullable = false)
+    private boolean blocked = false;
+
     @Column(name = "reset_password_token")
     private String resetPasswordToken;
 
@@ -75,7 +78,7 @@ public class UserEntity implements UserDetails {
     }
 
     @Override public boolean isAccountNonExpired() { return true; }
-    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isAccountNonLocked() { return !blocked; }
     @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled() { return true; }
+    @Override public boolean isEnabled() { return !blocked; }
 }
